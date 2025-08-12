@@ -1,0 +1,11 @@
+[Unit]
+Description=Set NVMe power state to PS1 on boot
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/nvme set-feature /dev/nvme0 -f 0x02 -v 1
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

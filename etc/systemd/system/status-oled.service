@@ -1,0 +1,20 @@
+[Unit]
+Description=OLED Status Display Service
+After=network.target
+
+[Service]
+Type=simple
+
+ExecStart=/home/reekroo/scripts/oleds/oled_env/bin/python3 /home/reekroo/scripts/oleds/oled_controller.py
+ExecStop=/home/reekroo/scripts/oleds/oled_env/bin/python3 /home/reekroo/scripts/oleds/tools/oled_clear.py
+
+WorkingDirectory=/home/reekroo/scripts
+
+User=reekroo
+Group=reekroo
+
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
