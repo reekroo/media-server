@@ -23,6 +23,7 @@ class StatsProvider:
         stats = {
             "ip": self.network.get_ip_address(),
             "cpu": self.system.get_cpu_usage(),
+            "cpu_freq": self.system.get_cpu_frequency(),
             "mem": self.system.get_mem_usage(),
             "swap": self.system.get_swap_usage(),
             "temp": self.system.get_cpu_temp(),

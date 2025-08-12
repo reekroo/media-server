@@ -24,6 +24,13 @@ class SystemProvider:
             pass
         return 0
         
+    def get_cpu_frequency(self):
+    try:
+        freq = psutil.cpu_freq()
+        return freq.current if freq else 0
+    except:
+        return 0
+        
     def get_uptime(self):
         uptime_seconds = time.time() - psutil.boot_time()
         uptime_delta = datetime.timedelta(seconds=uptime_seconds)
