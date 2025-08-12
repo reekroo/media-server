@@ -18,6 +18,7 @@ class StatsProvider:
     def get_all_stats(self):
         docker_stats = self.docker.get_stats()
         nvme_health = self.hardware.get_nvme_health()
+        throttling_status = self.hardware.get_throttling_status()
 
         stats = {
             "ip": self.network.get_ip_address(),
@@ -31,13 +32,11 @@ class StatsProvider:
             "docker_restarts": docker_stats["restarts"],
             "docker_status": docker_stats["status"],
             "nvme_temp": nvme_health["temperature"],
-            "nvme_ps_set": self.hardware.get_nvme_set_power_state(),
-            "nvme_ps_now": self.hardware.get_nvme_current_power_state(),
             "core_voltage": self.hardware.get_core_voltage(),
-            "psu_voltage": self.hardware.get_psu_voltage(),
             "network_throughput": self.network.get_throughput(),
+
             "disk_io": self.storage_disk.get_io(),
-            "throttling": self.hardware.get_throttling_status(),
+            "throttling": throttling_status,
 
             "status_docker": docker_stats["is_running"],
             "status_root_disk": self.root_disk.get_usage() < 90,

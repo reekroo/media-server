@@ -12,13 +12,6 @@ class HardwareProvider:
         except (FileNotFoundError, IndexError, ValueError):
             return 0.0
 
-    def get_psu_voltage(self):
-        try:
-            result = subprocess.run(['vcgencmd', 'measure_volts', 'usb'], capture_output=True, text=True)
-            return float(result.stdout.split('=')[1][:-2])
-        except (FileNotFoundError, IndexError, ValueError):
-            return 0.0
-
     def get_nvme_health(self):
         health_stats = {
             "critical_warning": 1,
@@ -28,36 +21,14 @@ class HardwareProvider:
             result = subprocess.run(['nvme', 'smart-log', '/dev/nvme0', '-o', 'json'], capture_output=True, text=True)
             data = json.loads(result.stdout)
             health_stats["critical_warning"] = data.get("critical_warning", 1)
-            health_stats["temperature"] = data.get("temperature", 0)
+            
+            temperature_kelvin = data.get("temperature", 0)
+            if temperature_kelvin > 0:
+                health_stats["temperature"] = temperature_kelvin - 273
+            
         except (FileNotFoundError, json.JSONDecodeError):
             pass
         return health_stats
-
-    def get_nvme_set_power_state(self):
-        try:
-            cmd = ['sudo', 'nvme', 'get-feature', '/dev/nvme0', '-f', '0x02', '-H']
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            return result.stdout.strip()[-1]
-        except (FileNotFoundError, IndexError):
-            return "?"
-
-    def get_nvme_current_power_state(self):
-        try:
-            cmd = ['sudo', 'nvme', 'smart-log', '/dev/nvme0', '-o', 'json']
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            data = json.loads(result.stdout)
-            
-            state_index = data.get('active_power_state')
-            if state_index is not None:
-                return str(state_index)
-            
-            state_index = data.get('ps')
-            if state_index is not None:
-                return str(state_index)
-
-        except (FileNotFoundError, json.JSONDecodeError, KeyError):
-            pass
-        return "?"
 
     def get_throttling_status(self):
         status_map = {

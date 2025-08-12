@@ -10,8 +10,8 @@ ExecStop=/home/reekroo/scripts/oleds/oled_env/bin/python3 /home/reekroo/scripts/
 
 WorkingDirectory=/home/reekroo/scripts
 
-User=reekroo
-Group=reekroo
+User=root
+Group=root
 
 Restart=on-failure
 RestartSec=5s
