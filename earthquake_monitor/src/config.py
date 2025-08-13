@@ -16,27 +16,27 @@ BUZZER_PIN = 18
 ALERT_LEVELS = [
     {
         'min_magnitude': 7.0,
-        'duration': 360,
+        'duration': 180,
         'melody': melodies.ALERT_LEVEL_5
     },
     {
         'min_magnitude': 6.0,
-        'duration': 180,
+        'duration': 60,
         'melody': melodies.ALERT_LEVEL_4
     },
     {
         'min_magnitude': 5.0,
-        'duration': 60,
+        'duration': 45,
         'melody': melodies.ALERT_LEVEL_3
     },
     {
         'min_magnitude': 4.2,
-        'duration': 30,
+        'duration': 20,
         'melody': melodies.ALERT_LEVEL_2
     },
     {
         'min_magnitude': 3.5,
-        'duration': 15,
+        'duration': 10,
         'melody': melodies.ALERT_LEVEL_1
     },
 ]

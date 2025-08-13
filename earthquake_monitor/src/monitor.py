@@ -1,6 +1,5 @@
 import time
 from src.earthquake_logger import get_logger
-from src import melodies
 
 log = get_logger(__name__)
 
@@ -26,32 +25,35 @@ class EarthquakeMonitor:
             log.info("No new significant events found.")
             return
 
+        new_events = []
         for event in data['features']:
-            if event['id'] in self._processed_event_ids:
-                continue
+            if event['id'] not in self._processed_event_ids:
+                new_events.append(event)
+        
+        if not new_events:
+            log.info("Found events, but they have already been processed.")
+            return
 
-            mag = event['properties'].get('mag', 0)
-            
-            for level in self._alert_levels:
-                if mag >= level['min_magnitude']:
-                    place = event['properties'].get('place', 'Unknown')
-                    log.warning("--- NEW EVENT DETECTED ---")
-                    log.warning(f"  Magnitude: {mag} meets threshold {level['min_magnitude']}")
-                    log.warning(f"  Place: {place}")
-                    
-                    melody_name = level['melody_name']
-                    actual_melody = melodies.MELODY_MAP.get(melody_name)
-
-                    if actual_melody:
-                        duration = level['duration']
-                        log.warning(f"  ALERT DURATION: {duration} seconds, MELODY: {melody_name}")
-                        self._alarmer.play_alarm(actual_melody, duration)
-                    else:
-                        log.error(f"Melody '{melody_name}' not found in MELODY_MAP!")
-                    
-                    break 
-            
+        strongest_event = max(new_events, key=lambda e: e['properties'].get('mag', 0))
+        
+        for event in new_events:
             self._processed_event_ids.add(event['id'])
+
+        mag = strongest_event['properties'].get('mag', 0)
+        
+        for level in self._alert_levels:
+            if mag >= level['min_magnitude']:
+                place = strongest_event['properties'].get('place', 'Unknown')
+                log.warning("--- STRONGEST NEW EVENT DETECTED ---")
+                log.warning(f"  Magnitude: {mag} meets threshold {level['min_magnitude']}")
+                log.warning(f"  Place: {place}")
+                
+                actual_melody = level['melody']
+                duration = level['duration']
+                log.warning(f"  ALERT DURATION: {duration} seconds")
+                self._alarmer.play_alarm(actual_melody, duration)
+                
+                break
 
     def run(self, interval_seconds):
         try:
