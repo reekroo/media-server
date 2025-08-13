@@ -1,0 +1,16 @@
+[Unit]
+Description=Earthquake Monitor Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/reekroo/earthquake_monitor/main.py
+
+WorkingDirectory=/home/reekroo/earthquake_monitor
+
+User=root
+Group=root
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
