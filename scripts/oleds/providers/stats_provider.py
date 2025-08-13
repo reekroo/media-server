@@ -16,6 +16,7 @@ class StatsProvider:
         self.hardware = HardwareProvider()
 
     def get_all_stats(self):
+        disk = self.root_disk.get_usage()
         docker_stats = self.docker.get_stats()
         nvme_health = self.hardware.get_nvme_health()
         throttling_status = self.hardware.get_throttling_status()
@@ -40,7 +41,7 @@ class StatsProvider:
             "throttling": throttling_status,
 
             "status_docker": docker_stats["is_running"],
-            "status_root_disk": self.root_disk.get_usage() < 90,
+            "status_root_disk": disk['percent'] < 90,
             "status_storage_disk": nvme_health["critical_warning"] == 0,
             "status_wifi": self.network.is_wifi_enabled(),
             "status_voltage": self.hardware.get_core_voltage() > 4.75

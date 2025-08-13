@@ -11,7 +11,8 @@ class DiskProvider:
         self.last_write_bytes = 0
         
     def get_usage(self):
-        return psutil.disk_usage(self.path).percent
+        usage = psutil.disk_usage(self.path)
+        return {"used": usage.used, "total": usage.total, "percent": usage.percent}
 
     def get_io(self):
         current_time = time.time()
