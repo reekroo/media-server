@@ -1,12 +1,19 @@
 import time
+# ИЗМЕНЕНИЕ: Удаляем лишние манипуляции с путями отсюда
+# import sys
+# import os
+# ...
+
+# Импорты теперь будут работать благодаря main.py
 from src.earthquake_logger import get_logger
+from sounds import sound_client
 
 log = get_logger(__name__)
 
 class EarthquakeMonitor:
-    def __init__(self, api_client, earthquake_buzzer, lat, lon, radius, min_api_mag, api_time_window, alert_levels_config):
+    # ... остальной код класса остается без изменений ...
+    def __init__(self, api_client, lat, lon, radius, min_api_mag, api_time_window, alert_levels_config):
         self._api_client = api_client
-        self._alarmer = earthquake_buzzer
         self._lat = lat
         self._lon = lon
         self._radius = radius
@@ -25,10 +32,7 @@ class EarthquakeMonitor:
             log.info("No new significant events found.")
             return
 
-        new_events = []
-        for event in data['features']:
-            if event['id'] not in self._processed_event_ids:
-                new_events.append(event)
+        new_events = [e for e in data.get('features', []) if e.get('id') not in self._processed_event_ids]
         
         if not new_events:
             log.info("Found events, but they have already been processed.")
@@ -48,10 +52,15 @@ class EarthquakeMonitor:
                 log.warning(f"  Magnitude: {mag} meets threshold {level['min_magnitude']}")
                 log.warning(f"  Place: {place}")
                 
-                actual_melody = level['melody']
-                duration = level['duration']
-                log.warning(f"  ALERT DURATION: {duration} seconds")
-                self._alarmer.play_alarm(actual_melody, duration)
+                # Эта часть кода предполагает, что вы исправите config.py и sound_client,
+                # как мы обсуждали ранее, чтобы передавать имя и длительность.
+                # Если мы не трогаем другие сервисы, то этот вызов нужно будет вернуть
+                # к прямому управлению зуммером, что вернет нас к исходной проблеме.
+                # Пока оставляем так, чтобы решить проблему с запуском.
+                melody_name = level.get('melody_name', 'ALERT_LEVEL_1') 
+                duration = level.get('duration', 5)
+                log.warning(f"  Sending alert command: play '{melody_name}' for {duration}s")
+                sound_client.play_sound(melody_name, duration)
                 
                 break
 
@@ -63,5 +72,4 @@ class EarthquakeMonitor:
         except KeyboardInterrupt:
             log.info("Monitoring stopped by user.")
         finally:
-            self._alarmer.close()
-            log.info("Alerter resources released.")
+            log.info("Earthquake Monitor service has been shut down.")

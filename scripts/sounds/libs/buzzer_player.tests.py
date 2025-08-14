@@ -1,34 +1,42 @@
 #!/usr/bin/env python3
+import sys
+sys.path.append('/home/reekroo/scripts')
 
+from sounds.libs.buzzer_player import BuzzerPlayer
 from time import sleep
-from buzzer_player import BuzzerPlayer
 
-import melodies
+print("--- Starting Buzzer Hardware Test ---")
 
-def main():
-    print("--- Running BuzzerPlayer Tests ---")
+try:
+    # Используем тот же пин, что и в конфигах
+    player = BuzzerPlayer(pin=18)
+    print("[OK] BuzzerPlayer initialized on pin 18.")
 
-    player = BuzzerPlayer()
+    print("Playing a simple note (C4 for 0.5s)...")
+    # Пытаемся напрямую использовать объект TonalBuzzer
+    player.bz.play('C4')
+    sleep(0.5)
+    player.bz.stop()
+    print("...Note stopped.")
+    
+    sleep(0.5)
 
-    print("\nPlaying BOOT melody...")
-    player.play(melodies.BOOT)
-    sleep(1)
+    print("Playing a short melody via player.play()...")
+    test_melody = [('C4', 0.2), ('E4', 0.2), ('G4', 0.2)]
+    player.play(test_melody)
+    print("...Melody finished.")
+    
+    print("\n--- Test Complete ---")
 
-    print("\nPlaying SHUTDOWN melody...")
-    player.play(melodies.SHUTDOWN)
-    sleep(1)
+except Exception as e:
+    print("\n!!! AN ERROR OCCURRED !!!")
+    print(f"Error Type: {type(e).__name__}")
+    print(f"Error Message: {e}")
+    import traceback
+    traceback.print_exc()
 
-    print("\nPlaying SUCCESS melody...")
-    player.play(melodies.SUCCESS)
-    sleep(1)
-
-    print("\nPlaying FAILURE melody...")
-    player.play(melodies.FAILURE)
-    sleep(1)
-
-    player.close()
-
-    print("\n--- All sound tests complete. ---")
-
-if __name__ == '__main__':
-    main()
+finally:
+    # Убедимся, что ресурсы освобождены, если плеер был создан
+    if 'player' in locals() and player:
+        player.close()
+        print("Buzzer resources released.")
