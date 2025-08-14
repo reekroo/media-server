@@ -1,17 +1,16 @@
 [Unit]
 Description=Earthquake Monitor Service
-Wants=network-online.target
-After=network-online.target boot-sound.service button-manager.service
+Wants=network-online.target sound-controller.service
+After=network-online.target sound-controller.service
 
 [Service]
-ExecStartPre=/bin/sleep 10
+# Задержка больше не нужна, так как мы используем правильные зависимости
+# ExecStartPre=/bin/sleep 10
 
 ExecStart=/usr/bin/python3 /home/reekroo/earthquake_monitor/main.py
 WorkingDirectory=/home/reekroo/earthquake_monitor
-
 User=root
 Group=root
-
 Restart=always
 RestartSec=20
 
