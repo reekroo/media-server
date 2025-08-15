@@ -24,9 +24,6 @@ class ButtonController:
         log.info("[ButtonController] Button is active and waiting for events.")
 
     def handle_short_press(self):
-        """
-        Обработчик короткого нажатия: сначала лог, потом звук, потом действие.
-        """
         log.info("Short press detected. Sending sound command...")
         # ВОТ КЛЮЧЕВАЯ СТРОКА, КОТОРОЙ, СКОРЕЕ ВСЕГО, НЕТ В ВАШЕМ ФАЙЛЕ
         sound_client.play_sound('WIFI_TOGGLE')

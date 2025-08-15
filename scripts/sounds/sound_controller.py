@@ -12,7 +12,6 @@ from sounds.libs.buzzer_player import BuzzerPlayer
 from sounds.configs import melodies
 from common.logger import setup_logger
 
-# Создаем логгер для самого сервиса звука
 log = setup_logger('SoundController', '/home/reekroo/scripts/logs/sounds.log')
 SOCKET_FILE = "/tmp/buzzer.sock"
 
@@ -41,17 +40,15 @@ def main():
                 melody_name = cmd.get('melody')
                 duration = cmd.get('duration', 0)
 
-                # Ищем мелодию по имени в вашем модуле melodies
                 melody_to_play = getattr(melodies, melody_name, None)
                 
                 if melody_to_play:
                     log.info(f"Found melody '{melody_name}'. Playing for {duration}s.")
-                    # Если длительность больше 0, играем в цикле
+  
                     if duration > 0:
                         start_time = time.time()
                         while time.time() - start_time < duration:
                             player.play(melody_to_play)
-                    # Если длительность 0, играем один раз
                     else:
                         player.play(melody_to_play)
                     log.info(f"Finished playing '{melody_name}'.")

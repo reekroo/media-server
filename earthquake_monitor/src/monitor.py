@@ -1,17 +1,10 @@
 import time
-# ИЗМЕНЕНИЕ: Удаляем лишние манипуляции с путями отсюда
-# import sys
-# import os
-# ...
-
-# Импорты теперь будут работать благодаря main.py
 from src.earthquake_logger import get_logger
 from sounds import sound_client
 
 log = get_logger(__name__)
 
 class EarthquakeMonitor:
-    # ... остальной код класса остается без изменений ...
     def __init__(self, api_client, lat, lon, radius, min_api_mag, api_time_window, alert_levels_config):
         self._api_client = api_client
         self._lat = lat
@@ -52,11 +45,6 @@ class EarthquakeMonitor:
                 log.warning(f"  Magnitude: {mag} meets threshold {level['min_magnitude']}")
                 log.warning(f"  Place: {place}")
                 
-                # Эта часть кода предполагает, что вы исправите config.py и sound_client,
-                # как мы обсуждали ранее, чтобы передавать имя и длительность.
-                # Если мы не трогаем другие сервисы, то этот вызов нужно будет вернуть
-                # к прямому управлению зуммером, что вернет нас к исходной проблеме.
-                # Пока оставляем так, чтобы решить проблему с запуском.
                 melody_name = level.get('melody_name', 'ALERT_LEVEL_1') 
                 duration = level.get('duration', 5)
                 log.warning(f"  Sending alert command: play '{melody_name}' for {duration}s")

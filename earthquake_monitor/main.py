@@ -1,9 +1,7 @@
 import sys
 import os
 
-# --- ВОТ РЕШЕНИЕ: Явно добавляем путь к папке со всеми общими скриптами ---
 sys.path.append('/home/reekroo/scripts')
-# -------------------------------------------------------------------
 
 from src import config
 from src.earthquake_logger import get_logger
