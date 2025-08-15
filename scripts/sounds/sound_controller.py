@@ -43,7 +43,6 @@ def main():
                 
                 if melody_to_play:
                     log.info(f"Passing play command to player: '{melody_name}' for {duration}s.")
-                    # Просто передаем команду плееру, он сам разберется
                     player.play(melody_to_play, duration)
                 else:
                     log.warning(f"Melody '{melody_name}' not found.")

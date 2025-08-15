@@ -46,7 +46,7 @@ class EarthquakeMonitor:
                 log.warning(f"  Place: {place}")
                 
                 melody_name = level.get('melody_name', 'ALERT_LEVEL_1') 
-                duration = level.get('duration', 5)
+                duration = level.get('duration', 10)
                 log.warning(f"  Sending alert command: play '{melody_name}' for {duration}s")
                 sound_client.play_sound(melody_name, duration)
                 

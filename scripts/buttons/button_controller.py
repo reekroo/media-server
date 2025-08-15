@@ -31,7 +31,7 @@ class ButtonController:
 
     def handle_long_press(self):
         log.info("Long press detected. Sending sound command...")
-        #sound_client.play_sound('REBOOT_SYSTEM')
+        sound_client.play_sound('REBOOT_SYSTEM')
 
         self.actions.reboot_system()
 

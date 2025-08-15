@@ -48,7 +48,7 @@ class HardwareProvider:
             
             for bit, message in status_map.items():
                 if (hex_code >> bit) & 1:
-                    return f"YES ({message.split(' ')[0]})" # Возвращаем короткую причину
+                    return f"YES ({message.split(' ')[0]})"
             return "YES (Unknown)"
         except (FileNotFoundError, IndexError, ValueError):
             return "N/A"
