@@ -5,11 +5,14 @@ Wants=network-online.target
 
 [Service]
 Type=simple
+
 ExecStart=/usr/bin/python3 /home/reekroo/scripts/sounds/sound_controller.py
 WorkingDirectory=/home/reekroo/scripts
+
 User=root
 Group=root
-Restart=always
+
+Restart=on-failure
 RestartSec=5
 
 [Install]

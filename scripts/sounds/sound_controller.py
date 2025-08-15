@@ -17,7 +17,12 @@ SOCKET_FILE = "/tmp/buzzer.sock"
 
 def main():
     if os.path.exists(SOCKET_FILE):
-        os.remove(SOCKET_FILE)
+        try:
+            os.remove(SOCKET_FILE)
+        except FileNotFoundError:
+            pass
+        except PermissionError:
+            print(f"Warning: cannot remove {SOCKET_FILE}, check permissions")
 
     player = BuzzerPlayer()
     server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -34,14 +39,14 @@ def main():
                 command_data = connection.recv(1024).decode()
                 if not command_data:
                     continue
-                
+
                 log.info(f"Received command data: '{command_data}'")
                 cmd = json.loads(command_data)
                 melody_name = cmd.get('melody')
                 duration = cmd.get('duration', 0)
 
                 melody_to_play = getattr(melodies, melody_name, None)
-                
+
                 if melody_to_play:
                     log.info(f"Found melody '{melody_name}'. Playing for {duration}s.")
   
