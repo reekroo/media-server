@@ -8,12 +8,10 @@ from time import sleep
 print("--- Starting Buzzer Hardware Test ---")
 
 try:
-    # Используем тот же пин, что и в конфигах
     player = BuzzerPlayer(pin=18)
     print("[OK] BuzzerPlayer initialized on pin 18.")
 
     print("Playing a simple note (C4 for 0.5s)...")
-    # Пытаемся напрямую использовать объект TonalBuzzer
     player.bz.play('C4')
     sleep(0.5)
     player.bz.stop()
@@ -36,7 +34,6 @@ except Exception as e:
     traceback.print_exc()
 
 finally:
-    # Убедимся, что ресурсы освобождены, если плеер был создан
     if 'player' in locals() and player:
         player.close()
         print("Buzzer resources released.")
