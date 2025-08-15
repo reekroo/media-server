@@ -1,10 +1,12 @@
 [Unit]
 Description=Button Control Script (WiFi Toggle and Reboot)
-Wants=sound-controller.service
+Requires=sound-controller.service
 After=sound-controller.service
+PartOf=sound-stack.target
 
 [Service]
 Type=simple
+ExecStartPre=/bin/sleep 5
 ExecStart=/usr/bin/python3 /home/reekroo/scripts/buttons/button_controller.py
 WorkingDirectory=/home/reekroo/scripts
 User=root
@@ -13,4 +15,4 @@ Restart=on-failure
 RestartSec=5s
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=sound-stack.target

@@ -1,14 +1,15 @@
 [Unit]
 Description=Play Boot Sound
-Wants=sound-controller.service
 After=sound-controller.service
+Requires=sound-controller.service
 
 [Service]
 Type=oneshot
+ExecStartPre=/bin/sleep 3
 ExecStart=/usr/bin/python3 /home/reekroo/scripts/sounds/tools/boot_sound.py
 WorkingDirectory=/home/reekroo/scripts
 User=root
 Group=root
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=sound-stack.target

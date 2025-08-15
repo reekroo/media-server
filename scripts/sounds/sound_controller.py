@@ -21,7 +21,7 @@ def main():
 
     player = BuzzerPlayer()
     server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    
+
     log.info("Starting Sound Service...")
     try:
         server.bind(SOCKET_FILE)

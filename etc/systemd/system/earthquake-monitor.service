@@ -1,12 +1,10 @@
 [Unit]
 Description=Earthquake Monitor Service
-Wants=network-online.target sound-controller.service
-After=network-online.target sound-controller.service
+After=sound-controller.service
+Requires=sound-controller.service
 
 [Service]
-# Задержка больше не нужна, так как мы используем правильные зависимости
-# ExecStartPre=/bin/sleep 10
-
+ExecStartPre=/bin/sleep 10
 ExecStart=/usr/bin/python3 /home/reekroo/earthquake_monitor/main.py
 WorkingDirectory=/home/reekroo/earthquake_monitor
 User=root
@@ -15,4 +13,4 @@ Restart=always
 RestartSec=20
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=sound-stack.target
