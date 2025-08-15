@@ -1,19 +1,16 @@
 [Unit]
 Description=Earthquake Monitor Service
-Wants=network-online.target
-After=network-online.target boot-sound.service button-manager.service
+After=sound-controller.service
+Requires=sound-controller.service
 
 [Service]
 ExecStartPre=/bin/sleep 10
-
 ExecStart=/usr/bin/python3 /home/reekroo/earthquake_monitor/main.py
 WorkingDirectory=/home/reekroo/earthquake_monitor
-
 User=root
 Group=root
-
 Restart=always
 RestartSec=20
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=sound-stack.target
