@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock
-from src.monitor import EarthquakeMonitor
+from earthquake_monitor.src.earthquake_monitor import EarthquakeMonitor
 
 MOCK_ALERT_LEVELS = [
     {

@@ -1,25 +1,27 @@
 import requests
 from datetime import datetime, timezone, timedelta
-from src import config
-
+from src import configs
 from src.earthquake_logger import get_logger
+from src.data_sources.base import DataSource
 
 log = get_logger(__name__)
 
-class UsgsApi:
+class UsgsApiDataSource(DataSource):
     API_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query"
 
-    def get_significant_earthquakes(self, lat, lon, radius_km, min_mag, time_window_minutes):
-        time_window = timedelta(minutes=time_window_minutes)
+    def get_earthquakes(self):
+        log.info("[UsgsApiDataSource] Querying USGS data source...")
+
+        time_window = timedelta(minutes=configs.API_TIME_WINDOW_MINUTES)
         now_utc = datetime.now(timezone.utc)
         start_time_utc = now_utc - time_window
 
         params = {
             "format": "geojson",
-            "latitude": lat,
-            "longitude": lon,
-            "maxradiuskm": radius_km,
-            "minmagnitude": min_mag,
+            "latitude": configs.MY_LAT,
+            "longitude": configs.MY_LON,
+            "maxradiuskm": configs.SEARCH_RADIUS_KM,
+            "minmagnitude": configs.MIN_API_MAGNITUDE,
             "orderby": "time",
             "starttime": start_time_utc.isoformat(),
         }
@@ -27,7 +29,8 @@ class UsgsApi:
         try:
             response = requests.get(self.API_URL, params=params, timeout=10)
             response.raise_for_status()
+            log.info(f"[UsgsApiDataSource] Response status code: {response.status_code}")
             return response.json()
         except requests.RequestException as e:
-            log.error(f"Network or API error: {e}")
+            log.error(f"[UsgsApiDataSource] Network or API error: {e}")
             return None

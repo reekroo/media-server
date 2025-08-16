@@ -5,10 +5,12 @@ Requires=sound-controller.service
 
 [Service]
 ExecStartPre=/bin/sleep 10
-ExecStart=/usr/bin/python3 /home/reekroo/earthquake_monitor/main.py
+ExecStart=/usr/bin/python3 -m src.main
 WorkingDirectory=/home/reekroo/earthquake_monitor
+
 User=root
 Group=root
+
 Restart=always
 RestartSec=20
 
