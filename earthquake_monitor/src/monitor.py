@@ -1,11 +1,12 @@
 import time
+from collections import deque
 from src.earthquake_logger import get_logger
 from sounds import sound_client
 
 log = get_logger(__name__)
 
 class EarthquakeMonitor:
-    def __init__(self, api_client, lat, lon, radius, min_api_mag, api_time_window, alert_levels_config):
+    def __init__(self, api_client, lat, lon, radius, min_api_mag, api_time_window, alert_levels_config, max_processed_events):
         self._api_client = api_client
         self._lat = lat
         self._lon = lon
@@ -13,7 +14,7 @@ class EarthquakeMonitor:
         self._min_api_mag = min_api_mag
         self._api_time_window = api_time_window
         self._alert_levels = alert_levels_config
-        self._processed_event_ids = set()
+        self._processed_event_ids = deque(maxlen=max_processed_events)
 
     def check_and_alert(self):
         log.info("Checking for events...")
@@ -34,7 +35,7 @@ class EarthquakeMonitor:
         strongest_event = max(new_events, key=lambda e: e['properties'].get('mag', 0))
         
         for event in new_events:
-            self._processed_event_ids.add(event['id'])
+            self._processed_event_ids.append(event['id'])
 
         mag = strongest_event['properties'].get('mag', 0)
         

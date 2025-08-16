@@ -22,7 +22,8 @@ if __name__ == "__main__":
         radius=config.SEARCH_RADIUS_KM,
         min_api_mag=config.MIN_API_MAGNITUDE,
         api_time_window=config.API_TIME_WINDOW_MINUTES,
-        alert_levels_config=config.ALERT_LEVELS
+        alert_levels_config=config.ALERT_LEVELS,
+        max_processed_events=config.MAX_PROCESSED_EVENTS_MEMORY
     )
 
     monitor.run(config.CHECK_INTERVAL_SECONDS)
