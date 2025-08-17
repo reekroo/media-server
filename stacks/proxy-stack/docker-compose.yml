@@ -1,0 +1,41 @@
+version: "3.8"
+
+networks:
+  media-network:
+    name: server-stack_media-network
+    external: true
+
+  logging-network:
+    name: logging-stack_logging-network
+    external: true
+
+  dashboard-network:
+    name: dashboard-stack_dashboard-network
+    external: true
+  
+services:
+  npm:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: npm
+    volumes:
+      - ${STORAGE_PATH}/configs/npm/data:/data
+      - ${STORAGE_PATH}/configs/npm/letsencrypt:/etc/letsencrypt
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    networks:
+      - media-network
+      - logging-network
+      - dashboard-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:81"]
+      interval: 2m
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped

@@ -164,26 +164,6 @@ services:
     logging: *logging_defaults
     restart: unless-stopped
 
-  npm:
-    image: jc21/nginx-proxy-manager:latest
-    container_name: npm
-    volumes:
-      - ${STORAGE_PATH}/configs/npm/data:/data
-      - ${STORAGE_PATH}/configs/npm/letsencrypt:/etc/letsencrypt
-    ports:
-      - '80:80'
-      - '81:81'
-      - '443:443'
-    networks:
-      - media-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:81"]
-      interval: 2m
-      timeout: 10s
-      retries: 3
-    logging: *logging_defaults
-    restart: unless-stopped
-
   organizr:
     image: organizr/organizr:latest
     container_name: organizr
@@ -195,22 +175,6 @@ services:
       - ${STORAGE_PATH}/configs/organizr:/config
     ports:
       - 9983:80
-    networks:
-      - media-network
-    logging: *logging_defaults
-    restart: unless-stopped
-
-  homer:
-    image: b4bz/homer
-    container_name: homer
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-    volumes:
-      - ${STORAGE_PATH}/configs/homer/assets:/www/assets
-    ports:
-      - 8088:8080
     networks:
       - media-network
     logging: *logging_defaults

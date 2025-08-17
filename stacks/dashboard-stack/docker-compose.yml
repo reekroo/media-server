@@ -1,0 +1,20 @@
+version: "3.8"
+
+networks:
+  dashboard-network:
+
+services:
+  homer:
+    image: b4bz/homer
+    container_name: homer
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${STORAGE_PATH}/configs/homer/assets:/www/assets
+    ports:
+      - 8088:8080
+    networks:
+      - dashboard-network
+    restart: unless-stopped
