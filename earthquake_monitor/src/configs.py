@@ -1,7 +1,7 @@
 import os
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LOG_FILE_PATH = os.path.join(PROJECT_ROOT, 'logs/monitor.log')
+LOG_FILE_PATH = os.path.join(PROJECT_ROOT, 'logs/earthquake_monitor.log')
 
 MY_LAT = 38.4237
 MY_LON = 27.1428
