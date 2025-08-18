@@ -46,6 +46,7 @@ class IscApiDataSource(DataSource):
         
     def get_earthquakes(self):
         log.info("[IscApiDataSource] Querying ISC data source...")
+        
         time_window = timedelta(minutes=configs.API_TIME_WINDOW_MINUTES)
         now_utc = datetime.now(timezone.utc)
         start_time_utc = now_utc - time_window
@@ -66,9 +67,16 @@ class IscApiDataSource(DataSource):
 
         try:
             response = requests.get(self.API_URL, params=params, headers=headers, timeout=10)
-            response.raise_for_status()
+                        
+            if response.status_code == 204:
+                log.info("[IscApiDataSource] Received 204 No Content, no new events.")
+                return None 
+            
             log.info(f"[IscApiDataSource] Response status code: {response.status_code}")
+            response.raise_for_status()
+            
             return self._parse_quakeml(response.text)
+        
         except requests.RequestException as e:
             log.error(f"[IscApiDataSource] Network or API error: {e}")
             return None

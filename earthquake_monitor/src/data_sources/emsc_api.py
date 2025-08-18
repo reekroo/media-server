@@ -30,8 +30,16 @@ class EmscApiDataSource(DataSource):
         try:
             response = requests.get(self.API_URL, params=params, timeout=10)
             response.raise_for_status()
+            
+            if response.status_code == 204:
+                log.info("[EmscApiDataSource] Received 204 No Content, no new events.")
+                return None 
+
             log.info(f"[EmscApiDataSource] Response status code: {response.status_code}")
+            response.raise_for_status()
+
             return response.json()
+        
         except requests.RequestException as e:
             log.error(f"[EmscApiDataSource] Network or API error: {e}")
             return None
