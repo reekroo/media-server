@@ -1,15 +1,23 @@
-import sys
-sys.path.append('/home/reekroo/scripts')
-from common.logger import setup_logger
-from src.configs import LOG_FILE_PATH
+import logging
+from concurrent_log_handler import ConcurrentRotatingFileHandler
+from src.configs import LOG_FILE_PATH, LOG_MAX_BYTES, LOG_BACKUP_COUNT
 
-_service_logger_instance = None
+handler = ConcurrentRotatingFileHandler(
+    filename=LOG_FILE_PATH,
+    maxBytes=LOG_MAX_BYTES,
+    backupCount=LOG_BACKUP_COUNT
+)
+
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
+
+if root_logger.hasHandlers():
+    root_logger.handlers.clear()
+
+root_logger.addHandler(handler)
 
 def get_logger(name):
-    global _service_logger_instance
-
-    if _service_logger_instance is None:
-        print("--- Initializing logger for the first time ---")
-        _service_logger_instance = setup_logger('earthquake_service', LOG_FILE_PATH)
-
-    return setup_logger(name, LOG_FILE_PATH)
+    return logging.getLogger(name)

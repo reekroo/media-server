@@ -2,6 +2,8 @@ import os
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOG_FILE_PATH = os.path.join(PROJECT_ROOT, 'logs/earthquake_monitor.log')
+LOG_MAX_BYTES = 10 * 1024 * 1024
+LOG_BACKUP_COUNT = 5
 
 MY_LAT = 38.4237
 MY_LON = 27.1428
