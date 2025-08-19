@@ -7,17 +7,23 @@ import sys
 sys.path.append('/home/reekroo/scripts')
 
 from buttons.libs.button_actions import ButtonActions
+from buttons.configs import hardware_pins
 from sounds import sound_client
 from common.logger import setup_logger
 
 log = setup_logger('ButtonController', '/home/reekroo/scripts/logs/buttons.log')
 
 class ButtonController:
-    def __init__(self, pin=23, hold_time=3):
+    def __init__(self):
         log.info("[ButtonController] Initializing...")
+        
         self.actions = ButtonActions(logger=log)
-        self.button = Button(pin, pull_up=True, hold_time=hold_time)
-
+        self.button = Button(
+            pin=hardware_pins.BUTTON_PIN, 
+            pull_up=True, 
+            hold_time=hardware_pins.BUTTON_HOLD_TIME
+        )
+        
         self.button.when_released = self.handle_short_press
         self.button.when_held = self.handle_long_press
 
