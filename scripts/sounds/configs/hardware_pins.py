@@ -1,0 +1,1 @@
+BUZZER_PIN = 18

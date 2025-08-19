@@ -1,8 +1,7 @@
 [Unit]
 Description=Play Shutdown Sound
-DefaultDependencies=no
+Requires=sound-controller.service
 After=sound-controller.service
-Wants=sound-controller.service
 Before=shutdown.target reboot.target halt.target
 
 [Service]

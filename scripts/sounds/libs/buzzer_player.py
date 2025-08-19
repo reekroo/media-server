@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 
-from gpiozero import TonalBuzzer
-from time import sleep
+from gpiozero.pins.lgpio import LGPIOFactory
+from gpiozero import Device, TonalBuzzer
+Device.pin_factory = LGPIOFactory()
+
 import threading
 import time
 
+from sounds.configs import hardware_pins
+
 class BuzzerPlayer:
-    def __init__(self, pin=18):
-        self.bz = TonalBuzzer(pin)
+    def __init__(self):
+        self.pin = hardware_pins.BUZZER_PIN
         self._thread = None
         self._lock = threading.Lock()
 
-    def _play_task(self, melody, duration_seconds, stop_event):
+    def _play_task(self, buzzer_instance, melody, duration_seconds, stop_event):
         try:
             start_time = time.time()
             is_looping = duration_seconds > 0
@@ -24,17 +28,20 @@ class BuzzerPlayer:
                     if stop_event.is_set():
                         break
                     if note:
-                        self.bz.play(note)
+                        buzzer_instance.play(note)
+
+                    if stop_event.wait(duration):
+                        break
+
+                    buzzer_instance.stop()
                     
-                    stop_event.wait(duration)
-                    self.bz.stop()
-                    sleep(0.06)
+                    if stop_event.wait(0.06):
+                        break
 
                 if not is_looping:
                     break
         finally:
-            self.bz.stop()
-            sleep(0.06)
+            buzzer_instance.close()
 
     def play(self, melody, duration_seconds=0):
         with self._lock:
@@ -42,8 +49,14 @@ class BuzzerPlayer:
                 self._thread.stop_event.set()
                 self._thread.join()
 
+            local_buzzer = TonalBuzzer(self.pin)
+
             stop_event = threading.Event()
-            self._thread = threading.Thread(target=self._play_task, args=(melody, duration_seconds, stop_event))
+
+            self._thread = threading.Thread(
+                target=self._play_task, 
+                args=(local_buzzer, melody, duration_seconds, stop_event)
+            )
             self._thread.stop_event = stop_event
             self._thread.start()
 
@@ -52,9 +65,6 @@ class BuzzerPlayer:
             if self._thread and self._thread.is_alive():
                 self._thread.stop_event.set()
                 self._thread.join()
-            self.bz.stop()
-            sleep(0.06)
-
+    
     def close(self):
         self.stop()
-        self.bz.close()

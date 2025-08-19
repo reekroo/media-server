@@ -21,11 +21,13 @@ def main():
     player = BuzzerPlayer()
     server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     
-    log.info("Starting Sound Service...")
+    log.info("[SoundController] Starting Sound Service...")
+    
     try:
         server.bind(SOCKET_FILE)
         server.listen(5)
-        log.info(f"Listening for commands on {SOCKET_FILE}")
+
+        log.info(f"[SoundController] Listening for commands on {SOCKET_FILE}")
 
         while True:
             connection, _ = server.accept()
@@ -34,7 +36,8 @@ def main():
                 if not command_data:
                     continue
                 
-                log.info(f"Received command data: '{command_data}'")
+                log.info(f"[SoundController]  Received command data: '{command_data}'")
+
                 cmd = json.loads(command_data)
                 melody_name = cmd.get('melody')
                 duration = cmd.get('duration', 0)
@@ -42,20 +45,22 @@ def main():
                 melody_to_play = getattr(melodies, melody_name, None)
                 
                 if melody_to_play:
-                    log.info(f"Passing play command to player: '{melody_name}' for {duration}s.")
+                    log.info(f"[SoundController] Passing play command to player: '{melody_name}' for {duration}s.")
                     player.play(melody_to_play, duration)
                 else:
                     log.warning(f"Melody '{melody_name}' not found.")
             except Exception as e:
-                log.error(f"Error processing command: {e}", exc_info=True)
+                log.error(f"[SoundController] Error processing command: {e}", exc_info=True)
             finally:
                 connection.close()
     finally:
         player.close()
         server.close()
+
         if os.path.exists(SOCKET_FILE):
             os.remove(SOCKET_FILE)
-        log.info("Sound Service stopped and resources released.")
+        
+        log.info("[SoundController] Sound Service stopped and resources released.")
 
 if __name__ == '__main__':
     main()
