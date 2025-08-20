@@ -4,7 +4,6 @@ from src.providers.disk_provider import DiskProvider
 from src.providers.docker_provider import DockerProvider
 from src.providers.hardware_provider import HardwareProvider
 
-
 class StatsProvider:
     def __init__(self):
         self.system = SystemProvider()

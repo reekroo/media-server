@@ -1,4 +1,3 @@
-
 import netifaces as ni
 import psutil
 import time

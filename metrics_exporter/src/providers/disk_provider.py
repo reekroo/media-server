@@ -1,5 +1,3 @@
-# ~/metrics_exporter/src/providers/disk_provider.py
-
 import psutil
 import time
 

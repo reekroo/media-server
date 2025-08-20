@@ -1,7 +1,5 @@
-
 import psutil
 import time
-import datetime
 
 class SystemProvider:
     
@@ -33,14 +31,4 @@ class SystemProvider:
             return 0
 
     def get_uptime(self):
-        try:
-            uptime_seconds = time.time() - psutil.boot_time()
-            uptime_delta = datetime.timedelta(seconds=uptime_seconds)
-            days = uptime_delta.days
-            hours, rem = divmod(uptime_delta.seconds, 3600)
-            minutes, _ = divmod(rem, 60)
-            if days > 0:
-                return f"{days}d {hours:02}h{minutes:02}m"
-            return f"{hours:02}h{minutes:02}m"
-        except Exception:
-            return "N/A"
+        return time.time() - psutil.boot_time()
