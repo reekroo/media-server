@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "button-driver"
+version = "0.1.0"
+authors = [
+  { name="reekroo", email="paul.davidovski@gmail.com" },
+]
+description = "Service for buttons"
+requires-python = ">=3.9"
+
+dependencies = [
+    "gpiozero",
+    "common-utils",
+    "sound-client"
+]
+
+[project.scripts]
+button-service = "buttons.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["buttons*"]

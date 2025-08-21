@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 
-import sys
-
-sys.path.append('/home/reekroo/scripts')
-from common.interface_monitor import InterfaceMonitor
-from common.wifi_controller import WifiController
-from common.logger import setup_logger
+from utils.interface_monitor import InterfaceMonitor
+from utils.wifi_controller import WifiController
+from utils.logger import setup_logger
 
 log = setup_logger('LanWifiPolicy', '/home/reekroo/scripts/logs/wifi_manager.log')
 
@@ -28,11 +25,3 @@ class LanWifiPolicy:
 
         log.info("[LanWifiPolicy] Wi-Fi is active, applying block...")
         self.wifi_controller.set_blocked(True)
-
-if __name__ == '__main__':
-    try:
-        policy = LanWifiPolicy()
-        policy.apply()
-        log.info("[LanWifiPolicy] Policy applied successfully.")
-    except Exception as e:
-        log.error(f"[LanWifiPolicy] Failed to apply LAN/Wi-Fi policy: {e}", exc_info=True)

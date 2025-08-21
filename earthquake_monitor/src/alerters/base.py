@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-class Alerter(ABC):
+class BaseAlerter(ABC):
     
     @abstractmethod
-    def trigger_alert(self, melody_name, duration):
+    def alert(self, level: int, magnitude: float, location: str):
         pass

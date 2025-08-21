@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "metrics-exporter"
+version = "0.1.0"
+authors = [
+  { name="reekroo", email="paul.davidovski@gmail.com" },
+]
+description = "Service for collectıng system metrics and sending them to Prometheus."
+requires-python = ">=3.9"
+
+dependencies = [
+    "prometheus_client==0.22.1",
+    "psutil==7.0.0",
+    "netifaces==0.11.0",
+    "concurrent-log-handler==0.9.28",
+    "portalocker==3.2.0"
+]
+
+# [project.scripts]
+# metrics-exporter = "metrics_exporter.main:start_server"

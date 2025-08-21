@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "network-policy"
+version = "0.1.0"
+authors = [
+  { name="reekroo", email="paul.davidovski@gmail.com" },
+]
+description = "Service for auto switching wifi and lan."
+requires-python = ">=3.9"
+
+dependencies = [
+    "common-utils"
+]
+
+[project.scripts]
+network-policy-apply = "wifi_lan_managers.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["wifi_lan_managers*"]

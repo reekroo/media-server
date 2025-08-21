@@ -4,7 +4,7 @@ import sys
 sys.path.append('/home/reekroo/scripts')
 
 from sounds import sound_client
-from common.logger import setup_logger
+from common_utils.logger import setup_logger
 
 log = setup_logger('BootSound', '/home/reekroo/scripts/logs/sounds.log')
 

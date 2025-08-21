@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from PIL import Image
 
 ICON_DATA = {
     "IP":     [0b00010000, 0b00010000, 0b00010000, 0b00000000, 0b00010000, 0b00010000, 0b00000000, 0b00000000],
