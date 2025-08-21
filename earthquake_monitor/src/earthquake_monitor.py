@@ -2,7 +2,9 @@
 
 import time
 from collections import deque
-from .earthquake_logger import log
+from earthquake_logger import get_logger
+
+log = get_logger(__name__)
 
 class EarthquakeMonitor:
     def __init__(self, data_sources, alerters, alert_levels_config, max_processed_events):

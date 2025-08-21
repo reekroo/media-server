@@ -22,7 +22,7 @@ dependencies = [
 
 [project.scripts]
 oled-controller = "oleds.main:main"
-oled-сlear-controller = "oleds.oled_clear_controller:main"
+oled-clear-controller = "oleds.oled_clear_controller:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

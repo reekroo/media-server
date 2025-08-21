@@ -4,7 +4,7 @@ from .base import BaseScreen
 
 class PerformanceScreen(BaseScreen):
 
-    def draw(display_manager, stats):
+    def draw(self, display_manager, stats):
         ip = stats.get('ip', 'N/A')
         cpu_percent = stats.get('cpu', 0)
         cpu_temp = stats.get('temp', 0)

@@ -1,12 +1,10 @@
 #!/usr/-bin/env python3
 
 import netifaces as ni
-import sys
 import psutil
 import time
 
-sys.path.append('/home/reekroo/scripts/common')
-from wifi_controller import WifiController
+from utils.wifi_controller import WifiController
 
 class NetworkProvider:
     def __init__(self, lan_if='eth0', wlan_if='wlan0'):

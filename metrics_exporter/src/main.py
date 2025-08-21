@@ -1,10 +1,10 @@
 import time
 
 from prometheus_client import start_http_server
-from src.metrics_logger import get_logger
-from src.metrics_exporter import update_metrics
-from src.providers.stats_provider import StatsProvider
-from src.configs import EXPORTER_PORT, EXPORTER_UPDATE_INTERVAL_SECONDS
+from metrics_logger import get_logger
+from metrics_exporter import update_metrics
+from providers.stats_provider import StatsProvider
+from configs import EXPORTER_PORT, EXPORTER_UPDATE_INTERVAL_SECONDS
 
 log = get_logger(__name__)
 

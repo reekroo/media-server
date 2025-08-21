@@ -2,9 +2,9 @@
 
 from .base import BaseScreen
 
-class PerformanceScreen(BaseScreen):
+class HealthScreen(BaseScreen):
 
-    def draw(display_manager, stats):
+    def draw(self, display_manager, stats):
         core_v = stats.get('core_voltage', 0.0)
         throttling = stats.get('throttling', 'N/A')
         uptime = stats.get('uptime', '00:00')

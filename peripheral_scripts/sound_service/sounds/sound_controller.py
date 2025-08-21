@@ -4,14 +4,13 @@ import socket
 import os
 import sys
 import json
-import traceback
 
-sys.path.append('/home/reekroo/scripts')
+sys.path.append('/home/reekroo/peripheral_scripts')
 from sounds.libs.buzzer_player import BuzzerPlayer
 from sounds.configs import melodies
-from common_utils.logger import setup_logger
+from utils.logger import setup_logger
 
-log = setup_logger('SoundController', '/home/reekroo/scripts/logs/sounds.log')
+log = setup_logger('SoundController', '/home/reekroo/peripheral_scripts/logs/sounds.log')
 SOCKET_FILE = "/tmp/buzzer.sock"
 
 def main():

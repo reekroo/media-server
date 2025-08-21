@@ -17,5 +17,8 @@ dependencies = [
     "portalocker==3.2.0"
 ]
 
-# [project.scripts]
-# earthquake-monitor = "earthquake_monitor.main:main_func"
+[project.scripts]
+earthquake-monitor = "main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

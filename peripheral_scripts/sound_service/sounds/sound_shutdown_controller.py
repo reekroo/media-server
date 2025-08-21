@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 import sys
-sys.path.append('/home/reekroo/scripts')
+sys.path.append('/home/reekroo/peripheral_scripts')
 
 from sounds import sound_client
 from common_utils.logger import setup_logger
 
-log = setup_logger('ShutdownSound', '/home/reekroo/scripts/logs/sounds.log')
+log = setup_logger('ShutdownSound', '/home/reekroo/peripheral_scripts/logs/sounds.log')
 
 def main():
     log.info("[ShutdownSound] Sending shutdown sound command to sound service and waiting for completion.")

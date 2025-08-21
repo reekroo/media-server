@@ -4,7 +4,7 @@ import time
 from .providers.stats_provider import StatsProvider
 from utils.logger import setup_logger
 
-log = setup_logger('OledController', '/home/reekroo/scripts/logs/oled.log')
+log = setup_logger('OledController', '/home/reekroo/peripheral_scripts/logs/oled.log')
 
 class OledController:
     def __init__(self, display_manager, pages):

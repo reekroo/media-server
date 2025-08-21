@@ -2,9 +2,9 @@
 
 from .base import BaseScreen
 
-class PerformanceScreen(BaseScreen):
+class StorageScreen(BaseScreen):
 
-    def draw(display_manager, stats):
+    def draw(self, display_manager, stats):
         root_usage = stats.get('root_disk_usage', {})
         nvme_usage = stats.get('storage_disk_usage', {})
         disk_io = stats.get('disk_io', {'read': '0K', 'write': '0K'})

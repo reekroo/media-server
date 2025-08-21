@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-sys.path.append('/home/reekroo/scripts')
+sys.path.append('/home/reekroo/peripheral_scripts')
 
 from sounds.libs.buzzer_player import BuzzerPlayer
 from time import sleep

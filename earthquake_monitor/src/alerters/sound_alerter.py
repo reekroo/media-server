@@ -1,7 +1,9 @@
 import socket
 import json
 from .base import BaseAlerter
-from ..earthquake_logger import log
+from earthquake_logger import get_logger
+
+log = get_logger(__name__)
 
 SOCKET_FILE = "/tmp/buzzer.sock"
 

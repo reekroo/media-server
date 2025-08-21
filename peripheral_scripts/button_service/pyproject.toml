@@ -14,7 +14,7 @@ requires-python = ">=3.9"
 dependencies = [
     "gpiozero",
     "common-utils",
-    "sound-client"
+    "sound-service"
 ]
 
 [project.scripts]

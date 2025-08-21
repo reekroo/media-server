@@ -19,5 +19,8 @@ dependencies = [
     "portalocker==3.2.0"
 ]
 
-# [project.scripts]
-# metrics-exporter = "metrics_exporter.main:start_server"
+[project.scripts]
+metrics-exporter = "main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

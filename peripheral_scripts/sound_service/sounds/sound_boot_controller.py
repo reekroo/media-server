@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 import sys
-sys.path.append('/home/reekroo/scripts')
+sys.path.append('/home/reekroo/peripheral_scripts')
 
 from sounds import sound_client
-from common_utils.logger import setup_logger
+from utils.logger import setup_logger
 
 log = setup_logger('BootSound', '/home/reekroo/scripts/logs/sounds.log')
 
