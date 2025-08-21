@@ -23,7 +23,7 @@ services:
     container_name: promtail
     volumes:
       - /home/reekroo/earthquake_monitor/logs:/mnt/logs/earthquake_monitor_logs:ro
-      - /home/reekroo/scripts/logs:/mnt/logs/scripts_logs:ro
+      - /home/reekroo/peripheral_scripts/logs:/mnt/logs/scripts_logs:ro
       - ./promtail-config.yml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
     depends_on:
@@ -38,7 +38,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - grafana-data:/var/lib/grafana
+      - /mnt/storage/configs/grafana:/var/lib/grafana
     depends_on:
       - loki
     networks:
