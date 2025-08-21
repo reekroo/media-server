@@ -4,8 +4,8 @@ Description=OLED Status Display Service
 After=network-online.target
 
 [Service]
-ExecStart=/home/reekroo/scripts/.venv_peripherals/bin/oled-controller
-ExecStop=/home/reekroo/scripts/.venv_peripherals/bin/oled-clear-controller
+ExecStart=/home/reekroo/peripheral_scripts/.venv_peripherals/bin/oled-controller
+ExecStop=/home/reekroo/peripheral_scripts/.venv_peripherals/bin/oled-clear-controller
 
 User=root
 Group=root

@@ -8,7 +8,7 @@ PartOf=sound-stack.target
 [Service]
 Type=simple
 ExecStartPre=/bin/sleep 5
-ExecStart=/home/reekroo/scripts/.venv_peripherals/bin/button-service
+ExecStart=/home/reekroo/peripheral_scripts/.venv_peripherals/bin/button-service
 
 User=root
 Group=root

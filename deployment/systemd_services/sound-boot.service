@@ -7,7 +7,7 @@ Requires=sound-controller.service
 [Service]
 Type=oneshot
 ExecStartPre=/bin/sleep 3
-ExecStart=/home/reekroo/scripts/.venv_peripherals/bin/sound-boot-controller
+ExecStart=/home/reekroo/peripheral_scripts/.venv_peripherals/bin/sound-boot-controller
 
 User=root
 Group=root

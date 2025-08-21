@@ -6,7 +6,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/home/reekroo/scripts/.venv_peripherals/bin/sound-controller
+ExecStart=/home/reekroo/peripheral_scripts/.venv_peripherals/bin/sound-controller
 
 User=root
 Group=root
