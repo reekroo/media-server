@@ -1,13 +1,14 @@
 [Unit]
 Description=Play Shutdown Sound
+
 Requires=sound-controller.service
 After=sound-controller.service
 Before=shutdown.target reboot.target halt.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/python3 /home/reekroo/scripts/sounds/tools/shutdown_sound.py
-WorkingDirectory=/home/reekroo/scripts
+ExecStart=/home/reekroo/scripts/.venv_peripherals/bin/sound-shutdown-controller
+
 User=root
 Group=root
 

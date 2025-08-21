@@ -1,12 +1,12 @@
 [Unit]
 Description=Earthquake Monitor Service
+
 After=sound-controller.service
 Requires=sound-controller.service
 
 [Service]
 ExecStartPre=/bin/sleep 10
-ExecStart=/home/reekroo/earthquake_monitor/venv/bin/python3 -m src.main
-WorkingDirectory=/home/reekroo/earthquake_monitor
+ExecStart=/home/reekroo/earthquake_monitor/.venv_earthquake_monitor/bin/earthquake-monitor
 
 User=root
 Group=root

@@ -19,8 +19,8 @@ dependencies = [
 
 [project.scripts]
 sound-controller = "sounds.sound_controller:main"
-sound_boot_controller = "sounds.sound_boot_controller:main"
-sound_shutdown_controller = "sounds.sound_shutdown_controller:main"
+sound-boot-controller = "sounds.sound_boot_controller:main"
+sound-shutdown-controller = "sounds.sound_shutdown_controller:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

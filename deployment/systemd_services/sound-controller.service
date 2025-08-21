@@ -1,13 +1,12 @@
 [Unit]
 Description=Central Buzzer Sound Service
+
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-
-ExecStart=/usr/bin/python3 /home/reekroo/scripts/sounds/sound_controller.py
-WorkingDirectory=/home/reekroo/scripts
+ExecStart=/home/reekroo/scripts/.venv_peripherals/bin/sound-controller
 
 User=root
 Group=root

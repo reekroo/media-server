@@ -1,10 +1,10 @@
 [Unit]
 Description=Raspberry Pi System Metrics Exporter for Prometheus
+
 After=network.target
 
 [Service]
-ExecStart=/home/reekroo/metrics_exporter/.venv/bin/python3 -m src.main
-WorkingDirectory=/home/reekroo/metrics_exporter
+ExecStart=/home/reekroo/metrics_exporter/.venv_metrics_exporter/bin/metrics-exporter
 
 User=root
 Group=root
