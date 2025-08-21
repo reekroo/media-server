@@ -1,7 +1,7 @@
 from buttons.button_controller import ButtonController
 from utils.logger import setup_logger
 
-log = setup_logger('ButtonMain', '/home/reekroo/scripts/logs/buttons.log')
+log = setup_logger('ButtonMain', '/home/reekroo/peripheral_scripts/logs/buttons.log')
 
 def main():
     controller = ButtonController()

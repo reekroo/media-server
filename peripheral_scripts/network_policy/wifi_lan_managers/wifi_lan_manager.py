@@ -4,7 +4,7 @@ from utils.interface_monitor import InterfaceMonitor
 from utils.wifi_controller import WifiController
 from utils.logger import setup_logger
 
-log = setup_logger('LanWifiPolicy', '/home/reekroo/scripts/logs/wifi_manager.log')
+log = setup_logger('LanWifiPolicy', '/home/reekroo/peripheral_scripts/logs/wifi_manager.log')
 
 class LanWifiPolicy:
     def __init__(self, lan_interface_name='eth0'):

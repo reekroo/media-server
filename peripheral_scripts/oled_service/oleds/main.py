@@ -8,7 +8,7 @@ from .displays.screens.storage_screen import StorageScreen
 from .displays.screens.health_screen import HealthScreen
 from utils.logger import setup_logger
 
-log = setup_logger('OledMain', '/home/reekroo/peripheral_scripts/logs/oled.log')
+log = setup_logger('OledMain', '/home/reekroo/peripheral_scripts/logs/oleds.log')
 
 def main():
     try:

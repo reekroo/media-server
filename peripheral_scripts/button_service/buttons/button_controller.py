@@ -9,7 +9,7 @@ from buttons.configs import hardware_pins
 from sounds import sound_client
 from utils.logger import setup_logger
 
-log = setup_logger('ButtonController', '/home/reekroo/scripts/logs/buttons.log')
+log = setup_logger('ButtonController', '/home/reekroo/peripheral_scripts/logs/buttons.log')
 
 class ButtonController:
     def __init__(self):
