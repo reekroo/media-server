@@ -4,7 +4,7 @@ import sys
 sys.path.append('/home/reekroo/peripheral_scripts')
 
 from sounds import sound_client
-from common_utils.logger import setup_logger
+from utils.logger import setup_logger
 
 log = setup_logger('ShutdownSound', '/home/reekroo/peripheral_scripts/logs/sounds.log')
 

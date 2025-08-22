@@ -52,9 +52,9 @@ class EarthquakeMonitor:
                 
                 for alerter in self._alerters:
                     alerter.alert(
+                        level=level_config.get('level_id', 1),
                         magnitude=mag,
-                        place=place,
-                        alert_config=level_config
+                        place=place
                     )
                 break
 

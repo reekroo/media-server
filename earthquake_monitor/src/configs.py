@@ -19,26 +19,31 @@ ALERT_LEVELS = [
     {
         'min_magnitude': 7.0,
         'duration': 180,
+        'level_id': 5,
         'melody_name': 'ALERT_LEVEL_5'
     },
     {
         'min_magnitude': 6.0,
         'duration': 60,
+        'level_id': 4,
         'melody_name': 'ALERT_LEVEL_4'
     },
     {
         'min_magnitude': 5.0,
         'duration': 45,
+        'level_id': 3,
         'melody_name': 'ALERT_LEVEL_3'
     },
     {
         'min_magnitude': 4.2,
         'duration': 20,
+        'level_id': 2,
         'melody_name': 'ALERT_LEVEL_2'
     },
     {
         'min_magnitude': 3.5,
         'duration': 10,
+        'level_id': 1,
         'melody_name': 'ALERT_LEVEL_1'
     },
 ]

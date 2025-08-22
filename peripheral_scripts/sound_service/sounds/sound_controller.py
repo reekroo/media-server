@@ -4,6 +4,7 @@ import socket
 import os
 import sys
 import json
+import stat
 
 sys.path.append('/home/reekroo/peripheral_scripts')
 from sounds.libs.buzzer_player import BuzzerPlayer
@@ -26,6 +27,8 @@ def main():
         server.bind(SOCKET_FILE)
         server.listen(5)
 
+        os.chmod(SOCKET_FILE, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+        
         log.info(f"[SoundController] Listening for commands on {SOCKET_FILE}")
 
         while True:
