@@ -11,39 +11,38 @@
             </ul>
         </li>
         <li>
-            <a href="#">2. NVMe Drive Preparation</a>
+            <a href="#2-nvme-drive-preparation-">2. NVMe Drive Preparation</a>
             <ul>
-                <li><a href="#">Enabling PCIe Gen3</a></li>
-                <li><a href="#">Partitioning and Formatting the Drive
-</a></li>
-                <li><a href="#">Mounting the Drive</a></li>
+                <li><a href="#enabling-pcie-gen3">Enabling PCIe Gen3</a></li>
+                <li><a href="#partitioning-and-formatting-the-drive">Partitioning and Formatting the Drive</a></li>
+                <li><a href="#mounting-the-drive">Mounting the Drive</a></li>
             </ul>
         </li>
         <li>
-            <a href="#">3. Software Installation and Services</a>
+            <a href="#software-installation-and-services-%EF%B8%8F">3. Software Installation and Services</a>
             <ul>
-                <li><a href="#">Docker & Portainer Installation</a></li>
-                <li><a href="#">Setting Up Python Virtual Environments (venv)</a></li>
-                <li><a href="#">Samba Setup (Network Storage Access)</a></li>
-                <li><a href="#">Activating the I2C Interface</a></li>
+                <li><a href="#docker--portainer-installation">Docker & Portainer Installation</a></li>
+                <li><a href="#setting-up-python-virtual-environments-venv">Setting Up Python Virtual Environments (venv)</a></li>
+                <li><a href="#samba-setup-network-storage-access">Samba Setup (Network Storage Access)</a></li>
+                <li><a href="#activating-the-i2c-interface">Activating the I2C Interface</a></li>
             </ul>
         </li>
         <li>
-            <a href="#">4. Starting System Services</a>
+            <a href="#4-starting-system-services-">4. Starting System Services</a>
             <ul>
-                <li><a href="#">Services</a></li>
-                <li><a href="#">Peripherals</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#peripherals">Peripherals</a></li>
             </ul>
         </li>
         <li>
-            <a href="#">5. Utilities and Troubleshooting</a>
+            <a href="#5-utilities-and-troubleshooting-%EF%B8%8F">5. Utilities and Troubleshooting</a>
             <ul>
-                <li><a href="#">Running Unit Tests</a></li>
-                <li><a href="#">System Time Synchronization</a></li>
-                <li><a href="#">Increasing the Swap File Size</a></li>
+                <li><a href="#running-unit-tests">Running Unit Tests</a></li>
+                <li><a href="#system-time-synchronization">System Time Synchronization</a></li>
+                <li><a href="#increasing-the-swap-file-size">Increasing the Swap File Size</a></li>
             </ul>
         </li>
-  </ol>
+    </ol>
 </details>
 
 # Raspberry Pi 5 Media Server Setup
