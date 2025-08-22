@@ -1,13 +1,13 @@
 <details>
     <summary>Table of Contents</summary>
     <ol>
-        <li><a href="#">Raspberry Pi 5 Media Server Setup</a></li>
+        <li><a href="#raspberry-pi-5-media-server-setup">Raspberry Pi 5 Media Server Setup</a></li>
         <li>
-        <a href="#">1. Preparation and Initial Setup</a>
+        <a href="#1-preparation-and-initial-setup-%EF%B8%8F">1. Preparation and Initial Setup</a>
             <ul>
-                <li><a href="#">Operating System Installation</a></li>
-                <li><a href="#">SSH Connection</a></li>
-                <li><a href="#">Copying Files and System Update</a></li>
+                <li><a href="#operating-system-installation">Operating System Installation</a></li>
+                <li><a href="#ssh-connection">SSH Connection</a></li>
+                <li><a href="#copying-files-and-system-update">Copying Files and System Update</a></li>
             </ul>
         </li>
         <li>
@@ -62,35 +62,34 @@ This document is a step-by-step guide for setting up a media server on a Raspber
 
 After installing the OS and connecting the Pi to your network, find its IP address and connect via SSH.
 
-    ```Bash
-    ssh reekroo@192.168.0.118
-    ```
+```Bash
+ssh reekroo@192.168.0.118
+```
 
-        ⚠️ If you encounter any issues with the SSH key, remove the old key from your known hosts.
+⚠️ If you encounter any issues with the SSH key, remove the old key from your known hosts.
 
-   ```Bash
-   ssh-keygen -R 192.168.0.118
-   ```
+```Bash
+ssh-keygen -R 192.168.0.118
+```
 
 ### Copying Files and System Update
 
 To synchronize local script files, you can use `VS Code` with the `SFTP` plugin or a similar tool.
 
-        ⚠️ Important Security Note: The `sudo chmod -R 777` command grants full permissions to all users and is not recommended for permanent use due to security risks. Use it cautiously and only for temporary setup tasks.
+⚠️ Important Security Note: The `sudo chmod -R 777` command grants full permissions to all users and is not recommended for permanent use due to security risks. Use it cautiously and only for temporary setup tasks.
 
-   ```Bash
-   cd /etc/systemd/system
-   sudo chmod -R 777 .
-   ```
+```Bash
+cd /etc/systemd/system
+sudo chmod -R 777 .
+```
 
 Update your Pi's packages and firmware.
 
-
-   ```Bash
-   sudo apt update
-    sudo apt upgrade -y
-    sudo rpi-eeprom-update -a
-   ```
+```Bash
+sudo apt update
+sudo apt upgrade -y
+sudo rpi-eeprom-update -a
+```
 
 ## 2. NVMe Drive Preparation 💾
 
@@ -124,12 +123,12 @@ lsblk
 sudo fdisk /dev/nvme0n1
 ```
 
-    * `g` - create a new empty GPT partition table.
-    * `n` - create a new partition.
-    * [Enter] - select the default partition number.
-    * [Enter] - select the default first sector.
-    * [Enter] - select the default last sector.
-    * `w`- write the changes to the disk and exit.
+* `g` - create a new empty GPT partition table.
+* `n` - create a new partition.
+* [Enter] - select the default partition number.
+* [Enter] - select the default first sector.
+* [Enter] - select the default last sector.
+* `w`- write the changes to the disk and exit.
 
 3. Format the new partition with the `ext4` filesystem.
 
@@ -327,8 +326,8 @@ sudo systemctl status earthquake-monitor.service
 sudo systemctl status metrics-exporter.service
 ```
 
-    ℹ️ To view real-time logs for a specific service, use:
-    `journalctl -u <service_name> -n 20 -f`
+ℹ️ To view real-time logs for a specific service, use:
+`journalctl -u <service_name> -n 20 -f`
 
 ### Peripherals
 
@@ -341,9 +340,9 @@ sudo systemctl enable nvme-powermode-manager.service
 sudo systemctl enable wifi-lan-manager.service
 ```
 
-    ⚠️ The `nvme-powermode-manager.service` requires `nvme-cli` to be installed.
-    `sudo apt update`
-    `sudo apt install nvme-cli`
+⚠️ The `nvme-powermode-manager.service` requires `nvme-cli` to be installed.
+`sudo apt update`
+`sudo apt install nvme-cli`
 
 ## 5. Utilities and Troubleshooting 🛠️
 
