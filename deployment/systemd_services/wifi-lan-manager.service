@@ -1,11 +1,12 @@
 [Unit]
 Description=Auto-disable Wi-Fi if LAN is connected
+
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/python3 /home/reekroo/scripts/wifi_lan_managers/tools/wifi_lan_manager.py
+ExecStart=/home/reekroo/peripheral_scripts/.venv_peripherals/bin/network-policy-apply
 
 [Install]
 WantedBy=multi-user.target

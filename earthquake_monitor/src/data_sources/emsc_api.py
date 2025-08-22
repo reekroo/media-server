@@ -1,8 +1,9 @@
 import requests
 from datetime import datetime, timezone, timedelta
-from src import configs
-from src.earthquake_logger import get_logger
-from src.data_sources.base import DataSource
+
+import configs
+from earthquake_logger import get_logger
+from data_sources.base import DataSource
 
 log = get_logger(__name__)
 

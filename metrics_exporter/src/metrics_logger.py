@@ -1,8 +1,8 @@
 import os
 import logging
 
+from configs import LOG_FILE_PATH, LOG_MAX_BYTES, LOG_BACKUP_COUNT
 from concurrent_log_handler import ConcurrentRotatingFileHandler
-from src.configs import LOG_FILE_PATH, LOG_MAX_BYTES, LOG_BACKUP_COUNT
 
 os.makedirs(os.path.dirname(LOG_FILE_PATH), exist_ok=True)
 

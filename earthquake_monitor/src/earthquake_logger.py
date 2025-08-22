@@ -1,6 +1,6 @@
 import logging
+from configs import LOG_FILE_PATH, LOG_MAX_BYTES, LOG_BACKUP_COUNT
 from concurrent_log_handler import ConcurrentRotatingFileHandler
-from src.configs import LOG_FILE_PATH, LOG_MAX_BYTES, LOG_BACKUP_COUNT
 
 handler = ConcurrentRotatingFileHandler(
     filename=LOG_FILE_PATH,

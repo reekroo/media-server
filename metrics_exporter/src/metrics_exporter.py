@@ -1,8 +1,8 @@
 import time
 
-from prometheus_client import start_http_server, Gauge
-from src.providers.stats_provider import StatsProvider
-from src.metrics_logger import get_logger
+from providers.stats_provider import StatsProvider
+from metrics_logger import get_logger
+from prometheus_client import Gauge
 
 log = get_logger(__name__)
 
@@ -59,15 +59,6 @@ def update_metrics(stats_provider):
             METRICS['docker_running'].set(all_stats['docker_stats'].get('running_containers', 0))
 
         log.info("Metrics successfully updated.")
+
     except Exception as e:
         log.error(f"Failed to update metrics: {e}", exc_info=True)
-
-def run_exporter():
-    start_http_server(8001)
-    log.info("Prometheus metrics exporter started.")
-    
-    provider = StatsProvider()
-    
-    while True:
-        update_metrics(provider)
-        time.sleep(15)

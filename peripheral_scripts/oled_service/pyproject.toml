@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oled-service"
+version = "0.1.0"
+authors = [
+  { name="reekroo", email="paul.davidovski@gmail.com" },
+]
+description = "Service to show system stats on oled displays"
+requires-python = ">=3.9"
+
+dependencies = [
+    "Pillow",
+    "adafruit-circuitpython-ssd1306",
+    "adafruit-blinka",
+    "psutil",
+    "netifaces",
+    "common-utils"
+]
+
+[project.scripts]
+oled-controller = "oleds.main:main"
+oled-clear-controller = "oleds.oled_clear_controller:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["oleds*"]

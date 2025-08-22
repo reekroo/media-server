@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sound-service"
+version = "0.1.0"
+authors = [
+  { name="reekroo", email="paul.davidovski@gmail.com" },
+]
+description = "Service with self client to play sounds"
+requires-python = ">=3.9"
+
+dependencies = [
+    "gpiozero",
+    "lgpio",
+    "common-utils"
+]
+
+[project.scripts]
+sound-controller = "sounds.sound_controller:main"
+sound-boot-controller = "sounds.sound_boot_controller:main"
+sound-shutdown-controller = "sounds.sound_shutdown_controller:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sounds*"]
