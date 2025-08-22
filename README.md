@@ -1,1 +1,417 @@
-# media-server
+<details>
+    <summary>Table of Contents</summary>
+    <ol>
+        <li><a href="#">Raspberry Pi 5 Media Server Setup</a></li>
+        <li>
+        <a href="#">1. Preparation and Initial Setup</a>
+            <ul>
+                <li><a href="#">Operating System Installation</a></li>
+                <li><a href="#">SSH Connection</a></li>
+                <li><a href="#">Copying Files and System Update</a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="#">2. NVMe Drive Preparation</a>
+            <ul>
+                <li><a href="#">Enabling PCIe Gen3</a></li>
+                <li><a href="#">Partitioning and Formatting the Drive
+</a></li>
+                <li><a href="#">Mounting the Drive</a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="#">3. Software Installation and Services</a>
+            <ul>
+                <li><a href="#">Docker & Portainer Installation</a></li>
+                <li><a href="#">Setting Up Python Virtual Environments (venv)</a></li>
+                <li><a href="#">Samba Setup (Network Storage Access)</a></li>
+                <li><a href="#">Activating the I2C Interface</a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="#">4. Starting System Services</a>
+            <ul>
+                <li><a href="#">Services</a></li>
+                <li><a href="#">Peripherals</a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="#">5. Utilities and Troubleshooting</a>
+            <ul>
+                <li><a href="#">Running Unit Tests</a></li>
+                <li><a href="#">System Time Synchronization</a></li>
+                <li><a href="#">Increasing the Swap File Size</a></li>
+            </ul>
+        </li>
+  </ol>
+</details>
+
+# Raspberry Pi 5 Media Server Setup
+
+This document is a step-by-step guide for setting up a media server on a Raspberry Pi 5 using an NVMe drive. The guide covers the initial OS installation, disk preparation, Docker and Samba installation, as well as starting and managing system services.
+
+
+## 1. Preparation and Initial Setup 🛠️
+
+### Operating System Installation
+
+1. Download and install the Raspberry Pi Imager.
+2. Select and flash the Raspberry Pi OS Lite (64-bit) image for the Pi 5 to your SSD.
+
+### SSH Connection
+
+After installing the OS and connecting the Pi to your network, find its IP address and connect via SSH.
+
+    ```Bash
+    ssh reekroo@192.168.0.118
+    ```
+
+        ⚠️ If you encounter any issues with the SSH key, remove the old key from your known hosts.
+
+   ```Bash
+   ssh-keygen -R 192.168.0.118
+   ```
+
+### Copying Files and System Update
+
+To synchronize local script files, you can use `VS Code` with the `SFTP` plugin or a similar tool.
+
+        ⚠️ Important Security Note: The `sudo chmod -R 777` command grants full permissions to all users and is not recommended for permanent use due to security risks. Use it cautiously and only for temporary setup tasks.
+
+   ```Bash
+   cd /etc/systemd/system
+   sudo chmod -R 777 .
+   ```
+
+Update your Pi's packages and firmware.
+
+
+   ```Bash
+   sudo apt update
+    sudo apt upgrade -y
+    sudo rpi-eeprom-update -a
+   ```
+
+## 2. NVMe Drive Preparation 💾
+
+### Enabling PCIe Gen3
+
+To improve the performance of your NVMe drive, you need to enable PCIe Gen3.
+
+1. Open the configuration file:
+
+```Bash
+sudo nano /boot/firmware/config.txt
+```
+
+2. Add the following line to the end of the file:
+
+```Ini, TOML
+dtparam=pcie_gen=3
+```
+
+### Partitioning and Formatting the Drive
+
+1. Check if the drive is recognized by the system:
+
+```Bash
+lsblk
+```
+
+2. Run the disk partitioning utility. Be careful, as this will erase all data on the drive!
+
+```Bash
+sudo fdisk /dev/nvme0n1
+```
+
+    * `g` - create a new empty GPT partition table.
+    * `n` - create a new partition.
+    * [Enter] - select the default partition number.
+    * [Enter] - select the default first sector.
+    * [Enter] - select the default last sector.
+    * `w`- write the changes to the disk and exit.
+
+3. Format the new partition with the `ext4` filesystem.
+
+```Bash
+sudo mkfs.ext4 /dev/nvme0n1p1
+```
+
+### Mounting the Drive
+
+To ensure the drive mounts automatically on boot, add it to `/etc/fstab`.
+
+1. Create a mount point:
+
+```Bash
+sudo mkdir /mnt/storage
+```
+
+2. Find the UUID of your partition:
+
+```Bash
+sudo blkid /dev/nvme0n1p1
+```
+
+3. Edit the `fstab ` file:
+
+```Bash
+sudo nano /etc/fstab
+```
+
+Add the following line to the end of the file, replacing the UUID with the one you obtained in the previous step:
+
+```Ini, TOML
+UUID="581ac755-4d7a-4fe6-bf3e-9102d81e4458" /mnt/storage ext4 defaults,auto,users,rw,nofail 0 0
+```
+
+4. Apply the changes and set permissions.
+
+```Bash
+sudo mount -a
+sudo chown -R reekroo:reekroo /mnt/storage
+sudo chmod -R 777 /mnt/storage
+```
+
+## Software Installation and Services ⚙️
+
+### Docker & Portainer Installation
+
+1. Install Docker:
+
+```Bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+```
+2. Add your user to the docker group to run Docker commands without sudo.
+
+```Bash
+sudo usermod -aG docker $USER
+sudo usermod -aG docker reekroo
+sudo reboot
+```
+
+3. Install the Docker Compose plugin:
+
+```Bash
+sudo apt-get install docker-compose-plugin
+```
+
+4. Create a volume and run the Portainer container.
+
+```Bash
+docker volume create portainer_data
+docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest
+```
+
+5. Navigate to your Docker stacks directory and start them.
+
+```Bash
+cd ~/docker_stacks
+make up
+```
+
+### Setting Up Python Virtual Environments (venv)
+
+It is recommended to use a separate virtual environment for each project.
+
+* peripheral_scripts
+
+```Bash
+cd ~/peripheral_scripts
+python3 -m venv .venv_peripherals
+source .venv_peripherals/bin/activate
+pip install -e ./common_utils
+pip install -e ./network_policy
+pip install -e ./sound_service
+pip install -e ./button_service
+pip install -e ./oled_service
+deactivate
+```
+
+* peripheral_script
+
+```Bash
+cd ~/earthquake_monitor
+python3 -m venv .venv_earthquake_monitor
+source .venv_earthquake_monitor/bin/activate
+pip install -e .
+deactivate
+```
+
+* metrics_exporter
+
+```Bash
+cd ~/metrics_exporter
+python3 -m venv .venv_metrics_exporter
+source .venv_metrics_exporter/bin/activate
+pip install -e .
+deactivate
+```
+
+### Samba Setup (Network Storage Access)
+
+1. Install Samba:
+
+```Bash
+sudo apt install samba samba-common-bin -y
+```
+
+2. Edit the configuration file:
+
+```Bash
+sudo nano /etc/samba/smb.conf
+```
+
+3. Add the following block to the end of the file to share your storage drive on the network:
+
+```Ini, TOML
+[storage]
+comment = Main Storage Drive
+path = /mnt/storage
+browseable = yes
+writeable = yes
+only guest = no
+create mask = 0777
+directory mask = 0777
+public = yes
+guest ok = yes
+```
+
+4. Restart the Samba service:
+
+```Bash
+sudo systemctl restart smbd
+```
+
+### Activating the I2C Interface
+
+This step is required for peripherals like OLED displays.
+
+```Bash
+sudo raspi-config
+```
+
+* `Interface Options` -> `I5 I2C` -> `Yes`
+* `Ok` -> `Finish`
+
+## 4. Starting System Services 🚀
+
+Once all scripts are copied and virtual environments are set up, you can enable the systemd services.
+
+### Services
+
+1. Reload the systemd manager configuration:
+
+```Bash
+sudo systemctl daemon-reload
+```
+
+2. Enable and start the services immediately:
+
+```Bash
+sudo systemctl enable --now sound-controller.service
+sudo systemctl enable --now oled-status.service
+sudo systemctl enable --now button-manager.service
+sudo systemctl enable --now earthquake-monitor.service
+sudo systemctl enable --now metrics-exporter.service
+```
+
+3. Check the status of the running services:
+
+```Bash
+sudo systemctl status sound-controller.service
+sudo systemctl status oled-status.service
+sudo systemctl status button-manager.service
+sudo systemctl status earthquake-monitor.service
+sudo systemctl status metrics-exporter.service
+```
+
+    ℹ️ To view real-time logs for a specific service, use:
+    `journalctl -u <service_name> -n 20 -f`
+
+### Peripherals
+
+Enable additional services for power management and networking.
+
+```Bash
+sudo systemctl enable sound-boot.service
+sudo systemctl enable sound-shutdown.service
+sudo systemctl enable nvme-powermode-manager.service
+sudo systemctl enable wifi-lan-manager.service
+```
+
+    ⚠️ The `nvme-powermode-manager.service` requires `nvme-cli` to be installed.
+    `sudo apt update`
+    `sudo apt install nvme-cli`
+
+## 5. Utilities and Troubleshooting 🛠️
+
+### Running Unit Tests
+
+To verify the functionality of your scripts, navigate to the project directory and run the tests.
+
+```Bash
+cd ~/earthquake_monitor
+source .venv_earthquake_monitor/bin/activate
+python3 -m unittest discover -s tests -p "test_*.py"
+```
+
+```Bash
+cd ~/earthquake_monitor
+source .venv_earthquake_monitor/bin/activate
+python3 -m tests.integration_test_alert
+```
+
+### System Time Synchronization
+
+Check and set your system's timezone.
+
+```Bash
+date
+sudo timedatectl set-timezone Europe/Istanbul
+date
+timedatectl status
+```
+
+### Increasing the Swap File Size
+
+If you need more virtual memory, you can increase the size of the swap file.
+
+1. Check the current swap size:
+
+```Bash
+htop
+sudo swapon --show
+```
+
+2. Disable, create, and enable a new 2GB swap file:
+
+```Bash
+sudo swapoff /var/swap
+sudo fallocate -l 2G /var/swapfile
+sudo mkswap /var/swapfile
+sudo chmod 600 /var/swapfile
+sudo swapon /var/swapfile
+sudo swapon --show
+htop
+```
+
+3. To make this change persistent across reboots, edit the /etc/dphys-swapfile file and set CONF_SWAPSIZE to 2048.
+
+```Bash
+sudo nano /etc/dphys-swapfile
+```
+
+```Ini, TOML
+# Set the swap file size
+CONF_SWAPSIZE=2048
+```
+
+4. Apply the changes from the configuration file.
+
+```Bash
+sudo dphys-swapfile swapoff
+sudo dphys-swapfile swapon
+htop
+```
