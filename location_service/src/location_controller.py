@@ -5,7 +5,7 @@ import time
 import threading
 
 from typing import List
-from configs import SOCKET_FILE, UPDATE_INTERVAL_SECONDS
+from configs import LOCATION_SERVICE_SOCKET, UPDATE_INTERVAL_SECONDS
 from providers.base import ILocationProvider
 from location_logger import get_logger
 
@@ -13,7 +13,7 @@ log = get_logger(__name__)
 
 class LocationController:
     def __init__(self, providers: List[ILocationProvider]):
-        self._socket_path = SOCKET_FILE
+        self._socket_path = LOCATION_SERVICE_SOCKET
         self._providers = providers
         self._current_location = None
         self._server_socket = None

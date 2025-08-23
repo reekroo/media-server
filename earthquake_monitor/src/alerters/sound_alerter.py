@@ -2,9 +2,9 @@ import socket
 import json
 from .base import BaseAlerter
 from earthquake_logger import get_logger
+from configs import BUZZER_SOCKET
 
 log = get_logger(__name__)
-SOCKET_FILE = "/tmp/buzzer.sock"
 
 class SoundAlerter(BaseAlerter):
 
@@ -22,7 +22,7 @@ class SoundAlerter(BaseAlerter):
         try:
             client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             client.settimeout(2) 
-            client.connect(SOCKET_FILE)
+            client.connect(BUZZER_SOCKET)
             client.sendall(json.dumps(command).encode('utf-8'))
         except Exception as e:
             log.error(f"[SoundAlerter] Could not connect to sound service: {e}")
