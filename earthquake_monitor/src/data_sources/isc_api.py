@@ -44,7 +44,7 @@ class IscApiDataSource(DataSource):
             log.error(f"[IscApiDataSource] Unexpected error during XML parsing: {e}", exc_info=True)
             return None
         
-    def get_earthquakes(self):
+    def get_earthquakes(self, latitude, longitude):
         log.info("[IscApiDataSource] Querying ISC data source...")
         
         time_window = timedelta(minutes=configs.API_TIME_WINDOW_MINUTES)
@@ -53,8 +53,8 @@ class IscApiDataSource(DataSource):
         radius_deg = configs.SEARCH_RADIUS_KM / 111.0
 
         params = {
-            "latitude": configs.MY_LAT,
-            "longitude": configs.MY_LON,
+            "latitude": latitude,
+            "longitude": longitude,
             "maxradius": f"{radius_deg:.2f}",
             "minmagnitude": configs.MIN_API_MAGNITUDE,
             "orderby": "time",

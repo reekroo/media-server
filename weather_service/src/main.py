@@ -5,6 +5,8 @@ from providers.weatherapi import WeatherApiProvider
 from outputs.console_output import ConsoleOutput
 from outputs.socket_output import SocketOutput
 from weather_controller import WeatherController
+from locations.socket_provider import SocketLocationProvider
+from locations.config_provider import ConfigLocationProvider
 
 log = get_logger(__name__)
 
@@ -14,7 +16,7 @@ def main():
     output_strategies = []
     output_factories = {
         'console': ConsoleOutput,
-        'socket': lambda: SocketOutput(socket_path=config.SOCKET_FILE)
+        'socket': lambda: SocketOutput(socket_path=config.WEATHER_SERVICE_SOCKET)
     }
     
     for mode in config.OUTPUT_MODES:
@@ -30,11 +32,15 @@ def main():
         WeatherApiProvider(api_key=config.WEATHERAPI_API_KEY)
     ]
 
+    location_providers = [
+        SocketLocationProvider(),
+        ConfigLocationProvider()
+    ]
+
     controller = WeatherController(
-        providers=providers,
+        weather_providers=providers,
         outputs=output_strategies,
-        lat=config.LATITUDE,
-        lon=config.LONGITUDE
+        location_providers=location_providers 
     )
     
     controller.run(interval_seconds=config.INTERVAL_SECONDS)

@@ -13,10 +13,9 @@ if root_logger.hasHandlers():
     root_logger.handlers.clear()
 
 file_handler = ConcurrentRotatingFileHandler(
-    filename=LOG_FILE_PATH,
-    maxBytes=LOG_MAX_BYTES,
-    backupCount=LOG_BACKUP_COUNT,
-    encoding='utf-8'
+    LOG_FILE_PATH, 
+    maxBytes=LOG_MAX_BYTES, 
+    backupCount=LOG_BACKUP_COUNT
 )
 file_handler.setFormatter(file_formatter)
 root_logger.addHandler(file_handler)

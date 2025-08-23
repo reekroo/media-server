@@ -7,6 +7,8 @@ from data_sources.emsc_api import EmscApiDataSource
 from data_sources.isc_api import IscApiDataSource
 from data_sources.usgs_api import UsgsApiDataSource
 from alerters.sound_alerter import SoundAlerter
+from locations.socket_provider import SocketLocationProvider
+from locations.config_provider import ConfigLocationProvider
 
 log = get_logger(__name__)
 
@@ -23,8 +25,14 @@ def main():
         SoundAlerter(),
     ]
 
+    location_providers = [
+        SocketLocationProvider(),
+        ConfigLocationProvider()
+    ]
+
     monitor = EarthquakeMonitor(
         data_sources=data_sources,
+        location_providers=location_providers,
         alerters=alerters,
         alert_levels_config=configs.ALERT_LEVELS,
         max_processed_events=configs.MAX_PROCESSED_EVENTS_MEMORY

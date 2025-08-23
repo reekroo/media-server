@@ -1,0 +1,16 @@
+[Unit]
+Description=Location Monitor Service
+
+After=network-online.target
+
+[Service]
+ExecStart=/home/reekroo/location_service/.venv_location_service/bin/location-service
+
+User=root
+Group=root
+
+Restart=always
+RestartSec=20
+
+[Install]
+WantedBy=multi-user.target

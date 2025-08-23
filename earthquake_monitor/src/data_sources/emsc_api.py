@@ -10,7 +10,7 @@ log = get_logger(__name__)
 class EmscApiDataSource(DataSource):
     API_URL = "https://www.seismicportal.eu/fdsnws/event/1/query"
 
-    def get_earthquakes(self):
+    def get_earthquakes(self, latitude, longitude):
         log.info("[EmscApiDataSource] Querying EMSC data source...")
 
         time_window = timedelta(minutes=configs.API_TIME_WINDOW_MINUTES)
@@ -20,8 +20,8 @@ class EmscApiDataSource(DataSource):
 
         params = {
             "format": "json",
-            "latitude": configs.MY_LAT,
-            "longitude": configs.MY_LON,
+            "latitude": latitude,
+            "longitude": longitude,
             "maxradius": f"{radius_deg:.2f}",
             "minmagnitude": configs.MIN_API_MAGNITUDE,
             "orderby": "time",

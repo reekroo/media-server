@@ -227,6 +227,16 @@ pip install -e ./oled_service
 deactivate
 ```
 
+* location_service
+
+```Bash
+cd ~/location_service
+python3 -m venv .venv_location_service
+source .venv_location_service/bin/activate
+pip install -e .
+deactivate
+```
+
 * earthquake_monitor
 
 ```Bash
@@ -237,22 +247,22 @@ pip install -e .
 deactivate
 ```
 
-* metrics_exporter
-
-```Bash
-cd ~/metrics_exporter
-python3 -m venv .venv_metrics_exporter
-source .venv_metrics_exporter/bin/activate
-pip install -e .
-deactivate
-```
-
 * weather_service
 
 ```Bash
 cd ~/weather_service
 python3 -m venv .venv_weather_service
 source .venv_weather_service/bin/activate
+pip install -e .
+deactivate
+```
+
+* metrics_exporter
+
+```Bash
+cd ~/metrics_exporter
+python3 -m venv .venv_metrics_exporter
+source .venv_metrics_exporter/bin/activate
 pip install -e .
 deactivate
 ```
@@ -321,9 +331,10 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now sound-controller.service
 sudo systemctl enable --now oled-status.service
 sudo systemctl enable --now button-manager.service
+sudo systemctl enable --now location-monitor.service
 sudo systemctl enable --now earthquake-monitor.service
-sudo systemctl enable --now metrics-exporter.service
 sudo systemctl enable --now weather-monitor.service
+sudo systemctl enable --now metrics-exporter.service
 ```
 
 3. Check the status of the running services:
@@ -332,9 +343,10 @@ sudo systemctl enable --now weather-monitor.service
 sudo systemctl status sound-controller.service
 sudo systemctl status oled-status.service
 sudo systemctl status button-manager.service
+sudo systemctl status location-monitor.service
 sudo systemctl status earthquake-monitor.service
-sudo systemctl status metrics-exporter.service
 sudo systemctl status weather-monitor.service
+sudo systemctl status metrics-exporter.service
 ```
 
 ℹ️ To view real-time logs for a specific service, use:
