@@ -227,7 +227,7 @@ pip install -e ./oled_service
 deactivate
 ```
 
-* peripheral_script
+* earthquake_monitor
 
 ```Bash
 cd ~/earthquake_monitor
@@ -243,6 +243,16 @@ deactivate
 cd ~/metrics_exporter
 python3 -m venv .venv_metrics_exporter
 source .venv_metrics_exporter/bin/activate
+pip install -e .
+deactivate
+```
+
+* weather_service
+
+```Bash
+cd ~/weather_service
+python3 -m venv .venv_weather_service
+source .venv_weather_service/bin/activate
 pip install -e .
 deactivate
 ```
@@ -313,6 +323,7 @@ sudo systemctl enable --now oled-status.service
 sudo systemctl enable --now button-manager.service
 sudo systemctl enable --now earthquake-monitor.service
 sudo systemctl enable --now metrics-exporter.service
+sudo systemctl enable --now weather-monitor.service
 ```
 
 3. Check the status of the running services:
@@ -323,10 +334,20 @@ sudo systemctl status oled-status.service
 sudo systemctl status button-manager.service
 sudo systemctl status earthquake-monitor.service
 sudo systemctl status metrics-exporter.service
+sudo systemctl status weather-monitor.service
 ```
 
 ℹ️ To view real-time logs for a specific service, use:
 `journalctl -u <service_name> -n 20 -f`
+
+ℹ️ To logs in files:
+`tail -f <path_to_log_file>`
+
+ℹ️ To restart a service, use:
+`sudo systemctl restart <service_name>`
+
+ℹ️ To stop a service, use:
+`sudo systemctl stop <service_name>`
 
 ### Peripherals
 
