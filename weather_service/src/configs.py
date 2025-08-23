@@ -1,7 +1,8 @@
 import os
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-LOG_FILE_PATH = os.path.join(PROJECT_ROOT, 'app.log')
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LOGS_DIR = os.path.join(PROJECT_ROOT, 'logs')
+LOG_FILE_PATH = os.path.join(LOGS_DIR, 'weather_service.log')
 LOG_MAX_BYTES = 10 * 1024 * 1024
 LOG_BACKUP_COUNT = 5
 

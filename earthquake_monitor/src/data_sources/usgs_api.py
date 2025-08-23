@@ -10,7 +10,7 @@ log = get_logger(__name__)
 class UsgsApiDataSource(DataSource):
     API_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query"
 
-    def get_earthquakes(self):
+    def get_earthquakes(self, latitude, longitude):
         log.info("[UsgsApiDataSource] Querying USGS data source...")
 
         time_window = timedelta(minutes=configs.API_TIME_WINDOW_MINUTES)
@@ -19,8 +19,8 @@ class UsgsApiDataSource(DataSource):
 
         params = {
             "format": "geojson",
-            "latitude": configs.MY_LAT,
-            "longitude": configs.MY_LON,
+            "latitude": latitude,
+            "longitude": longitude,
             "maxradiuskm": configs.SEARCH_RADIUS_KM,
             "minmagnitude": configs.MIN_API_MAGNITUDE,
             "orderby": "time",
