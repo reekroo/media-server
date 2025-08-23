@@ -1,0 +1,16 @@
+[Unit]
+Description=Weather Monitor Service
+
+After=network-online.target
+
+[Service]
+ExecStart=/home/reekroo/weather_service/.venv_weather_service/bin/weather-service
+
+User=root
+Group=root
+
+Restart=always
+RestartSec=20
+
+[Install]
+WantedBy=multi-user.target
