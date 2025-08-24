@@ -26,4 +26,4 @@ oled-clear-controller = "oleds.oled_clear_controller:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["oleds*"]
+include = ["oleds*", "utils*"]

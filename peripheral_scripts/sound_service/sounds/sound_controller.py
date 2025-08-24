@@ -1,68 +1,86 @@
-#!/usr/bin/env python3
-
 import socket
 import os
-import sys
 import json
 import stat
 
-sys.path.append('/home/reekroo/peripheral_scripts')
-from sounds.libs.buzzer_player import BuzzerPlayer
-from sounds.configs import melodies
+from .libs.buzzer_player import BuzzerPlayer
+from .configs import melodies
+from .configs.configs import SOUND_SOCKET, SOUNDS_LOG_FILE
+
 from utils.logger import setup_logger
 
-log = setup_logger('SoundController', '/home/reekroo/peripheral_scripts/logs/sounds.log')
-SOCKET_FILE = "/tmp/buzzer.sock"
+log = setup_logger("SoundController", SOUNDS_LOG_FILE)
 
 def main():
-    if os.path.exists(SOCKET_FILE):
-        os.remove(SOCKET_FILE)
+    if os.path.exists(SOUND_SOCKET):
+        os.remove(SOUND_SOCKET)
 
     player = BuzzerPlayer()
     server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    
-    log.info("[SoundController] Starting Sound Service...")
-    
-    try:
-        server.bind(SOCKET_FILE)
-        server.listen(5)
 
-        os.chmod(SOCKET_FILE, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-        
-        log.info(f"[SoundController] Listening for commands on {SOCKET_FILE}")
+    log.info("[SoundController] Starting Sound Service…")
+
+    try:
+        server.bind(SOUND_SOCKET)
+        server.listen(5)
+        os.chmod(SOUND_SOCKET, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+        log.info(f"[SoundController] Listening for commands on {SOUND_SOCKET}")
 
         while True:
             connection, _ = server.accept()
             try:
-                command_data = connection.recv(1024).decode()
-                if not command_data:
+                raw = connection.recv(1024)
+                if not raw:
+                    connection.sendall(b"NOK")
                     continue
-                
-                log.info(f"[SoundController]  Received command data: '{command_data}'")
 
-                cmd = json.loads(command_data)
-                melody_name = cmd.get('melody')
-                duration = cmd.get('duration', 0)
+                try:
+                    cmd = json.loads(raw.decode())
+                except json.JSONDecodeError:
+                    log.warning("[SoundController] Bad JSON: %r", raw)
+                    connection.sendall(b"NOK")
+                    continue
 
-                melody_to_play = getattr(melodies, melody_name, None)
-                
-                if melody_to_play:
-                    log.info(f"[SoundController] Passing play command to player: '{melody_name}' for {duration}s.")
-                    player.play(melody_to_play, duration)
+                melody_name = cmd.get("melody")
+                duration = float(cmd.get("duration", 0))
+                wait_flag = bool(cmd.get("wait", False))
+
+                melody_to_play = melodies.ALL_MELODIES.get(melody_name)
+                if not melody_to_play:
+                    log.warning("[SoundController] Unknown melody: %r", melody_name)
+                    connection.sendall(b"NOK")
+                    continue
+
+                log.info("[SoundController] Play request: name=%s duration=%s wait=%s", melody_name, duration, wait_flag)
+
+                player.play(melody_to_play, duration)
+                if wait_flag:
+                    player.wait() 
+                    connection.sendall(b"OK")
                 else:
-                    log.warning(f"Melody '{melody_name}' not found.")
-            except Exception as e:
-                log.error(f"[SoundController] Error processing command: {e}", exc_info=True)
-            finally:
-                connection.close()
-    finally:
-        player.close()
-        server.close()
+                    connection.sendall(b"ACK")
 
-        if os.path.exists(SOCKET_FILE):
-            os.remove(SOCKET_FILE)
-        
+            except Exception as e:
+                log.error("[SoundController] Error: %s", e, exc_info=True)
+                try:
+                    connection.sendall(b"NOK")
+                except Exception:
+                    pass
+            finally:
+                try:
+                    connection.close()
+                except Exception:
+                    pass
+    finally:
+        try:
+            player.close()
+        finally:
+            try:
+                server.close()
+            finally:
+                if os.path.exists(SOUND_SOCKET):
+                    os.remove(SOUND_SOCKET)
         log.info("[SoundController] Sound Service stopped and resources released.")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

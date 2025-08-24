@@ -1,14 +1,16 @@
-#!/usr/-bin/env python3
+#!/usr/bin/env python3
 
-from .oled_controller import OledController
-from .displays.manager import DisplayManager
-from .displays.drivers.ssd1306 import SSD1306_Driver
-from .displays.screens.performance_screen import PerformanceScreen
-from .displays.screens.storage_screen import StorageScreen
-from .displays.screens.health_screen import HealthScreen
+from oled_controller import OledController
+from displays.manager import DisplayManager
+from displays.drivers.ssd1306 import SSD1306_Driver
+from displays.screens.performance_screen import PerformanceScreen
+from displays.screens.storage_screen import StorageScreen
+from displays.screens.health_screen import HealthScreen
+
 from utils.logger import setup_logger
+from configs.configs import LOG_FILE
 
-log = setup_logger('OledMain', '/home/reekroo/peripheral_scripts/logs/oleds.log')
+log = setup_logger('OledMain', LOG_FILE)
 
 def main():
     try:
@@ -23,12 +25,11 @@ def main():
         display_manager = DisplayManager(driver=active_driver)
 
         controller = OledController(
-            display_manager=display_manager, 
+            display_manager=display_manager,
             pages=active_pages
         )
 
         controller.run()
-        
     except KeyboardInterrupt:
         log.info("[OledController] stopped by user.")
     except Exception as e:

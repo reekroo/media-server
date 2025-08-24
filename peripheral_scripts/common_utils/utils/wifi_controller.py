@@ -1,23 +1,41 @@
 #!/usr/bin/env python3
-
 import subprocess
 
 class WifiController:
-    def is_blocked(self):
+    def __init__(self, logger=None):
+        self.log = logger
+
+    def is_blocked(self) -> bool:
         try:
             result = subprocess.run(
                 ['rfkill', 'list', 'wifi'],
-                capture_output=True, text=True, check=True
+                capture_output=True, text=True, check=True, timeout=5
             )
-            return 'Soft blocked: yes' in result.stdout
-        except (subprocess.CalledProcessError, FileNotFoundError):
+            blocked = 'Soft blocked: yes' in result.stdout
+            if self.log:
+                self.log.debug("[WifiController] rfkill says wifi is %s", "BLOCKED" if blocked else "UNBLOCKED")
+            return blocked
+        except subprocess.TimeoutExpired as e:
+            if self.log:
+                self.log.error("[WifiController] rfkill timeout: %s", e, exc_info=True)
+            return True
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            if self.log:
+                self.log.error("[WifiController] rfkill failed: %s", e, exc_info=True)
             return True
 
-    def set_blocked(self, blocked):
+    def set_blocked(self, blocked: bool) -> bool:
         action = 'block' if blocked else 'unblock'
-        print(f"WifiController: Setting Wi-Fi to '{action}'...")
         try:
-            subprocess.run(['rfkill', action, 'wifi'], check=True)
-            print("WifiController: Done.")
+            subprocess.run(['rfkill', action, 'wifi'], check=True, timeout=5)
+            if self.log:
+                self.log.info("[WifiController] Wi-Fi %sed successfully.", action)
+            return True
+        except subprocess.TimeoutExpired as e:
+            if self.log:
+                self.log.error("[WifiController] rfkill %s timeout: %s", action, e, exc_info=True)
+            return False
         except Exception as e:
-            print(f"WifiController: Failed to {action} Wi-Fi: {e}")
+            if self.log:
+                self.log.error("[WifiController] Failed to %s Wi-Fi: %s", action, e, exc_info=True)
+            return False

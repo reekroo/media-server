@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from gpiozero.pins.lgpio import LGPIOFactory
 from gpiozero import Device, TonalBuzzer
 Device.pin_factory = LGPIOFactory()
@@ -7,7 +5,7 @@ Device.pin_factory = LGPIOFactory()
 import threading
 import time
 
-from sounds.configs import hardware_pins
+from ..configs import hardware_pins
 
 class BuzzerPlayer:
     def __init__(self):
@@ -15,7 +13,7 @@ class BuzzerPlayer:
         self._thread = None
         self._lock = threading.Lock()
 
-    def _play_task(self, buzzer_instance, melody, duration_seconds, stop_event):
+    def _play_task(self, buzzer_instance: TonalBuzzer, melody, duration_seconds: float, stop_event: threading.Event):
         try:
             start_time = time.time()
             is_looping = duration_seconds > 0
@@ -23,7 +21,7 @@ class BuzzerPlayer:
             while not stop_event.is_set():
                 if is_looping and (time.time() - start_time) >= duration_seconds:
                     break
-                
+
                 for note, duration in melody:
                     if stop_event.is_set():
                         break
@@ -34,37 +32,51 @@ class BuzzerPlayer:
                         break
 
                     buzzer_instance.stop()
-                    
+
+                    # small gap between notes
                     if stop_event.wait(0.06):
                         break
 
                 if not is_looping:
                     break
         finally:
-            buzzer_instance.close()
+            try:
+                buzzer_instance.stop()
+            finally:
+                buzzer_instance.close()
 
-    def play(self, melody, duration_seconds=0):
+    def play(self, melody, duration_seconds: float = 0):
         with self._lock:
             if self._thread and self._thread.is_alive():
                 self._thread.stop_event.set()
                 self._thread.join()
 
             local_buzzer = TonalBuzzer(self.pin)
-
             stop_event = threading.Event()
 
-            self._thread = threading.Thread(
-                target=self._play_task, 
-                args=(local_buzzer, melody, duration_seconds, stop_event)
+            t = threading.Thread(
+                target=self._play_task,
+                args=(local_buzzer, melody, duration_seconds, stop_event),
+                daemon=True,
             )
-            self._thread.stop_event = stop_event
-            self._thread.start()
+            t.stop_event = stop_event  # type: ignore[attr-defined]
+
+            self._thread = t
+            t.start()
+
+    def wait(self, timeout: float | None = None) -> bool:
+        """Block until current melody finishes. True if finished, False on timeout."""
+        with self._lock:
+            if not self._thread:
+                return True
+            self._thread.join(timeout)
+            return not self._thread.is_alive()
 
     def stop(self):
         with self._lock:
             if self._thread and self._thread.is_alive():
-                self._thread.stop_event.set()
+                self._thread.stop_event.set()  # type: ignore[attr-defined]
                 self._thread.join()
-    
+
     def close(self):
         self.stop()

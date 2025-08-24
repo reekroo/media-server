@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import subprocess
 
 class ButtonActions:
@@ -11,22 +10,29 @@ class ButtonActions:
         if self.busy:
             self.log.warning("[ButtonActions] Action is busy, ignoring toggle.")
             return
-        
+
         self.busy = True
         try:
-            result = subprocess.run(['rfkill', 'list', 'wifi'], capture_output=True, text=True, check=True)
+            result = subprocess.run(
+                ['rfkill', 'list', 'wifi'],
+                capture_output=True, text=True, check=True, timeout=5
+            )
 
             if "Soft blocked: yes" in result.stdout:
                 self.log.info("[ButtonActions] Turning on Wi-Fi...")
-                subprocess.run(["rfkill", "unblock", "wifi"], check=True)
+                subprocess.run(["rfkill", "unblock", "wifi"], check=True, timeout=5)
             else:
                 self.log.info("[ButtonActions] Turning off Wi-Fi...")
-                subprocess.run(["rfkill", "block", "wifi"], check=True)
-            
+                subprocess.run(["rfkill", "block", "wifi"], check=True, timeout=5)
+
             self.log.info("[ButtonActions] Wi-Fi toggle complete.")
 
+        except subprocess.TimeoutExpired as e:
+            self.log.error(f"[ButtonActions] rfkill timeout: {e}", exc_info=True)
+       
         except Exception as e:
             self.log.error(f"[ButtonActions] Error toggling Wi-Fi: {e}", exc_info=True)
+        
         finally:
             self.busy = False
 
