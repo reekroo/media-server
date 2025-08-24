@@ -6,7 +6,7 @@ sys.path.append('/home/reekroo/peripheral_scripts')
 from sounds import sound_client
 from utils.logger import setup_logger
 
-log = setup_logger('BootSound', '/home/reekroo/scripts/logs/sounds.log')
+log = setup_logger('BootSound', '/home/reekroo/peripheral_scripts/logs/sounds.log')
 
 def main():
     log.info("[BootSound] Sending boot sound command and waiting for completion.")
