@@ -26,3 +26,21 @@ scrape_configs:
           job: earthquake_monitor
           host: raspberrypi
           __path__: /mnt/logs/earthquake_monitor_logs/*.log
+
+  - job_name: location service
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: location_service
+          host: raspberrypi
+          __path__: /mnt/logs/location_service_logs/*.log
+
+  - job_name: weather service
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: weather_service
+          host: raspberrypi
+          __path__: /mnt/logs/weather_service_logs/*.log
