@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 from .wifi_lan_manager import LanWifiPolicy, log
 
 def main():

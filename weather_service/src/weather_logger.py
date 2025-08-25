@@ -1,5 +1,6 @@
 import logging
 import sys
+import os
 from configs import LOG_FILE_PATH, LOG_MAX_BYTES, LOG_BACKUP_COUNT
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 
@@ -11,6 +12,8 @@ root_logger.setLevel(logging.INFO)
 
 if root_logger.hasHandlers():
     root_logger.handlers.clear()
+
+os.makedirs(os.path.dirname(LOG_FILE_PATH), exist_ok=True)
 
 file_handler = ConcurrentRotatingFileHandler(
     filename=LOG_FILE_PATH,

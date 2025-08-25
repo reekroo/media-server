@@ -1,46 +1,101 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 
-from gpiozero import Button
-from signal import pause
-
-from buttons.libs.button_actions import ButtonActions
-from buttons.configs import hardware_pins
-
-from sounds import sound_client
-from utils.logger import setup_logger
-
-log = setup_logger('ButtonController', '/home/reekroo/peripheral_scripts/logs/buttons.log')
+import time
+from typing import Any, Callable
 
 class ButtonController:
-    def __init__(self):
-        log.info("[ButtonController] Initializing...")
-        
-        self.actions = ButtonActions(logger=log)
-        self.button = Button(
-            pin=hardware_pins.BUTTON_PIN, 
-            pull_up=True, 
-            hold_time=hardware_pins.BUTTON_HOLD_TIME
+    def __init__(
+        self,
+        *,
+        button,
+        settings,
+        log: Any,
+        short_action: Callable[[], None],
+        long_action: Callable[[], None],
+    ):
+        self.log = log
+        self.settings = settings
+        self.button = button
+        self.short_action = short_action
+        self.long_action = long_action
+
+        self._started_at = time.monotonic()
+        self._press_ts = 0.0
+        self._held_fired = False
+        self._ignore_until = 0.0
+        self._ignore_current_press = False
+
+        self.button.set_handlers(
+            on_press=self._on_press,
+            on_release=self._on_release,
+            on_hold=self._on_hold,
         )
-        
-        self.button.when_released = self.handle_short_press
-        self.button.when_held = self.handle_long_press
 
-        log.info("[ButtonController] Button is active and waiting for events.")
+        self.log.info(
+            "[ButtonController] Button is active (pin=%s, mode=%s, hold=%.2fs, bounce=%.2fs). Waiting for events.",
+            self.settings.pin, self.settings.mode, self.settings.hold, self.settings.bounce
+        )
 
-    def handle_short_press(self):
-        log.info("[ButtonController] Short press detected. Sending sound command...")
-        sound_client.play_sound('WIFI_TOGGLE')
+    def _on_press(self):
+        now = time.monotonic()
+        self._press_ts = now
+        self._held_fired = False
 
-        self.actions.toggle_wifi()
+        if now < self._ignore_until:
+            self._ignore_current_press = True
+            self.log.info(
+                "[ButtonController] PRESS edge (ignored by cooldown; is_active=%s)",
+                self.button.is_active()
+            )
+            return
 
-    def handle_long_press(self):
-        log.info("[ButtonController] Long press detected. Sending sound command...")
-        sound_client.play_sound('REBOOT_SYSTEM')
+        self._ignore_current_press = False
+        self.log.info("[ButtonController] PRESS edge (is_active=%s)", self.button.is_active())
 
-        self.actions.reboot_system()
+    def _on_release(self):
+        now = time.monotonic()
+        self.log.info("[ButtonController] RELEASE edge (is_active=%s)", self.button.is_active())
+
+        if self._ignore_current_press:
+            self._ignore_current_press = False
+            self.log.debug("[ButtonController] Release of ignored press — no action.")
+            return
+
+        if self._held_fired:
+            self._held_fired = False
+            self.log.debug("[ButtonController] Short press suppressed after hold.")
+            return
+
+        if now - self._started_at < self.settings.startup_grace:
+            self.log.debug("[ButtonController] Suppressing press during startup grace.")
+            return
+
+        self.log.info("[ButtonController] Short press detected.")
+        try:
+            self.short_action()
+        finally:
+            self._ignore_until = now + self.settings.cooldown
+
+    def _on_hold(self):
+        if self._ignore_current_press:
+            self.log.debug("[ButtonController] Ignoring hold for ignored press session.")
+            return
+        if time.monotonic() - self._started_at < self.settings.startup_grace:
+            self.log.debug("[ButtonController] Suppressing hold during startup grace.")
+            return
+
+        self._held_fired = True
+        self.log.info("[ButtonController] Long press detected.")
+        self.long_action()
 
     def run(self):
+        from signal import pause
         pause()
 
     def close(self):
-        log.info("[ButtonController] Closing button controller resources...")
+        self.log.info("[ButtonController] Closing button controller resources...")
+        try:
+            self.button.close()
+        except Exception:
+            pass

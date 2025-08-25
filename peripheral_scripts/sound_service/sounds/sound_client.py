@@ -1,32 +1,44 @@
-#!/usr/bin/env python3
-
 import socket
 import json
 
-SOCKET_FILE = "/tmp/buzzer.sock"
+from .configs.configs import SOUND_SOCKET
 
-def play_sound(melody_name: str, duration: int = 0, wait: bool = False):
+def play_sound(melody_name: str, duration: int = 0, wait: bool = False, timeout: float | None = 5.0) -> bool:
+
     if not isinstance(melody_name, str) or not melody_name:
         print("Error: melody_name must be a non-empty string.")
-        return
+        return False
 
     command = {
         "melody": melody_name,
         "duration": duration,
-        "wait": wait
+        "wait": wait,
     }
-    
+
     client = None
     try:
         client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        client.connect(SOCKET_FILE)
-        client.sendall(json.dumps(command).encode('utf-8'))
+        
+        if timeout is not None:
+            client.settimeout(timeout)
+
+        client.connect(SOUND_SOCKET)
+        client.sendall(json.dumps(command).encode("utf-8"))
 
         if wait:
-            client.recv(1024)
+            data = client.recv(1024)
+            return data == b"OK"
+        else:
+            data = client.recv(1024)
+            return data in (b"ACK", b"OK")
 
-    except socket.error as e:
+    except (socket.timeout, OSError) as e:
         print(f"Could not connect to sound service to play '{melody_name}': {e}")
+        return False
+    
     finally:
         if client:
-            client.close()
+            try:
+                client.close()
+            except Exception:
+                pass

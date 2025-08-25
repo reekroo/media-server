@@ -10,6 +10,12 @@ Type=simple
 ExecStartPre=/bin/sleep 5
 ExecStart=/home/reekroo/peripheral_scripts/.venv_peripherals/bin/button-service
 
+Environment=GPIOZERO_PIN_FACTORY=lgpio
+Environment=BUTTON_MODE=module_active_low
+Environment=BUTTON_BOUNCE_TIME=0.5
+Environment=BUTTON_COOLDOWN=0.6
+Environment=BUTTON_HOLD_TIME=3.0
+
 User=root
 Group=root
 

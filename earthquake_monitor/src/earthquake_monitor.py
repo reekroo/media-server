@@ -12,15 +12,15 @@ log = get_logger(__name__)
 
 class EarthquakeMonitor:
     def __init__(self, 
-                data_sources: List[DataSource], 
-                location_providers : List[ILocationProvider], 
-                alerters: List[BaseAlerter],
-                alert_levels_config, 
-                max_processed_events):
-        self._data_sources = data_sources
-        self._location_providers = location_providers
-        self._alerters = alerters
-        self._alert_levels = alert_levels_config
+                 data_sources: List[DataSource], 
+                 location_providers: List[ILocationProvider] = None,
+                 alerters: List[BaseAlerter] = None,
+                 alert_levels_config=None, 
+                 max_processed_events: int = 100):
+        self._data_sources = data_sources or []
+        self._location_providers = location_providers or []
+        self._alerters = alerters or []
+        self._alert_levels = alert_levels_config or []
         self._processed_event_ids = deque(maxlen=max_processed_events)
         log.info("[EarthquakeMonitor] initialized.")
 
@@ -32,17 +32,15 @@ class EarthquakeMonitor:
         log.error("Failed to get location from all available providers.")
         return None
 
-    def _check_and_alert(self):
+    def check_and_alert(self) -> None:
         log.info("[EarthquakeMonitor] Checking for events...")
-        
-        current_location = self._get_current_location()
-                
+
+        current_location = self._get_current_location() if self._location_providers else {"lat": 0.0, "lon": 0.0}
         if not current_location:
             log.error("Could not determine location, skipping weather check.")
             return
 
         all_features = []
-        
         for source in self._data_sources:
             try:
                 data = source.get_earthquakes(current_location['lat'], current_location['lon'])
@@ -56,37 +54,41 @@ class EarthquakeMonitor:
             return
 
         new_events = [e for e in all_features if e.get('id') not in self._processed_event_ids]
-        
         if not new_events:
             log.info("[EarthquakeMonitor] Found events, but they have already been processed.")
             return
 
         strongest_event = max(new_events, key=lambda e: e['properties'].get('mag', 0))
-        
         for event in new_events:
             self._processed_event_ids.append(event['id'])
 
         mag = strongest_event['properties'].get('mag', 0)
         place = strongest_event['properties'].get('place', 'Unknown')
-        
-        for level_config in self._alert_levels:
-            if mag >= level_config['min_magnitude']:
+
+        for level_cfg in self._alert_levels:
+            if mag >= level_cfg.get('min_magnitude', 0):
+                level_id = level_cfg.get('level_id', 1)
+                melody_name = level_cfg.get('melody_name') or f"ALERT_LEVEL_{level_id}"
+                duration = level_cfg.get('duration', 0)
+
                 log.warning("--- STRONGEST NEW EVENT DETECTED ---")
-                log.warning(f"Magnitude: {mag} (Threshold: {level_config['min_magnitude']})")
+                log.warning(f"Magnitude: {mag} (Threshold: {level_cfg.get('min_magnitude')})")
                 log.warning(f"Place: {place}")
-                
+
                 for alerter in self._alerters:
                     alerter.alert(
-                        level=level_config.get('level_id', 1),
+                        level=level_id,
                         magnitude=mag,
-                        place=place
+                        place=place,
+                        melody_name=melody_name,
+                        duration=duration
                     )
                 break
 
-    def run(self, interval_seconds):
+    def run(self, interval_seconds: int) -> None:
         try:
             while True:
-                self._check_and_alert()
+                self.check_and_alert()
                 time.sleep(interval_seconds)
         except KeyboardInterrupt:
             log.info("[EarthquakeMonitor] Monitor service stopped by user.")

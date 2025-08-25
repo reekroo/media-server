@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-
 from PIL import Image, ImageDraw, ImageFont
-from ..configs.oled_icons import ICON_DATA
+from configs.oled_icons import ICON_DATA
+from configs.configs import FONT_PATH, FONT_SIZE
 
 class DisplayManager:
     def __init__(self, driver):
@@ -11,11 +11,14 @@ class DisplayManager:
         self.image = Image.new("1", (self.width, self.height))
         self.draw = ImageDraw.Draw(self.image)
         try:
-            self.font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 10)
-        except IOError:
+            self.font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+        except Exception:
             self.font = ImageFont.load_default()
-        
-        self.icons = {name: Image.frombytes('1', (8, 8), bytes(data)) for name, data in ICON_DATA.items()}
+
+        # Pre-render icons to images; missing ones will be created lazily
+        self.icons = {}
+        for name, data in ICON_DATA.items():
+            self.icons[name] = Image.frombytes('1', (8, 8), bytes(data))
 
     def clear(self):
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
@@ -23,14 +26,23 @@ class DisplayManager:
     def show(self):
         self.driver.show(self.image)
 
-    def draw_status_bar(self, statuses):
+    def _get_icon(self, name: str):
+        img = self.icons.get(name)
+        if img is None and name in ICON_DATA:
+            img = Image.frombytes('1', (8, 8), bytes(ICON_DATA[name]))
+            self.icons[name] = img
+        return img
+
+    def draw_status_bar(self, statuses: dict):
         icons_to_draw = [
-            "DOCKER_OK" if statuses["status_docker"] else "DOCKER_FAIL",
-            "STORAGE_OK" if statuses["status_root_disk"] else "STORAGE_FAIL",
-            "NVME_OK" if statuses["status_storage_disk"] else "NVME_FAIL",
-            "WIFI_OK" if statuses["status_wifi"] else "WIFI_FAIL",
-            "VOLTAGE_OK" if statuses["status_voltage"] else "VOLTAGE_FAIL",
+            "DOCKER_OK" if statuses.get("status_docker") else "DOCKER_FAIL",
+            "STORAGE_OK" if statuses.get("status_root_disk") else "STORAGE_FAIL",
+            "NVME_OK" if statuses.get("status_storage_disk") else "NVME_FAIL",
+            "WIFI_OK" if statuses.get("status_wifi") else "WIFI_FAIL",
+            "VOLTAGE_OK" if statuses.get("status_voltage") else "VOLTAGE_FAIL",
         ]
         positions = [0, 30, 60, 90, 120]
         for i, icon_name in enumerate(icons_to_draw):
-            self.image.paste(self.icons[icon_name], (positions[i], 0))
+            icon = self._get_icon(icon_name)
+            if icon:
+                self.image.paste(icon, (positions[i], 0))

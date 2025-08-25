@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+from typing import Protocol
+
+class IWifi(Protocol):
+    def enable(self) -> None: ...
+    def disable(self) -> None: ...
+    def toggle(self) -> None: ...

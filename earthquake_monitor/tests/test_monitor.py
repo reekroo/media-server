@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import MagicMock
 
-from src.earthquake_monitor import EarthquakeMonitor
-from src.alerters.base import BaseAlerter
+from earthquake_monitor import EarthquakeMonitor
+from alerters.base import BaseAlerter
 
 MOCK_ALERT_LEVELS = [
     {'min_magnitude': 6.0, 'level_id': 4, 'melody_name': 'ALERT_LEVEL_4', 'duration': 180},
@@ -30,31 +30,25 @@ class TestEarthquakeMonitor(unittest.TestCase):
         )
 
     def test_triggers_correct_level_for_high_magnitude(self):
-        # Arrange
         self.mock_data_source.get_earthquakes.return_value = create_mock_api_response(6.5)
-        
-        # Act
         self.monitor.check_and_alert()
-
-        # Assert
         self.mock_alerter.alert.assert_called_once_with(
             level=4,
             magnitude=6.5,
-            place="Test Location"
+            place="Test Location",
+            melody_name="ALERT_LEVEL_4",
+            duration=180
         )
 
     def test_triggers_correct_level_for_medium_magnitude(self):
-        # Arrange
         self.mock_data_source.get_earthquakes.return_value = create_mock_api_response(5.0)
-        
-        # Act
         self.monitor.check_and_alert()
-
-        # Assert
         self.mock_alerter.alert.assert_called_once_with(
             level=3,
             magnitude=5.0,
-            place="Test Location"
+            place="Test Location",
+            melody_name="ALERT_LEVEL_3",
+            duration=60
         )
 
     def test_no_alert_below_threshold(self):
