@@ -9,13 +9,7 @@ from .detector import probe_pin
 
 
 def create_button_by_mode(mode: str, pin: int, hold: float, bounce: float, *, logger: Optional[object] = None):
-    """
-    Минималистичная фабрика с поддержкой 'auto'.
-    - bare_pullup        -> внутренняя подтяжка вверх, нажatie=LOW
-    - module_active_high -> внешняя логика, нажatie=HIGH
-    - module_active_low  -> внешняя логика, нажatie=LOW
-    - auto               -> короткий пробник: idle HIGH -> module_active_low, иначе module_active_high
-    """
+
     m = (mode or "").strip().lower()
 
     if m == "bare_pullup":
@@ -27,7 +21,6 @@ def create_button_by_mode(mode: str, pin: int, hold: float, bounce: float, *, lo
     if m == "module_active_low":
         return ModuleButton(pin, hold, bounce, active_high=False)
 
-    # auto
     idle_is_high, transitions = probe_pin(pin)
     picked = "module_active_low" if idle_is_high else "module_active_high"
     if logger:

@@ -9,13 +9,6 @@ from gpiozero import DigitalInputDevice
 
 
 class BaseButton:
-    """
-    Обёртка над gpiozero.DigitalInputDevice с собственным опросом:
-      - программный debounce (bounce_time);
-      - hold по таймеру (hold_time);
-      - без автодетекта и магии — чистая механика.
-    """
-
     def __init__(
         self,
         *,
@@ -29,8 +22,8 @@ class BaseButton:
         self._dev = DigitalInputDevice(
             pin=pin,
             pull_up=pull_up,
-            active_state=active_high,  # определяем "активность" однозначно
-            bounce_time=None,          # программный debounce делаем сами
+            active_state=active_high,
+            bounce_time=None,
         )
 
         self._bounce = max(0.0, float(bounce_time))
@@ -49,7 +42,6 @@ class BaseButton:
         self._thread = threading.Thread(target=self._poll_loop, name="ButtonPoll", daemon=True)
         self._thread.start()
 
-    # ---------- публичный API ----------
     def set_handlers(
         self,
         *,
@@ -81,7 +73,6 @@ class BaseButton:
         except Exception:
             pass
 
-    # ---------- внутренняя логика ----------
     def _poll_loop(self) -> None:
         while not self._stop_evt.is_set():
             now = time.monotonic()

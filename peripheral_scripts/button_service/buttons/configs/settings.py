@@ -37,8 +37,8 @@ def load_settings() -> Settings:
         s.cooldown     = float(getattr(hp, "BUTTON_COOLDOWN", s.cooldown))
 
         if hasattr(hp, "BUTTON_ACTIVE_HIGH"):
-            ah = bool(getattr(hp, "BUTTON_ACTIVE_HIGH"))
-            s.mode = "module_active_high" if ah else "module_active_low"
+            ah         = bool(getattr(hp, "BUTTON_ACTIVE_HIGH"))
+            s.mode     = "module_active_high" if ah else "module_active_low"
         s.mode         = str(getattr(hp, "BUTTON_MODE", s.mode))
 
         s.sound_short  = str(getattr(hp, "BUTTON_SOUND_SHORT", s.sound_short))
