@@ -1,6 +1,7 @@
 from .button_controller import ButtonController
-from utils.logger import setup_logger
 from .configs.configs import BUTTONS_LOG_FILE
+
+from utils.logger import setup_logger
 
 log = setup_logger('ButtonMain', BUTTONS_LOG_FILE)
 

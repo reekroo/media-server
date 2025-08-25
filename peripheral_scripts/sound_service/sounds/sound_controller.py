@@ -14,7 +14,6 @@ log = setup_logger("SoundController", SOUNDS_LOG_FILE)
 
 
 def _safe_send(conn: socket.socket, payload: bytes) -> None:
-    """Безопасная отправка: если клиент уже закрыл сокет — молча игнорируем."""
     try:
         conn.sendall(payload)
     except (BrokenPipeError, ConnectionResetError, OSError):
