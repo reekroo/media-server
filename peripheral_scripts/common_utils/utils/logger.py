@@ -22,19 +22,26 @@ def setup_logger(logger_name: str,
     if logger.handlers:
         return logger
 
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    console_formatter = logging.Formatter('%(message)s')
 
-    sh = logging.StreamHandler(sys.stdout)
-    sh.setFormatter(formatter)
-    logger.addHandler(sh)
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setFormatter(console_formatter)
+    logger.addHandler(stream_handler)
 
     if log_file:
         try:
             log_dir = os.path.dirname(log_file) or "."
             os.makedirs(log_dir, exist_ok=True)
-            fh = _FileHandler(log_file, maxBytes=max_bytes, backupCount=backups, encoding="utf-8")
-            fh.setFormatter(formatter)
-            logger.addHandler(fh)
+
+            file_handler = _FileHandler(
+                filename=log_file, 
+                maxBytes=max_bytes, 
+                backupCount=backups, 
+                encoding="utf-8"
+            )
+            file_handler.setFormatter(file_formatter)
+            logger.addHandler(file_handler)
 
         except Exception as e:
             logger.warning("File logging disabled: %s", e)
