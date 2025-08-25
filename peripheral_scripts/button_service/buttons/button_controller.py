@@ -7,7 +7,7 @@ from signal import pause
 
 from .libs.button_actions import ButtonActions
 from .configs.settings import load_settings
-from .drivers.factory import create_button_by_mode
+from buttons.drivers.factory import create_button_by_mode
 from .configs.configs import BUTTONS_LOG_FILE
 
 from sounds import sound_client
@@ -17,34 +17,31 @@ log = setup_logger("ButtonController", BUTTONS_LOG_FILE)
 
 
 class ButtonController:
+    """
+    Контроллер: читает настройки, создаёт драйвер кнопки (в т.ч. auto),
+    применяет доменную логику (cooldown, startup_grace, short/long).
+    """
+
     def __init__(self):
         log.info("[ButtonController] Initializing...")
 
         self.settings = load_settings()
         self.actions = ButtonActions(logger=log)
 
-        # доп. настройки с дефолтами: можем прокинуть через env
-        self.cooldown_after_press = float(
-            getattr(self.settings, "cooldown", os.getenv("BUTTON_COOLDOWN", "0.8"))
-        )
-        self.startup_grace = float(
-            getattr(self.settings, "startup_grace", os.getenv("BUTTON_STARTUP_GRACE", "0.8"))
-        )
-
+        # служебные флаги
         self._started_at = time.monotonic()
-        self._held_fired = False
         self._press_ts = 0.0
+        self._held_fired = False
+        self._ignore_until = 0.0
+        self._ignore_current_press = False
 
-        # антидребезговые доп. флаги
-        self._ignore_until = 0.0          # время, до которого игнорируем новые PRESSES
-        self._ignore_current_press = False  # игнорировать ли именно эту «сессию» нажатия
-
-        # создаём кнопку согласно режиму/пину/временам (внутри — опрос с дебаунсом)
+        # создаём кнопку (внутри — polling+debounce+hold)
         self.button = create_button_by_mode(
             self.settings.mode,
             self.settings.pin,
             self.settings.hold,
             self.settings.bounce,
+            logger=log,
         )
 
         self.button.set_handlers(
@@ -58,13 +55,13 @@ class ButtonController:
             self.settings.pin, self.settings.mode, self.settings.hold, self.settings.bounce
         )
 
-    # ==== события ====
+    # ===== события =====
     def _on_press(self):
         now = time.monotonic()
-        self._held_fired = False
         self._press_ts = now
+        self._held_fired = False
 
-        # если ещё в кулдауне после предыдущего короткого нажатия — игнорируем этот press
+        # кулдаун после короткого клика — защищает от ложного длинного
         if now < self._ignore_until:
             self._ignore_current_press = True
             log.info("[ButtonController] PRESS edge (ignored by cooldown; is_active=%s)", self.button.is_active())
@@ -77,39 +74,36 @@ class ButtonController:
         now = time.monotonic()
         log.info("[ButtonController] RELEASE edge (is_active=%s)", self.button.is_active())
 
-        # если этот press был игнорирован (дребезг/повтор) — просто сбрасываем флаг
         if self._ignore_current_press:
             self._ignore_current_press = False
             log.debug("[ButtonController] Release of ignored press — no action.")
             return
 
-        # если уже сработал hold — не считаем это коротким нажатием
         if self._held_fired:
             self._held_fired = False
             log.debug("[ButtonController] Short press suppressed after hold.")
             return
 
-        # подавим ложные нажатия в первые секунды после старта
-        if now - self._started_at < self.startup_grace:
+        if now - self._started_at < self.settings.startup_grace:
             log.debug("[ButtonController] Suppressing press during startup grace.")
             return
 
-        # КОРОТКОЕ НАЖАТИЕ
+        # короткое нажатие
         log.info("[ButtonController] Short press detected. Sending sound command...")
         sound_client.play_sound(self.settings.sound_short, wait=False)
         self.actions.toggle_wifi()
 
-        # выставим кулдаун, чтобы следующее ложное «PRESS» за дребезг не привело к hold
-        self._ignore_until = now + self.cooldown_after_press
+        # выставим кулдаун (в это окно игнорируем новые press)
+        self._ignore_until = now + self.settings.cooldown
 
     def _on_hold(self):
-        # если текущий «PRESS» уже помечен как игнорируемый — глушим hold
+        # не допускаем hold от "игнорируемого" press (дребезг)
         if self._ignore_current_press:
             log.debug("[ButtonController] Ignoring hold for ignored press session.")
             return
 
-        # подавим во время стартового грейса
-        if time.monotonic() - self._started_at < self.startup_grace:
+        # подавление первых мгновений после старта
+        if time.monotonic() - self._started_at < self.settings.startup_grace:
             log.debug("[ButtonController] Suppressing hold during startup grace.")
             return
 
@@ -118,7 +112,7 @@ class ButtonController:
         sound_client.play_sound(self.settings.sound_long, wait=True)
         self.actions.reboot_system()
 
-    # ==== run / close ====
+    # ===== run/close =====
     def run(self):
         pause()
 
