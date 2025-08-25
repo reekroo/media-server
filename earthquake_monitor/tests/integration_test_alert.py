@@ -33,7 +33,7 @@ def run_physical_test():
     )
     log.info("EarthquakeMonitor instance created with test components.")
 
-    log.info(">>> TRIGGERING CHECK_AND_ALERT(). Listen for the buzzer! <<<")
+    log.info(">>> TRIGGERING check_and_alert(). Listen for the buzzer! <<<")
     monitor.check_and_alert()
 
     log.info("--- PHYSICAL ALERT TEST COMPLETE ---")

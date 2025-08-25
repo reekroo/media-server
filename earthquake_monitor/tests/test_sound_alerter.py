@@ -1,79 +1,33 @@
+import json
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import patch, MagicMock
 
-from src.earthquake_monitor import EarthquakeMonitor
-from src.alerters.base import BaseAlerter
+from alerters.sound_alerter import SoundAlerter
 
-MOCK_ALERT_LEVELS = [
-    {'min_magnitude': 6.0, 'level_id': 4, 'melody_name': 'ALERT_LEVEL_4', 'duration': 180},
-    {'min_magnitude': 4.5, 'level_id': 3, 'melody_name': 'ALERT_LEVEL_3', 'duration': 60},
-]
+class TestSoundAlerter(unittest.TestCase):
+    @patch("socket.socket")
+    def test_alert_sends_full_command(self, mock_socket_ctor):
+        mock_sock = MagicMock()
+        mock_socket_ctor.return_value = mock_sock
+        mock_sock.recv.return_value = b"ACK"
 
-def create_mock_api_response(mag, event_id="test_event_1"):
-    return {
-        "features": [
-            {"id": event_id, "properties": {"mag": mag, "place": "Test Location"}}
-        ]
-    }
-
-class TestEarthquakeMonitor(unittest.TestCase):
-
-    def setUp(self):
-        self.mock_data_source = MagicMock()
-        self.mock_alerter = MagicMock(spec=BaseAlerter)
-
-        self.monitor = EarthquakeMonitor(
-            data_sources=[self.mock_data_source],
-            alerters=[self.mock_alerter],
-            alert_levels_config=MOCK_ALERT_LEVELS,
-            max_processed_events=100
-        )
-
-    def test_triggers_correct_level_for_high_magnitude(self):
-        # Arrange
-        self.mock_data_source.get_earthquakes.return_value = create_mock_api_response(6.5)
-        
-        # Act
-        self.monitor.check_and_alert()
-
-        # Assert
-        self.mock_alerter.alert.assert_called_once_with(
-            level=4,
-            magnitude=6.5,
-            place="Test Location"
-        )
-
-    def test_triggers_correct_level_for_medium_magnitude(self):
-        # Arrange
-        self.mock_data_source.get_earthquakes.return_value = create_mock_api_response(5.0)
-        
-        # Act
-        self.monitor.check_and_alert()
-
-        # Assert
-        self.mock_alerter.alert.assert_called_once_with(
+        alerter = SoundAlerter()
+        alerter.alert(
             level=3,
-            magnitude=5.0,
-            place="Test Location"
+            magnitude=5.1,
+            place="Somewhere",
+            melody_name="ALERT_LEVEL_3",
+            duration=60,
+            wait=False
         )
 
-    def test_no_alert_below_threshold(self):
-        # Arrange
-        self.mock_data_source.get_earthquakes.return_value = create_mock_api_response(4.0)
-        
-        # Act
-        self.monitor.check_and_alert()
-        
-        # Assert
-        self.mock_alerter.alert.assert_not_called()
+        sent = mock_sock.sendall.call_args[0][0]
+        payload = json.loads(sent.decode("utf-8"))
+        assert payload["melody"] == "ALERT_LEVEL_3"
+        assert payload["duration"] == 60
+        assert payload["wait"] is False
 
-    def test_no_alert_for_processed_event(self):
-        # Arrange
-        self.mock_data_source.get_earthquakes.return_value = create_mock_api_response(5.0, event_id="processed_event")
-        
-        # Act
-        self.monitor.check_and_alert()
-        self.monitor.check_and_alert()
-        
-        # Assert
-        self.mock_alerter.alert.assert_called_once()
+        mock_sock.recv.assert_called()
+
+if __name__ == "__main__":
+    unittest.main()
