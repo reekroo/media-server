@@ -22,8 +22,10 @@ services:
     image: grafana/promtail:latest
     container_name: promtail
     volumes:
-      - /home/reekroo/earthquake_monitor/logs:/mnt/logs/earthquake_monitor_logs:ro
       - /home/reekroo/peripheral_scripts/logs:/mnt/logs/scripts_logs:ro
+      - /home/reekroo/earthquake_monitor/logs:/mnt/logs/earthquake_monitor_logs:ro
+      - /home/reekroo/location_service/logs:/mnt/logs/location_service_logs:ro
+      - /home/reekroo/weather_service/logs:/mnt/logs/weather_service_logs:ro
       - ./promtail-config.yml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
     depends_on:
