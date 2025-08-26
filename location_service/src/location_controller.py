@@ -17,7 +17,7 @@ class LocationController:
         self._providers = providers
         self._current_location = None
         self._server_socket = None
-        self._lock = threading.Lock() # <-- Замок для безопасного доступа к данным из разных потоков
+        self._lock = threading.Lock()
         self._stop_event = threading.Event()
 
     def _update_location_loop(self):

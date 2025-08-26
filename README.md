@@ -49,6 +49,11 @@
 
 This document is a step-by-step guide for setting up a media server on a Raspberry Pi 5 using an NVMe drive. The guide covers the initial OS installation, disk preparation, Docker and Samba installation, as well as starting and managing system services.
 
+# Hardwere Setup
+
+TODO
+
+# Common Setup of the Project
 
 ## 1. Preparation and Initial Setup 🛠️
 
@@ -226,6 +231,28 @@ pip install -e ./button_service
 pip install -e ./oled_service
 deactivate
 ```
+* backup_serviсe
+
+```Bash
+cd ~/backup_serviсe
+python3 -m venv .venv_backup_serviсe
+source .venv_backup_serviсe/bin/activate
+pip install -e .
+
+#run main script manually to activate google account
+
+python -m src.main
+
+#authenticate as an real user
+#provided generated code to the console window
+#your pesonal token is generated
+
+deactivate
+
+#for immidiate run the solution use the command from console
+
+sudo /home/reekroo/backup_serviсe/.venv_backup_serviсe/bin/python -m src.main --now
+```
 
 * location_service
 
@@ -335,6 +362,7 @@ sudo systemctl enable --now location-monitor.service
 sudo systemctl enable --now earthquake-monitor.service
 sudo systemctl enable --now weather-monitor.service
 sudo systemctl enable --now metrics-exporter.service
+sudo systemctl enable --now backup.service
 ```
 
 3. Check the status of the running services:
@@ -347,6 +375,7 @@ sudo systemctl status location-monitor.service
 sudo systemctl status earthquake-monitor.service
 sudo systemctl status weather-monitor.service
 sudo systemctl status metrics-exporter.service
+sudo systemctl status backup.service
 ```
 
 ℹ️ To view real-time logs for a specific service, use:
@@ -446,3 +475,57 @@ sudo dphys-swapfile swapoff
 sudo dphys-swapfile swapon
 htop
 ```
+
+# Service setup
+
+## Backup service
+
+### Service overview
+
+Backup Service is an automated service for creating backups of important directories from your server (e.g., a Raspberry Pi) to Google Drive cloud storage.
+
+Key Features:
+
+* Scheduled Operation: The service runs automatically at a predefined time (e.g., once a week).
+* Archiving: Before being sent to the cloud, each specified directory is packed into a separate ZIP archive.
+* Multiple Folder Support: You can provide a list of several directories to be backed up.
+* Reliability: The service runs in the background as a system service (systemd), restarting automatically in case of failure.
+* Logging: All actions and potential errors are recorded in a log file for easy diagnostics.
+
+### Google Account Setup
+
+To work, the service needs permission to access your Google Drive. This is a one-time setup.
+
+* Step 1: Obtaining `credentials.json`
+This file is the key that allows your application to request access to the Google API.
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and create a new project.
+2. In the navigation menu (☰), open "APIs & Services" -> "Library". Find the "Google Drive API" and enable it (click the Enable button).
+3. Return to "APIs & Services" and go to the "Credentials" section.
+4. Click "+ CREATE CREDENTIALS" -> "OAuth client ID".
+5. For "Application type," select "Desktop app" and give it a name (e.g., "Backup Service").
+6. After creation, click "DOWNLOAD JSON". Rename the downloaded file to `credentials.json` and place it in the root folder of your project.
+
+* Step 2: Obtaining `GOOGLE_DRIVE_FOLDER_ID`
+This is the ID of the folder on your Google Drive where the archives will be uploaded.
+
+1. Create or select a folder on Google Drive.
+2. Open it. The ID will be at the end of the URL in your browser's address bar.
+Example: https://drive.google.com/drive/folders/1a2b3c4d5e6f7g8h9i0j
+Your ID here is: 1a2b3c4d5e6f7g8h9i0j.
+
+### Configuration Breakdown (src/configs.py)
+
+This file contains all the main settings for the service.
+
+* `SOURCE_DIRECTORIES`: The most important parameter. This is a Python list of strings, where each string is the full path to a directory you want to back up.
+
+SOURCE_DIRECTORIES = [
+    "/mnt/storage/configs",
+    "/home/reekroo/documents"
+]
+
+* `TEMP_ARCHIVE_PATH`: The path to a temporary folder where ZIP archives will be created before being uploaded to the cloud. The default is /tmp/backups.
+* `SCHEDULE_UNIT`, `SCHEDULE_INTERVAL`, `SCHEDULE_DAY`, `SCHEDULE_TIME`: Parameters for configuring the schedule. By default, the service runs every (INTERVAL=1) week (UNIT=weeks) on Sunday (DAY=sunday) at 03:00 (TIME="03:00").
+* `GOOGLE_DRIVE_FOLDER_ID`: The ID of the Google Drive folder you obtained in Step 2.
+* `LOG_FILE_PATH`, `LOG_LEVEL`, `LOG_MAX_BYTES`, `LOG_BACKUP_COUNT`: Logging settings. These specify the path to the log file, the level of detail, the maximum file size, and the number of old log files to keep.

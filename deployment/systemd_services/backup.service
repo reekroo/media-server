@@ -1,0 +1,15 @@
+[Unit]
+Description=Backup Service for external drive
+After=network.target
+
+[Service]
+WorkingDirectory=/home/reekroo/backup_serviсe/
+ExecStart=/home/reekroo/backup_serviсe/.venv_backup_serviсe/bin/python -m src.main
+
+User=root
+Group=root
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
