@@ -469,15 +469,16 @@ his document describes the core system services running on the Raspberry Pi medi
 
 ### Service overview
 
-Backup Service is an automated service for creating backups of important directories from your server (e.g., a Raspberry Pi) to Google Drive cloud storage.
+Backup Servic**Backup Service** automates periodic backups of specified directories to **Google Drive**.  
+Each selected directory is archived (ZIP) to a temporary location and then uploaded to your Drive; logs are written with rotation for reliability. :contentReference[oaicite:0]{index=0} :contentReference[oaicite:1]{index=1} :contentReference[oaicite:2]{index=2}
 
-Key Features:
+**Key capabilities:**
+- **Scheduled execution** (weekly by default) with a simple, readable scheduler. :contentReference[oaicite:3]{index=3}
+- **Per-directory archiving** into `.zip` before upload. :contentReference[oaicite:4]{index=4}
+- **Google Drive upload** with OAuth2 (token refresh + console auth flow fallback). :contentReference[oaicite:5]{index=5}
+- **Isolated temp storage** and **cleanup** of temporary archives after upload. :contentReference[oaicite:6]{index=6}
+- **Logging with rotation** via `ConcurrentRotatingFileHandler`. :contentReference[oaicite:7]{index=7}
 
-* Scheduled Operation: The service runs automatically at a predefined time (e.g., once a week).
-* Archiving: Before being sent to the cloud, each specified directory is packed into a separate ZIP archive.
-* Multiple Folder Support: You can provide a list of several directories to be backed up.
-* Reliability: The service runs in the background as a system service (systemd), restarting automatically in case of failure.
-* Logging: All actions and potential errors are recorded in a log file for easy diagnostics.
 
 ### Google Account Setup
 
@@ -503,22 +504,25 @@ Your ID here is: 1a2b3c4d5e6f7g8h9i0j.
 
 ### Configuration Breakdown (src/configs.py)
 
-This file contains all the main settings for the service.
+| Parameter | Description | Default / Notes |
+|---|---|---|
+| `SOURCE_DIRECTORIES` | List of directories to back up. Can be overridden via `BACKUP_SOURCE_DIR` env var. | `["/mnt/storage/configs"]` (by default one path) :contentReference[oaicite:12]{index=12} |
+| `TEMP_ARCHIVE_PATH` | Staging folder for creating ZIPs. Auto-created at startup. | `/tmp/backups` (overridable by `BACKUP_TEMP_PATH`) :contentReference[oaicite:13]{index=13} |
+| `SCHEDULE_UNIT` | Time unit for schedule. | `"weeks"` (supported: `weeks`, `days`) :contentReference[oaicite:14]{index=14} :contentReference[oaicite:15]{index=15} |
+| `SCHEDULE_INTERVAL` | Interval count. | `1` (every 1 week/day) :contentReference[oaicite:16]{index=16} |
+| `SCHEDULE_DAY` | Day of week for weekly schedule. | `"sunday"` :contentReference[oaicite:17]{index=17} |
+| `SCHEDULE_TIME` | Local time to run. | `"03:00"` :contentReference[oaicite:18]{index=18} |
+| `GOOGLE_DRIVE_FOLDER_ID` | Destination folder ID on Google Drive. | From env or config default. :contentReference[oaicite:19]{index=19} |
+| `CREDENTIALS_FILE_PATH` | Expected path to `credentials.json`. | `<project_root>/credentials.json` :contentReference[oaicite:20]{index=20} |
+| `TOKEN_FILE_PATH` | Where OAuth token is stored. | `<project_root>/token.json` :contentReference[oaicite:21]{index=21} |
+| `SCOPES` | OAuth scopes for Drive. | `['https://www.googleapis.com/auth/drive.file']` :contentReference[oaicite:22]{index=22} |
+| `LOG_FILE_PATH` | Log file location. | `<project_root>/logs/backup_serviсe.log` :contentReference[oaicite:23]{index=23} |
+| `LOG_LEVEL` / `LOG_MAX_BYTES` / `LOG_BACKUP_COUNT` | Logging verbosity & rotation. | `INFO`, `5 MB`, `3` :contentReference[oaicite:24]{index=24} |
 
-* `SOURCE_DIRECTORIES`: The most important parameter. This is a Python list of strings, where each string is the full path to a directory you want to back up.
-
-SOURCE_DIRECTORIES = [
-    "/mnt/storage/configs",
-    "/home/reekroo/documents"
-]
-
-* `TEMP_ARCHIVE_PATH`: The path to a temporary folder where ZIP archives will be created before being uploaded to the cloud. The default is /tmp/backups.
-
-* `SCHEDULE_UNIT`, `SCHEDULE_INTERVAL`, `SCHEDULE_DAY`, `SCHEDULE_TIME`: Parameters for configuring the schedule. By default, the service runs every (INTERVAL=1) week (UNIT=weeks) on Sunday (DAY=sunday) at 03:00 (TIME="03:00").
-
-* `GOOGLE_DRIVE_FOLDER_ID`: The ID of the Google Drive folder you obtained in Step 2.
-
-* `LOG_FILE_PATH`, `LOG_LEVEL`, `LOG_MAX_BYTES`, `LOG_BACKUP_COUNT`: Logging settings. These specify the path to the log file, the level of detail, the maximum file size, and the number of old log files to keep.
+### Run immediately (one-shot)
+```bash
+python -m backup_service.main --now
+```
 
 ## Locatıon Service
 
@@ -548,12 +552,14 @@ It periodically updates location data from external and fallback providers, and 
 
 ### Configuration (src/configs.py)
 
-| Parameter                | Description                                                                 | Default Value                  |
-|---------------------------|-----------------------------------------------------------------------------|--------------------------------|
-| `LOG_FILE_PATH`           | Path to log file                                                           | `logs/location.log` :contentReference[oaicite:0]{index=0} |
-| `LOG_MAX_BYTES`           | Max log file size before rotation (bytes)                                  | `10 * 1024 * 1024` (10 MB) :contentReference[oaicite:1]{index=1} |
-| `LOG_BACKUP_COUNT`        | Number of rotated log files to keep                                        | `5` :contentReference[oaicite:2]{index=2} |
-| `DEFAULT_LATITUDE`        | Fallback latitude if no provider succeeds                                  | `38.4237` :contentReference[oaicite:3]{index=3} |
-| `DEFAULT_LONGITUDE`       | Fallback longitude if no provider succeeds                                 | `27.1428` :contentReference[oaicite:4]{index=4} |
-| `LOCATION_SERVICE_SOCKET` | Unix socket path for client connections                                    | `/tmp/location_service.sock` :contentReference[oaicite:5]{index=5} |
-| `UPDATE_INTERVAL_SECONDS` | Interval between location updates     
+| Parameter                 | Description                                                            | Default Value                  |
+|---------------------------|------------------------------------------------------------------------|--------------------------------|
+| `LOG_FILE_PATH`           | Path to log file                                                       | `logs/location.log` :contentReference[oaicite:0]{index=0} |
+| `LOG_MAX_BYTES`           | Max log file size before rotation (bytes)                              | `10 * 1024 * 1024` (10 MB) :contentReference[oaicite:1]{index=1} |
+| `LOG_BACKUP_COUNT`        | Number of rotated log files to keep                                    | `5` :contentReference[oaicite:2]{index=2} |
+| `DEFAULT_LATITUDE`        | Fallback latitude if no provider succeeds                              | `38.4237` :contentReference[oaicite:3]{index=3} |
+| `DEFAULT_LONGITUDE`       | Fallback longitude if no provider succeeds                             | `27.1428` :contentReference[oaicite:4]{index=4} |
+| `LOCATION_SERVICE_SOCKET` | Unix socket path for client connections                                | `/tmp/location_service.sock` :contentReference[oaicite:5]{index=5} |
+| `UPDATE_INTERVAL_SECONDS` | Interval between location updates                                      | `3600` (1 hour) :contentReference[oaicite:6]{index=6} |
+
+##
