@@ -463,6 +463,8 @@ make up
 
 # Service setup
 
+his document describes the core system services running on the Raspberry Pi media-server environment. Each section explains the purpose of the service, its key features, initial setup, and configuration parameters.
+
 ## Backup service
 
 ### Service overview
@@ -517,3 +519,41 @@ SOURCE_DIRECTORIES = [
 * `GOOGLE_DRIVE_FOLDER_ID`: The ID of the Google Drive folder you obtained in Step 2.
 
 * `LOG_FILE_PATH`, `LOG_LEVEL`, `LOG_MAX_BYTES`, `LOG_BACKUP_COUNT`: Logging settings. These specify the path to the log file, the level of detail, the maximum file size, and the number of old log files to keep.
+
+## Locatıon Service
+
+### Service overview
+
+**Location Service** is a background system daemon that determines and maintains the current geographic location of the server (e.g., Raspberry Pi).  
+It periodically updates location data from external and fallback providers, and exposes this information to other applications via a Unix socket.
+
+**Key features:**
+- **Multiple providers**:  
+  - Primary: `IpInfoProvider` (queries [ipinfo.io](https://ipinfo.io) for location based on external IP).  
+  - Fallback: `ConfigFallbackProvider` (uses predefined coordinates from configuration).
+- **Automatic updates**: Location is refreshed at regular intervals (default: once per hour).
+- **Inter-process communication**: Other local services can connect to `/tmp/location_service.sock` to retrieve the latest location data in JSON format.
+- **Threaded execution**: Separate threads for location updates and socket communication.
+- **Logging with rotation**: Structured logs are written to `logs/location.log` and printed to console.
+
+### Initial Setup
+
+- No external configuration is required beyond network access.  
+- By default, the service will attempt to fetch location data via `ipinfo.io`.  
+- If that fails (e.g., offline, blocked, or API unavailable), it falls back to the default coordinates in `configs.py`.
+
+**Optional:**  
+- Ensure outbound HTTPS traffic is allowed to `ipinfo.io`.  
+- Adjust default latitude/longitude in `configs.py` to match your actual fallback location.
+
+### Configuration (src/configs.py)
+
+| Parameter                | Description                                                                 | Default Value                  |
+|---------------------------|-----------------------------------------------------------------------------|--------------------------------|
+| `LOG_FILE_PATH`           | Path to log file                                                           | `logs/location.log` :contentReference[oaicite:0]{index=0} |
+| `LOG_MAX_BYTES`           | Max log file size before rotation (bytes)                                  | `10 * 1024 * 1024` (10 MB) :contentReference[oaicite:1]{index=1} |
+| `LOG_BACKUP_COUNT`        | Number of rotated log files to keep                                        | `5` :contentReference[oaicite:2]{index=2} |
+| `DEFAULT_LATITUDE`        | Fallback latitude if no provider succeeds                                  | `38.4237` :contentReference[oaicite:3]{index=3} |
+| `DEFAULT_LONGITUDE`       | Fallback longitude if no provider succeeds                                 | `27.1428` :contentReference[oaicite:4]{index=4} |
+| `LOCATION_SERVICE_SOCKET` | Unix socket path for client connections                                    | `/tmp/location_service.sock` :contentReference[oaicite:5]{index=5} |
+| `UPDATE_INTERVAL_SECONDS` | Interval between location updates     
