@@ -467,8 +467,6 @@ his document describes the core system services running on the Raspberry Pi medi
 
 ## Backup service
 
-### Service overview
-
 Backup Servic**Backup Service** automates periodic backups of specified directories to **Google Drive**.  
 Each selected directory is archived (ZIP) to a temporary location and then uploaded to your Drive; logs are written with rotation for reliability. :contentReference[oaicite:0]{index=0} :contentReference[oaicite:1]{index=1} :contentReference[oaicite:2]{index=2}
 
@@ -478,7 +476,6 @@ Each selected directory is archived (ZIP) to a temporary location and then uploa
 - **Google Drive upload** with OAuth2 (token refresh + console auth flow fallback). :contentReference[oaicite:5]{index=5}
 - **Isolated temp storage** and **cleanup** of temporary archives after upload. :contentReference[oaicite:6]{index=6}
 - **Logging with rotation** via `ConcurrentRotatingFileHandler`. :contentReference[oaicite:7]{index=7}
-
 
 ### Google Account Setup
 
@@ -526,8 +523,6 @@ python -m backup_service.main --now
 
 ## Locatıon Service
 
-### Service overview
-
 **Location Service** is a background system daemon that determines and maintains the current geographic location of the server (e.g., Raspberry Pi).  
 It periodically updates location data from external and fallback providers, and exposes this information to other applications via a Unix socket.
 
@@ -562,4 +557,32 @@ It periodically updates location data from external and fallback providers, and 
 | `LOCATION_SERVICE_SOCKET` | Unix socket path for client connections                                | `/tmp/location_service.sock` :contentReference[oaicite:5]{index=5} |
 | `UPDATE_INTERVAL_SECONDS` | Interval between location updates                                      | `3600` (1 hour) :contentReference[oaicite:6]{index=6} |
 
-##
+## Weather monitor
+
+**Weather Service** periodically determines the device’s location, fetches current weather from online providers, and publishes the result through one or more outputs (console and/or a local Unix socket). It runs continuously with logging and safe shutdown. :contentReference[oaicite:0]{index=0} :contentReference[oaicite:1]{index=1}
+
+**Key capabilities:**
+- **Multiple weather providers with fallback**: OpenWeatherMap → WeatherAPI. :contentReference[oaicite:2]{index=2} :contentReference[oaicite:3]{index=3}
+- **Location resolution with fallback**: Location Service socket → local config defaults. :contentReference[oaicite:4]{index=4}
+- **Pluggable outputs**: console and/or Unix socket (`/tmp/weather_service.sock`). :contentReference[oaicite:5]{index=5}
+- **Configurable polling interval** with clean shutdown and output closing. :contentReference[oaicite:6]{index=6}
+- **Rotating logs** stored under `logs/`. :contentReference[oaicite:7]{index=7}
+
+### Initial setup
+
+- Ensure outbound network access for the chosen weather APIs.
+- Provide API keys via environment variables **`OPENWEATHERMAP_API_KEY`** and **`WEATHERAPI_API_KEY`** (do **not** hardcode keys). :contentReference[oaicite:8]{index=8}
+- If your **Location Service** is running, it will be used first via `/tmp/location_service.sock`; otherwise the service falls back to coordinates from config. :contentReference[oaicite:9]{index=9} :contentReference[oaicite:10]{index=10}
+
+### Configuration (src/configs.py)
+| Key | Meaning | Default / Notes |
+|---|---|---|
+| `LOG_FILE_PATH` | Log file path | `logs/weather_service.log` :contentReference[oaicite:11]{index=11} |
+| `LOG_MAX_BYTES`, `LOG_BACKUP_COUNT` | Log rotation | `10MB`, `5` :contentReference[oaicite:12]{index=12} |
+| `WEATHER_SERVICE_SOCKET` | Output socket (Unix) | `/tmp/weather_service.sock` :contentReference[oaicite:13]{index=13} |
+| `LOCATION_SERVICE_SOCKET` | Location Service socket | `/tmp/location_service.sock` :contentReference[oaicite:14]{index=14} |
+| `OPENWEATHERMAP_API_KEY` | OWM API key (from env) | `os.getenv("OPENWEATHERMAP_API_KEY", ...)` :contentReference[oaicite:15]{index=15} |
+| `WEATHERAPI_API_KEY` | WeatherAPI key (from env) | `os.getenv("WEATHERAPI_API_KEY", ...)` :contentReference[oaicite:16]{index=16} |
+| `DEFAULT_LATITUDE`, `DEFAULT_LONGITUDE` | Fallback location | `38.4237`, `27.1428` :contentReference[oaicite:17]{index=17} |
+| `INTERVAL_SECONDS` | Polling interval | `1800` (30 min) :contentReference[oaicite:18]{index=18} |
+| `OUTPUT_MODES` | Enabled outputs | `['console','socket']` (order matters) :contentReference[oaicite:19]{index=19} |
