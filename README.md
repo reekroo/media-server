@@ -340,9 +340,6 @@ pip install -e .
 deactivate
 ```
 
-
-
-
 ## Starting System Services
 
 Once all scripts are copied and virtual environments are set up, you can enable the systemd services.
@@ -557,7 +554,7 @@ It periodically updates location data from external and fallback providers, and 
 | `LOCATION_SERVICE_SOCKET` | Unix socket path for client connections                                | `/tmp/location_service.sock` :contentReference[oaicite:5]{index=5} |
 | `UPDATE_INTERVAL_SECONDS` | Interval between location updates                                      | `3600` (1 hour) :contentReference[oaicite:6]{index=6} |
 
-## Weather monitor
+## Weather Monitor
 
 **Weather Service** periodically determines the device’s location, fetches current weather from online providers, and publishes the result through one or more outputs (console and/or a local Unix socket). It runs continuously with logging and safe shutdown. :contentReference[oaicite:0]{index=0} :contentReference[oaicite:1]{index=1}
 
@@ -575,6 +572,7 @@ It periodically updates location data from external and fallback providers, and 
 - If your **Location Service** is running, it will be used first via `/tmp/location_service.sock`; otherwise the service falls back to coordinates from config. :contentReference[oaicite:9]{index=9} :contentReference[oaicite:10]{index=10}
 
 ### Configuration (src/configs.py)
+
 | Key | Meaning | Default / Notes |
 |---|---|---|
 | `LOG_FILE_PATH` | Log file path | `logs/weather_service.log` :contentReference[oaicite:11]{index=11} |
@@ -586,3 +584,86 @@ It periodically updates location data from external and fallback providers, and 
 | `DEFAULT_LATITUDE`, `DEFAULT_LONGITUDE` | Fallback location | `38.4237`, `27.1428` :contentReference[oaicite:17]{index=17} |
 | `INTERVAL_SECONDS` | Polling interval | `1800` (30 min) :contentReference[oaicite:18]{index=18} |
 | `OUTPUT_MODES` | Enabled outputs | `['console','socket']` (order matters) :contentReference[oaicite:19]{index=19} |
+
+## Weather Monitor
+
+**Earthquake Monitor** periodically polls multiple earthquake feeds (USGS, EMSC, ISC), filters events around the device’s location, and triggers an audible alert via the sound/buzzer socket based on configurable severity levels. It deduplicates already-processed events and runs continuously with rotating logs. :contentReference[oaicite:0]{index=0} :contentReference[oaicite:1]{index=1} :contentReference[oaicite:2]{index=2} :contentReference[oaicite:3]{index=3}
+
+**Key capabilities**
+- **Multiple data sources with fallback/merge**: USGS → EMSC → ISC (new events from all sources are combined). :contentReference[oaicite:4]{index=4}
+- **Location resolution with fallback**: Location Service socket → local config defaults. :contentReference[oaicite:5]{index=5} :contentReference[oaicite:6]{index=6}
+- **Alert levels (1–5)** with thresholds, durations, melodies. First matching level (from highest to lowest) is used. :contentReference[oaicite:7]{index=7}
+- **Deduplication** using a sliding window of recent event IDs to avoid repeat alerts. :contentReference[oaicite:8]{index=8}
+- **Logging with rotation** to `logs/earthquake_monitor.log`. :contentReference[oaicite:9]{index=9}
+
+### Initial setup
+
+- Ensure outbound HTTPS access to USGS/EMSC/ISC APIs. :contentReference[oaicite:10]{index=10} :contentReference[oaicite:11]{index=11} :contentReference[oaicite:12]{index=12}
+- If the **Location Service** is running, it will be used first via `/tmp/location_service.sock`; otherwise the monitor falls back to configured coordinates. :contentReference[oaicite:13]{index=13} :contentReference[oaicite:14]{index=14}
+- Make sure the **sound/buzzer** service is available at `/tmp/buzzer.sock` so alerts can be played. :contentReference[oaicite:15]{index=15} :contentReference[oaicite:16]{index=16}
+
+### Configuration (src/configs.py)
+
+| Key | Meaning | Default / Notes |
+|---|---|---|
+| `LOG_FILE_PATH`, `LOG_MAX_BYTES`, `LOG_BACKUP_COUNT` | Log path & rotation | `logs/earthquake_monitor.log`, `10MB`, `5` :contentReference[oaicite:17]{index=17} |
+| `LOCATION_SERVICE_SOCKET` | Path to Location Service socket | `/tmp/location_service.sock` :contentReference[oaicite:18]{index=18} |
+| `BUZZER_SOCKET` | Path to sound/buzzer socket | `/tmp/buzzer.sock` :contentReference[oaicite:19]{index=19} |
+| `DEFAULT_LATITUDE`, `DEFAULT_LONGITUDE` | Fallback coordinates | `38.4237`, `27.1428` :contentReference[oaicite:20]{index=20} |
+| `SEARCH_RADIUS_KM` | Search radius around location | `250` km :contentReference[oaicite:21]{index=21} |
+| `CHECK_INTERVAL_SECONDS` | Poll interval | `60` seconds :contentReference[oaicite:22]{index=22} |
+| `API_TIME_WINDOW_MINUTES` | How far back to look for events | `15` minutes :contentReference[oaicite:23]{index=23} |
+| `MAX_PROCESSED_EVENTS_MEMORY` | Dedup window (IDs kept) | `10` (used to size the deque) :contentReference[oaicite:24]{index=24} |
+| `ALERT_LEVELS` | Levels 1–5 with thresholds, durations, melodies | See inline list in `configs.py` (3.5→10s … 7.0→180s) :contentReference[oaicite:25]{index=25} |
+| `MIN_API_MAGNITUDE` | Derived minimum magnitude for API queries | `min(level.min_magnitude)` from `ALERT_LEVELS` :contentReference[oaicite:26]{index=26} |
+
+## Metrics Exporter
+
+**Metrics Exporter** exposes Raspberry Pi system and stack metrics via an HTTP endpoint in **Prometheus** format.  
+It periodically gathers stats (CPU, memory, disks, network, Docker, NVMe, voltage, etc.) and updates Prometheus **Gauges** that are scraped by Prometheus/Grafana. :contentReference[oaicite:0]{index=0} :contentReference[oaicite:1]{index=1}
+
+**Key capabilities**
+- Built-in HTTP server for `/metrics` on a configurable port. :contentReference[oaicite:2]{index=2}
+- Rich metric set (CPU, temp, RAM, swap, uptime, disk usage & I/O, network throughput, Docker containers, NVMe temp, core voltage). :contentReference[oaicite:3]{index=3}
+- Rotating logs with file + stdout handlers. :contentReference[oaicite:4]{index=4}
+
+### Initial setup
+
+- Open/allow the exporter port on localhost (default **8001**). :contentReference[oaicite:5]{index=5}
+- Ensure the `/mnt/storage` mount exists if you want disk usage and I/O metrics for that path (labels use `/mnt/storage`). :contentReference[oaicite:6]{index=6}
+- Prometheus server must be able to scrape the exporter’s address (see config example below).  
+- Optional but recommended: run as a `systemd` service for auto-restart.
+
+### Configuration (src/configs.py)
+
+| Key | Meaning | Default |
+|---|---|---|
+| `LOG_FILE_PATH` | Path to log file | `logs/metrics_exporter.log` :contentReference[oaicite:7]{index=7} |
+| `LOG_MAX_BYTES` / `LOG_BACKUP_COUNT` | Log rotation settings | `10MB` / `5` :contentReference[oaicite:8]{index=8} |
+| `EXPORTER_PORT` | HTTP port for `/metrics` | `8001` :contentReference[oaicite:9]{index=9} |
+| `EXPORTER_UPDATE_INTERVAL_SECONDS` | Collection interval | `15` seconds :contentReference[oaicite:10]{index=10} |
+
+### Metrics exposed
+
+| Metric name | Type | Labels | Source field | Description |
+|---|---|---|---|---|
+| `rpi_cpu_usage_percent` | Gauge | — | `cpu` | CPU usage % :contentReference[oaicite:14]{index=14} |
+| `rpi_cpu_frequency_mhz` | Gauge | — | `cpu_freq` | CPU frequency (MHz) :contentReference[oaicite:15]{index=15} |
+| `rpi_cpu_temperature_celsius` | Gauge | — | `temp` | CPU temperature (°C) :contentReference[oaicite:16]{index=16} |
+| `rpi_ram_usage_percent` | Gauge | — | `mem.percent` | RAM usage % :contentReference[oaicite:17]{index=17} |
+| `rpi_swap_usage_percent` | Gauge | — | `swap.percent` | Swap usage % :contentReference[oaicite:18]{index=18} |
+| `rpi_core_voltage_volts` | Gauge | — | `core_voltage` | Core voltage (V) :contentReference[oaicite:19]{index=19} |
+| `rpi_uptime_seconds` | Gauge | — | `uptime` | System uptime (s) :contentReference[oaicite:20]{index=20} |
+| `rpi_disk_usage_percent` | Gauge | `path` | `root_disk_usage.percent`, `storage_disk_usage.percent` | Disk usage % per path (`/`, `/mnt/storage`) :contentReference[oaicite:21]{index=21} |
+| `rpi_disk_read_bytes_per_second` | Gauge | `path` | `disk_io.read_bytes_per_sec` | Disk read B/s (for `/mnt/storage`) :contentReference[oaicite:22]{index=22} |
+| `rpi_disk_write_bytes_per_second` | Gauge | `path` | `disk_io.write_bytes_per_sec` | Disk write B/s (for `/mnt/storage`) :contentReference[oaicite:23]{index=23} |
+| `rpi_network_upload_bytes_per_second` | Gauge | — | `network_throughput.upload_bytes_per_sec` | Network upload B/s :contentReference[oaicite:24]{index=24} |
+| `rpi_network_download_bytes_per_second` | Gauge | — | `network_throughput.download_bytes_per_sec` | Network download B/s :contentReference[oaicite:25]{index=25} |
+| `rpi_docker_containers_total` | Gauge | — | `docker_stats.total_containers` | Total Docker containers :contentReference[oaicite:26]{index=26} |
+| `rpi_docker_containers_running` | Gauge | — | `docker_stats.running_containers` | Running Docker containers :contentReference[oaicite:27]{index=27} |
+| `rpi_nvme_temperature_celsius` | Gauge | — | `nvme_health.temperature` | NVMe temperature (°C) :contentReference[oaicite:28]{index=28} |
+
+### Running the service - One-shot (foreground)
+```bash
+python -m metrics_exporter.main
+```
