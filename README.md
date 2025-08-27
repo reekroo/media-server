@@ -49,20 +49,12 @@
 
 This document is a step-by-step guide for setting up a media server on a Raspberry Pi 5 using an NVMe drive. The guide covers the initial OS installation, disk preparation, Docker and Samba installation, as well as starting and managing system services.
 
-# Hardwere Setup
-
-TODO
-
-# Common Setup of the Project
-
-## 1. Preparation and Initial Setup 🛠️
-
-### Operating System Installation
+## Operating System Installation
 
 1. Download and install the Raspberry Pi Imager.
 2. Select and flash the Raspberry Pi OS Lite (64-bit) image for the Pi 5 to your SSD.
 
-### SSH Connection
+## SSH Connection
 
 After installing the OS and connecting the Pi to your network, find its IP address and connect via SSH.
 
@@ -76,26 +68,22 @@ ssh reekroo@192.168.0.118
 ssh-keygen -R 192.168.0.118
 ```
 
-### Copying Files and System Update
-
-To synchronize local script files, you can use `VS Code` with the `SFTP` plugin or a similar tool.
-
-⚠️ Important Security Note: The `sudo chmod -R 777` command grants full permissions to all users and is not recommended for permanent use due to security risks. Use it cautiously and only for temporary setup tasks.
-
-```Bash
-cd /etc/systemd/system
-sudo chmod -R 777 .
-```
+## Update system
 
 Update your Pi's packages and firmware.
 
 ```Bash
 sudo apt update
 sudo apt upgrade -y
-sudo rpi-eeprom-update -a
 ```
 
-## 2. NVMe Drive Preparation 💾
+# Hardwere Setup
+
+TODO
+
+# Initial Setup
+
+## NVMe Drive Preparation
 
 ### Enabling PCIe Gen3
 
@@ -176,45 +164,103 @@ sudo chown -R reekroo:reekroo /mnt/storage
 sudo chmod -R 777 /mnt/storage
 ```
 
-## Software Installation and Services ⚙️
+## Activating the I2C Interface
 
-### Docker & Portainer Installation
-
-1. Install Docker:
+This step is required for peripherals like I2C OLED displays.
 
 ```Bash
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
+sudo raspi-config
 ```
-2. Add your user to the docker group to run Docker commands without sudo.
+
+* `Interface Options` -> `I5 I2C` -> `Yes`
+* `Ok` -> `Finish`
+
+## Activating the SPI Interface
+
+This step is required for peripherals like SPI OLED displays.
 
 ```Bash
-sudo usermod -aG docker $USER
-sudo usermod -aG docker reekroo
-sudo reboot
+sudo raspi-config
 ```
 
-3. Install the Docker Compose plugin:
+* `Interface Options` -> `I4 SPI` -> `Yes`
+* `Ok` -> `Finish`
+
+## [Optional] Increasing the Swap File Size
+
+If you need more virtual memory, you can increase the size of the swap file.
+
+1. Check the current swap size:
 
 ```Bash
-sudo apt-get install docker-compose-plugin
+htop
+sudo swapon --show
 ```
 
-4. Create a volume and run the Portainer container.
+2. Disable, create, and enable a new 2GB swap file:
 
 ```Bash
-docker volume create portainer_data
-docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest
+sudo swapoff /var/swap
+sudo fallocate -l 2G /var/swapfile
+sudo mkswap /var/swapfile
+sudo chmod 600 /var/swapfile
+sudo swapon /var/swapfile
+sudo swapon --show
+htop
 ```
 
-5. Navigate to your Docker stacks directory and start them.
+3. To make this change persistent across reboots, edit the /etc/dphys-swapfile file and set CONF_SWAPSIZE to 2048.
 
 ```Bash
-cd ~/docker_stacks
-make up
+sudo nano /etc/dphys-swapfile
 ```
 
-### Setting Up Python Virtual Environments (venv)
+```Ini, TOML
+# Set the swap file size
+CONF_SWAPSIZE=2048
+```
+
+4. Apply the changes from the configuration file.
+
+```Bash
+sudo dphys-swapfile swapoff
+sudo dphys-swapfile swapon
+htop
+```
+
+## [Optional] System Time Synchronization
+
+Check and set your system's timezone.
+
+```Bash
+date
+sudo timedatectl set-timezone Europe/Istanbul
+date
+timedatectl status
+```
+
+# Software Installation and Services
+
+## Copying Files and System Update
+
+To synchronize local script files, you can use `VS Code` with the `SFTP` plugin or a similar tool.
+
+⚠️ Important Security Note: The `sudo chmod -R 777` command grants full permissions to all users and is not recommended for permanent use due to security risks. Use it cautiously and only for temporary setup tasks.
+
+```Bash
+cd /etc/systemd/system
+sudo chmod -R 777 .
+```
+
+Update your Pi's packages and firmware.
+
+```Bash
+sudo apt update
+sudo apt upgrade -y
+sudo rpi-eeprom-update -a
+```
+
+## Setting Up Python Virtual Environments (venv)
 
 It is recommended to use a separate virtual environment for each project.
 
@@ -294,53 +340,10 @@ pip install -e .
 deactivate
 ```
 
-### Samba Setup (Network Storage Access)
 
-1. Install Samba:
 
-```Bash
-sudo apt install samba samba-common-bin -y
-```
 
-2. Edit the configuration file:
-
-```Bash
-sudo nano /etc/samba/smb.conf
-```
-
-3. Add the following block to the end of the file to share your storage drive on the network:
-
-```Ini, TOML
-[storage]
-comment = Main Storage Drive
-path = /mnt/storage
-browseable = yes
-writeable = yes
-only guest = no
-create mask = 0777
-directory mask = 0777
-public = yes
-guest ok = yes
-```
-
-4. Restart the Samba service:
-
-```Bash
-sudo systemctl restart smbd
-```
-
-### Activating the I2C Interface
-
-This step is required for peripherals like OLED displays.
-
-```Bash
-sudo raspi-config
-```
-
-* `Interface Options` -> `I5 I2C` -> `Yes`
-* `Ok` -> `Finish`
-
-## 4. Starting System Services 🚀
+## Starting System Services
 
 Once all scripts are copied and virtual environments are set up, you can enable the systemd services.
 
@@ -405,8 +408,6 @@ sudo systemctl enable wifi-lan-manager.service
 `sudo apt update`
 `sudo apt install nvme-cli`
 
-## 5. Utilities and Troubleshooting 🛠️
-
 ### Running Unit Tests
 
 To verify the functionality of your scripts, navigate to the project directory and run the tests.
@@ -423,57 +424,41 @@ source .venv_earthquake_monitor/bin/activate
 python3 -m tests.integration_test_alert
 ```
 
-### System Time Synchronization
+## Docker & Portainer Installation
 
-Check and set your system's timezone.
-
-```Bash
-date
-sudo timedatectl set-timezone Europe/Istanbul
-date
-timedatectl status
-```
-
-### Increasing the Swap File Size
-
-If you need more virtual memory, you can increase the size of the swap file.
-
-1. Check the current swap size:
+1. Install Docker:
 
 ```Bash
-htop
-sudo swapon --show
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
 ```
 
-2. Disable, create, and enable a new 2GB swap file:
+2. Add your user to the docker group to run Docker commands without sudo.
 
 ```Bash
-sudo swapoff /var/swap
-sudo fallocate -l 2G /var/swapfile
-sudo mkswap /var/swapfile
-sudo chmod 600 /var/swapfile
-sudo swapon /var/swapfile
-sudo swapon --show
-htop
+sudo usermod -aG docker $USER
+sudo usermod -aG docker reekroo
+sudo reboot
 ```
 
-3. To make this change persistent across reboots, edit the /etc/dphys-swapfile file and set CONF_SWAPSIZE to 2048.
+3. Install the Docker Compose plugin:
 
 ```Bash
-sudo nano /etc/dphys-swapfile
+sudo apt-get install docker-compose-plugin
 ```
 
-```Ini, TOML
-# Set the swap file size
-CONF_SWAPSIZE=2048
-```
-
-4. Apply the changes from the configuration file.
+4. Create a volume and run the Portainer container.
 
 ```Bash
-sudo dphys-swapfile swapoff
-sudo dphys-swapfile swapon
-htop
+docker volume create portainer_data
+docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest
+```
+
+5. Navigate to your Docker stacks directory and start them.
+
+```Bash
+cd ~/docker_stacks
+make up
 ```
 
 # Service setup
@@ -496,21 +481,21 @@ Key Features:
 
 To work, the service needs permission to access your Google Drive. This is a one-time setup.
 
-* Step 1: Obtaining `credentials.json`
+1. Step 1: Obtaining `credentials.json`
 This file is the key that allows your application to request access to the Google API.
 
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and create a new project.
-2. In the navigation menu (☰), open "APIs & Services" -> "Library". Find the "Google Drive API" and enable it (click the Enable button).
-3. Return to "APIs & Services" and go to the "Credentials" section.
-4. Click "+ CREATE CREDENTIALS" -> "OAuth client ID".
-5. For "Application type," select "Desktop app" and give it a name (e.g., "Backup Service").
-6. After creation, click "DOWNLOAD JSON". Rename the downloaded file to `credentials.json` and place it in the root folder of your project.
+* Go to the [Google Cloud Console](https://console.cloud.google.com/) and create a new project.
+* In the navigation menu (☰), open "APIs & Services" -> "Library". Find the "Google Drive API" and enable it (click the Enable button).
+* Return to "APIs & Services" and go to the "Credentials" section.
+* Click "+ CREATE CREDENTIALS" -> "OAuth client ID".
+* For "Application type," select "Desktop app" and give it a name (e.g., "Backup Service").
+* After creation, click "DOWNLOAD JSON". Rename the downloaded file to `credentials.json` and place it in the root folder of your project.
 
-* Step 2: Obtaining `GOOGLE_DRIVE_FOLDER_ID`
+2. Step 2: Obtaining `GOOGLE_DRIVE_FOLDER_ID`. 
 This is the ID of the folder on your Google Drive where the archives will be uploaded.
 
-1. Create or select a folder on Google Drive.
-2. Open it. The ID will be at the end of the URL in your browser's address bar.
+* Create or select a folder on [Google Drive](https://drive.google.com/).
+* Open it. The ID will be at the end of the URL in your browser's address bar.
 Example: https://drive.google.com/drive/folders/1a2b3c4d5e6f7g8h9i0j
 Your ID here is: 1a2b3c4d5e6f7g8h9i0j.
 
@@ -526,6 +511,9 @@ SOURCE_DIRECTORIES = [
 ]
 
 * `TEMP_ARCHIVE_PATH`: The path to a temporary folder where ZIP archives will be created before being uploaded to the cloud. The default is /tmp/backups.
+
 * `SCHEDULE_UNIT`, `SCHEDULE_INTERVAL`, `SCHEDULE_DAY`, `SCHEDULE_TIME`: Parameters for configuring the schedule. By default, the service runs every (INTERVAL=1) week (UNIT=weeks) on Sunday (DAY=sunday) at 03:00 (TIME="03:00").
+
 * `GOOGLE_DRIVE_FOLDER_ID`: The ID of the Google Drive folder you obtained in Step 2.
+
 * `LOG_FILE_PATH`, `LOG_LEVEL`, `LOG_MAX_BYTES`, `LOG_BACKUP_COUNT`: Logging settings. These specify the path to the log file, the level of detail, the maximum file size, and the number of old log files to keep.
