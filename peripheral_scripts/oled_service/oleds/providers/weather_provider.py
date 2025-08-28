@@ -17,11 +17,6 @@ WeatherData = namedtuple(
 )
 
 class WeatherProvider:
-    """
-    Клиент для локального UNIX-сокета погодного сервиса.
-    Ожидает одну JSON-строку с полями WeatherData (см. модель выше).
-    Возвращает WeatherData или None, если данных нет/источник недоступен.
-    """
 
     def __init__(self, path: Optional[str] = None):
         self.path = path or os.getenv("WEATHER_SERVICE_SOCKET", "/tmp/weather_service.sock")
@@ -31,16 +26,19 @@ class WeatherProvider:
             s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             s.settimeout(timeout)
             s.connect(self.path)
-            # читаем одну порцию (ожидаем JSON-объект одной строкой)
+
             raw = s.recv(4096)
             s.close()
             if not raw:
                 return None
+            
             txt = raw.decode("utf-8", errors="ignore").strip()
+            
             if not txt:
                 return None
+            
             obj = json.loads(txt)
-            # допускаем разные кейсы ключей
+            
             def get(k, default=None):
                 return obj.get(k, obj.get(k.lower(), default))
 
@@ -54,5 +52,6 @@ class WeatherProvider:
                 source        = str(get("source", "n/a")).strip(),
             )
             return wd
+        
         except (FileNotFoundError, ConnectionRefusedError, socket.timeout, json.JSONDecodeError, OSError):
             return None
