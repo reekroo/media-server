@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from .base import BaseScreen
+from ..base import BaseScreen
 
 class StorageScreen1327(BaseScreen):
     def draw(self, display_manager, stats):

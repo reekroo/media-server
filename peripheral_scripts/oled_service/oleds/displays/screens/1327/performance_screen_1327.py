@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from .base import BaseScreen  # интерфейс неизменен
+from ..base import BaseScreen  # интерфейс неизменен
 
 class PerformanceScreen1327(BaseScreen):
     def draw(self, display_manager, stats):

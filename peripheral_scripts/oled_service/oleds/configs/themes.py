@@ -3,10 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 import os
 from pathlib import Path
+from typing import Optional, Tuple
 from PIL import Image, ImageFont
-from typing import Dict, Optional, Tuple
 
-from .icons import ICON_DATA  # 8x8 1-bit базовые иконки
+from oleds.models.icons import ICON_DATA  # 8x8 1-bit базовые иконки
 
 def _default_font_path() -> str:
     candidates = [
