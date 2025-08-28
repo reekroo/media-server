@@ -14,7 +14,11 @@ requires-python = ">=3.9"
 dependencies = [
     "Pillow",
     "adafruit-circuitpython-ssd1306",
-    "adafruit-blinka",
+    "adafruit-blinka"
+    "Adafruit-PlatformDetect",
+    "luma.oled",
+    "spidev>=3.6; platform_system=='Linux'",
+    "RPi.GPIO>=0.7.1; platform_system=='Linux'",
     "psutil",
     "netifaces",
     "common-utils"

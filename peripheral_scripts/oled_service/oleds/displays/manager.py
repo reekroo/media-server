@@ -8,20 +8,28 @@ class DisplayManager:
         self.driver = driver
         self.width = self.driver.width
         self.height = self.driver.height
-        self.image = Image.new("1", (self.width, self.height))
+
+        self.image_mode = getattr(self.driver, "image_mode", "1")
+
+        self.image = Image.new(self.image_mode, (self.width, self.height))
         self.draw = ImageDraw.Draw(self.image)
         try:
             self.font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
         except Exception:
             self.font = ImageFont.load_default()
 
-        # Pre-render icons to images; missing ones will be created lazily
         self.icons = {}
         for name, data in ICON_DATA.items():
-            self.icons[name] = Image.frombytes('1', (8, 8), bytes(data))
+            icon = Image.frombytes('1', (8, 8), bytes(data))
+            if self.image_mode != '1':
+                icon = icon.convert(self.image_mode)
+            self.icons[name] = icon
 
     def clear(self):
-        self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
+        if self.image_mode == "RGB":
+            self.draw.rectangle((0, 0, self.width, self.height), outline=None, fill=(0, 0, 0))
+        else:
+            self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
     def show(self):
         self.driver.show(self.image)
@@ -29,8 +37,11 @@ class DisplayManager:
     def _get_icon(self, name: str):
         img = self.icons.get(name)
         if img is None and name in ICON_DATA:
-            img = Image.frombytes('1', (8, 8), bytes(ICON_DATA[name]))
-            self.icons[name] = img
+            icon = Image.frombytes('1', (8, 8), bytes(ICON_DATA[name]))
+            if self.image_mode != '1':
+                icon = icon.convert(self.image_mode)
+            self.icons[name] = icon
+            img = self.icons[name]
         return img
 
     def draw_status_bar(self, statuses: dict):
