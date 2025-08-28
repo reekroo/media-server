@@ -12,16 +12,19 @@ description = "Service to show system stats on oled displays"
 requires-python = ">=3.9"
 
 dependencies = [
-    "Pillow",
-    "adafruit-circuitpython-ssd1306",
-    "adafruit-blinka"
-    "Adafruit-PlatformDetect",
-    "luma.oled",
-    "spidev>=3.6; platform_system=='Linux'",
-    "RPi.GPIO>=0.7.1; platform_system=='Linux'",
-    "psutil",
-    "netifaces",
-    "common-utils"
+  "Pillow>=10.3.0",
+  "psutil>=5.9.8",
+  "netifaces>=0.11.0",
+
+  "adafruit-circuitpython-ssd1306>=2.12.16",
+  "adafruit-blinka>=8.34.0",
+  "Adafruit-PlatformDetect>=3.54.0",
+
+  "luma.oled>=3.13.0",
+  "spidev>=3.6; platform_system=='Linux'",
+  "RPi.GPIO>=0.7.1; platform_system=='Linux'",
+
+  "common-utils"
 ]
 
 [project.scripts]
@@ -30,4 +33,4 @@ oled-clear-controller = "oleds.oled_clear_controller:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["oleds*", "utils*"]
+include = ["oleds*"]
