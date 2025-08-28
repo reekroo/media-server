@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 from typing import Dict
-from .manager_factory import make_display_manager
+from oleds.displays.manager_factory import make_display_manager
 
 class DisplayManager:
     """

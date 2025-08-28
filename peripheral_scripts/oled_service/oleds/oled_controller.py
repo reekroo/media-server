@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import time
-from configs.configs import LOG_FILE, PAGE_INTERVAL, UPDATE_INTERVAL
-from providers.stats_provider import StatsProvider
+
+from oleds.configs.configs import LOG_FILE, PAGE_INTERVAL, UPDATE_INTERVAL
+from oleds.providers.stats_provider import StatsProvider
 from utils.logger import setup_logger
 
 log = setup_logger('OledController', LOG_FILE)

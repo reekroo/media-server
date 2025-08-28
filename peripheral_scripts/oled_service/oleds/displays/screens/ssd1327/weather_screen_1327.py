@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from typing import Optional
 from ..base import BaseScreen
-from providers.weather_provider import WeatherProvider, WeatherData
+from oleds.providers.weather_provider import WeatherProvider, WeatherData
 
 class WeatherScreen1327(BaseScreen):
     HANDLES_BACKGROUND = True  # экран сам чистит фон и рисует статус-бар

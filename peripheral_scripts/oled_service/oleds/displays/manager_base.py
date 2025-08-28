@@ -2,8 +2,8 @@
 from __future__ import annotations
 from typing import Dict
 from PIL import Image, ImageDraw
-from configs.oled_profiles import OledProfile
-from configs.themes import Theme, IconProvider
+from oleds.configs.oled_profiles import OledProfile
+from oleds.configs.themes import Theme, IconProvider
 
 WHITE_1BIT = 255
 WHITE_RGB = (255, 255, 255)

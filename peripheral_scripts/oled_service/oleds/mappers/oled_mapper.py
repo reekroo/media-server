@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from peripheral_scripts.oled_service.oleds.configs.statuses import DOCKER_STATUS_MAP
+from oleds.models.statuses import DOCKER_STATUS_MAP
 
 def map_docker_status(raw_status: str) -> str:
     if not raw_status:

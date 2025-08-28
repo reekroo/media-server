@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import os
-from .manager_base import BaseDisplayManager
-from .statusbars.statusbar_x8 import StatusBarMono8
-from .statusbars.statusbar_x16 import StatusBarGray16
-from .capabilities import Capabilities
-from configs.oled_profiles import PROFILES, OledProfile
-from configs.themes import get_theme
+from oleds.displays.manager_base import BaseDisplayManager
+from oleds.displays.statusbars.statusbar_x8 import StatusBarMono8
+from oleds.displays.statusbars.statusbar_x16 import StatusBarGray16
+from oleds.displays.capabilities import Capabilities
+from oleds.configs.oled_profiles import PROFILES, OledProfile
+from oleds.configs.themes import get_theme
 
 class MonoDisplayManager(BaseDisplayManager):
     """ SSD1306 (1-бит, 8×8, узкий статус-бар) """
