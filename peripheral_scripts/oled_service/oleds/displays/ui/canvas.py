@@ -1,4 +1,3 @@
-# oleds/displays/ui/canvas.py
 #!/usr/bin/env python3
 from __future__ import annotations
 from dataclasses import dataclass
@@ -7,7 +6,6 @@ from PIL import ImageDraw, ImageFont
 
 @dataclass
 class Canvas:
-    """Удобная «кисть» для отрисовки внутри контентной области дисплея."""
     draw: ImageDraw.ImageDraw
     left: int
     top: int
@@ -15,7 +13,7 @@ class Canvas:
     bottom: int
     width: int
     height: int
-    color: Tuple[int, ...]  # цвет по умолчанию
+    color: Tuple[int, ...]  # default color
 
     @classmethod
     def from_display(cls, dm) -> "Canvas":
@@ -30,7 +28,6 @@ class Canvas:
             color=dm.color(),
         )
 
-    # --- измерения/кламп ---
     @staticmethod
     def _line_height(font: ImageFont.ImageFont, extra: int = 2) -> int:
         try:
@@ -49,7 +46,6 @@ class Canvas:
             return None
         return (X0, Y0, X1, Y1)
 
-    # --- текст ---
     def _ellipsis(self, text: str, max_w: int, font) -> str:
         if self.draw.textlength(text, font=font) <= max_w:
             return text
@@ -65,6 +61,7 @@ class Canvas:
                 hi = mid
         return text[:max(0, lo-1)] + ell
 
+    # --- text ---
     def text(self, x: int, y: int, s: str, *, font, fill=None, max_w: Optional[int]=None):
         fill = self.color if fill is None else fill
         if max_w is not None:
@@ -79,7 +76,7 @@ class Canvas:
         self.text(self.left + pad_left, y, s, font=font, fill=fill, max_w=self.width - pad_left)
         return row_idx + 1
 
-    # --- прямоугольники/бар/спарклайн ---
+    # --- rect/bar/sparkline ---
     def rect(self, x0, y0, x1, y1, *, outline=None, fill=None, width=1):
         r = self._clamp_rect(x0, y0, x1, y1)
         if not r:
@@ -114,7 +111,6 @@ class Canvas:
         for i, v in enumerate(values):
             px = x + int(i * step)
             py = y + int(h - 1 - ((v - vmin) / rng) * (h - 1))
-            # клиппинг по контенту
             px = min(self.right, max(self.left, px))
             py = min(self.bottom, max(self.top, py))
             pts.append((px, py))

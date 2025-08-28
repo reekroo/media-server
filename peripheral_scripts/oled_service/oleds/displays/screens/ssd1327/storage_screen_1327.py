@@ -1,28 +1,31 @@
 #!/usr/bin/env python3
 from ..base import BaseScreen
+from ...ui.canvas import Canvas
 
 class StorageScreen1327(BaseScreen):
-    def draw(self, display_manager, stats):
-        dm = display_manager
+    HANDLES_BACKGROUND = True
+
+    def draw(self, dm, stats):
         c = dm.color()
-        dm.begin(stats)
-        dm.draw_status_bar(stats)
+        dm.clear(); dm.draw_status_bar(stats)
+        cv = Canvas.from_display(dm)
 
-        root = stats.get('root_disk_usage', {})
-        nvme = stats.get('storage_disk_usage', {})
-        io = stats.get('disk_io', {'read':'0K','write':'0K'})
-        docker_status = stats.get('docker_status', 'N/A')
-        docker_restarts = stats.get('docker_restarts', 0)
+        root = stats.get('root_disk_usage', {}) or {}
+        data = stats.get('storage_disk_usage', {}) or {}
+        io   = stats.get('disk_io', {'read':'0K', 'write':'0K'}) or {}
 
-        def fmt(b):
-            if b > 1024**4: return f"{b/(1024**4):.1f}T"
-            return f"{b/(1024**3):.1f}G"
+        def gb(b): return f"{(b or 0)/(1024**3):.1f}G"
+        def v(p):  return max(0.0, min(1.0, (root.get('percent',0)/100 if p=='root' else data.get('percent',0)/100)))
 
-        dm.draw.text((4, 24), "Storage", font=dm.font_large, fill=c)
+        row = 0
+        row = cv.text_row(row, f"/      {root.get('percent',0):.0f}%  {gb(root.get('used'))}/{gb(root.get('total'))}", font=dm.font, fill=c)
+        cv.bar(cv.left, cv.top + row*Canvas._line_height(dm.font) - 2, min(120, cv.width), 12, v('root'), fg=c, bg=dm.theme.background, border=c)
+        row += 1
 
-        dm.draw.text((4, 50),  f"SSD  {fmt(root.get('used',0))}/{fmt(root.get('total',0))}  {root.get('percent',0):.0f}%", font=dm.font, fill=c)
-        dm.draw.text((4, 68),  f"NVMe {fmt(nvme.get('used',0))}/{fmt(nvme.get('total',0))}  {nvme.get('percent',0):.0f}%", font=dm.font, fill=c)
-        dm.draw.text((4, 86),  f"IO   R:{io['read']}  W:{io['write']}", font=dm.font, fill=c)
-        dm.draw.text((4, 104), f"Docker {docker_status} (R:{docker_restarts})", font=dm.font, fill=c)
+        row = cv.text_row(row, f"/mnt   {data.get('percent',0):.0f}%  {gb(data.get('used'))}/{gb(data.get('total'))}", font=dm.font, fill=c)
+        cv.bar(cv.left, cv.top + row*Canvas._line_height(dm.font) - 2, min(120, cv.width), 12, v('data'), fg=c, bg=dm.theme.background, border=c)
+        row += 1
+
+        row = cv.text_row(row, f"IO  R:{io.get('read','0K')}/s  W:{io.get('write','0K')}/s", font=dm.font_small, fill=c)
 
         dm.show()

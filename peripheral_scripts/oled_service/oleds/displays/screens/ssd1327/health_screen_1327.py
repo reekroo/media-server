@@ -1,23 +1,30 @@
 #!/usr/bin/env python3
 from ..base import BaseScreen
+from ...ui.canvas import Canvas
 
 class HealthScreen1327(BaseScreen):
-    def draw(self, display_manager, stats):
-        dm = display_manager
+    HANDLES_BACKGROUND = True
+
+    def draw(self, dm, stats):
         c = dm.color()
-        dm.begin(stats)
-        dm.draw_status_bar(stats)
+        dm.clear(); dm.draw_status_bar(stats)
+        cv = Canvas.from_display(dm)
 
-        core_v = stats.get('core_voltage', 0.0)
-        throt  = stats.get('throttling', 'N/A')
-        uptime = stats.get('uptime', '00:00')
-        nvme_t = stats.get('nvme_temp', 0)
-        thr    = stats.get('network_throughput', {'download':'0K/s','upload':'0K/s'})
+        uptime = stats.get('uptime','00:00')
+        temp   = float(stats.get('temp',0) or 0.0)
+        nvme_t = float(stats.get('nvme_temp',0) or 0.0)
+        volt   = float(stats.get('core_voltage',0) or 0.0)
+        thr    = str(stats.get('throttling','N/A'))
 
-        dm.draw.text((4, 24), "Health", font=dm.font_large, fill=c)
-        dm.draw.text((4, 50), f"Core {core_v:.2f}V   NVMe {nvme_t:.0f}C", font=dm.font, fill=c)
-        dm.draw.text((4, 68), f"Throttled: {throt}", font=dm.font, fill=c)
-        dm.draw.text((4, 86), f"Uptime: {uptime}", font=dm.font, fill=c)
+        row = 0
+        row = cv.text_row(row, f"Uptime {uptime}", font=dm.font, fill=c)
+        row = cv.text_row(row, f"CPU {temp:.0f}C    NVMe {nvme_t:.0f}C", font=dm.font, fill=c)
+        row = cv.text_row(row, f"Core V {volt:.2f}V", font=dm.font, fill=c)
+        row = cv.text_row(row, f"Throttled: {thr}", font=dm.font, fill=c)
 
-        dm.draw.text((4, 104), f"↓ {thr['download']}   ↑ {thr['upload']}", font=dm.font, fill=c)
+        # индикатор состояния справа от первой строки
+        ok = (thr == "NO")
+        box = "■" if not ok else "□"
+        cv.text(cv.right - 12, cv.top, box, font=dm.font, fill=c)
+
         dm.show()

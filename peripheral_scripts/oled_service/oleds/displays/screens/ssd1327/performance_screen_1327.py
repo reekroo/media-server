@@ -1,9 +1,8 @@
-# oleds/displays/screens/ssd1327/performance_screen_1327.py
 #!/usr/bin/env python3
 import math
 from collections import deque
 from ..base import BaseScreen
-from ...ui.canvas import Canvas  # ← новый модуль
+from ...ui.canvas import Canvas
 
 class PerformanceScreen1327(BaseScreen):
     HANDLES_BACKGROUND = True
@@ -34,20 +33,19 @@ class PerformanceScreen1327(BaseScreen):
         row = cv.text_row(row, f"MEM {gb(mem.get('used'))}/{gb(mem.get('total'))}  {mem.get('percent',0):.0f}%", font=dm.font, fill=c)
         row = cv.text_row(row, f"SWP {gb(swap.get('used'))}/{gb(swap.get('total'))}  {swap.get('percent',0):.0f}%", font=dm.font, fill=c)
 
-        # Полоса CPU и спарклиния — безопасно в пределах контента
+        # CPU bar + sparkline
         bar_w = min(120, cv.width)
         bar_h = 12
         bar_x = cv.left
-        # немного отступим от текста; следим, чтобы влезло до низа
         bar_y = min(cv.bottom - (bar_h + 16), cv.top + row * Canvas._line_height(dm.font) + 4)
-        cv.bar(bar_x, bar_y, bar_w, bar_h,
-               value01=max(0.0, min(1.0, (cpu/100.0)*(0.95 + 0.05*math.sin(self._t*2*math.pi/30.0)))),
-               fg=c, bg=dm.theme.background, border=c)
 
-        # Спарклиния
+        pulse = 0.95 + 0.05 * math.sin(self._t * 2*math.pi / 30.0)
+        value01 = max(0.0, min(1.0, (cpu/100.0) * pulse))
+
+        cv.bar(bar_x, bar_y, bar_w, bar_h, value01=value01, fg=c, bg=dm.theme.background, border=c)
+
         self._cpu_hist.append(cpu)
-        hist = list(self._cpu_hist)
-        cv.sparkline(bar_x, min(bar_y + bar_h + 4, cv.bottom - 12), bar_w, 12, hist, fg=c)
+        cv.sparkline(bar_x, min(bar_y + bar_h + 4, cv.bottom - 12), bar_w, 12, list(self._cpu_hist), fg=c)
 
         self._t = (self._t + 1) % 10000
         dm.show()
