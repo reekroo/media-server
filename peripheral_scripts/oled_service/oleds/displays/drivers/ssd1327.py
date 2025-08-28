@@ -16,7 +16,7 @@ class SSD1327_Driver(BaseDisplayDriver):
 
         width = int(os.getenv("OLED_WIDTH", "128"))
         height = int(os.getenv("OLED_HEIGHT", "128"))
-        rotate = int(os.getenv("OLED_ROTATE", "0"))  # 0/1/2/3
+        rotate = int(os.getenv("OLED_ROTATE", "0"))          # 0/1/2/3
 
         self.image_mode = os.getenv("OLED_IMAGE_MODE", "RGB")
 

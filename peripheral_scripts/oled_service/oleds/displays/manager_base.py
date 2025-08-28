@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 from typing import Dict
-from PIL import Image, ImageDraw, ImageFont
-from configs.oled_icons import ICON_DATA
+from PIL import Image, ImageDraw
 from configs.oled_profiles import OledProfile
+from configs.themes import Theme, IconProvider
 
 WHITE_1BIT = 255
 WHITE_RGB = (255, 255, 255)
 
 class BaseDisplayManager:
     """
-    Базовый менеджер: отвечает за холст, шрифты, иконки и общий цикл.
-    Конкретные потомки определяют image_mode, размеры, статус-бар стратегию.
+    Базовый менеджер: холст, шрифты (из Theme), иконки (IconProvider),
+    общий цикл begin/clear/show, цветовая схема.
+    Потомки подключают статус-бар стратегию.
     """
-    def __init__(self, driver, profile: OledProfile):
+    def __init__(self, driver, profile: OledProfile, theme: Theme):
         self.driver = driver
         self.profile = profile
+        self.theme = theme
+
         self.width = driver.width
         self.height = driver.height
 
@@ -22,24 +26,24 @@ class BaseDisplayManager:
         self.image = Image.new(self.profile.image_mode, (self.width, self.height))
         self.draw = ImageDraw.Draw(self.image)
 
-        # шрифты
-        self.font_small = self._load_font(self.profile.font_path, self.profile.font_small)
-        self.font = self._load_font(self.profile.font_path, self.profile.font_regular)
-        self.font_large = self._load_font(self.profile.font_path, self.profile.font_large)
+        # шрифты из темы
+        self.font_small = self.theme.load_font(self.theme.font_small)
+        self.font = self.theme.load_font(self.theme.font_regular)
+        self.font_large = self.theme.load_font(self.theme.font_large)
 
-        # иконки
-        self.icons = {}
-        self._prepare_icons()
+        # иконки из темы (или 8x8 upscale)
+        self._icon_provider = IconProvider(self.profile.image_mode, self.theme.statusbar_icon, self.theme.icon_pack)
+        self.icons = {}  # cache
 
         self._last_stats: Dict = {}
         self.statusbar = None  # установить в наследнике
 
-    # ---------- abstract-ish hooks ----------
+    # ---------- colors ----------
     def _background_color(self):
-        return (0, 0, 0) if self.profile.image_mode != "1" else 0
+        return self.theme.background
 
     def color(self):
-        return WHITE_RGB if self.profile.image_mode != "1" else WHITE_1BIT
+        return self.theme.foreground
 
     # ---------- public ----------
     def begin(self, stats: Dict):
@@ -56,26 +60,11 @@ class BaseDisplayManager:
         if self.statusbar:
             self.statusbar.draw(self, statuses)
 
-    # ---------- utils ----------
-    def _load_font(self, path: str, size: int):
-        if path:
-            try:
-                return ImageFont.truetype(path, size)
-            except Exception:
-                pass
-        return ImageFont.load_default()
-
-    def _prepare_icons(self):
-        # базовые 8×8 1-бит → масштаб до profile.statusbar_icon и конверт в image_mode
-        size = (self.profile.statusbar_icon, self.profile.statusbar_icon)
-        upscale = self.profile.statusbar_icon != 8
-        for name, data in ICON_DATA.items():
-            icon = Image.frombytes('1', (8, 8), bytes(data))
-            if upscale:
-                icon = icon.resize(size, Image.NEAREST)
-            if self.profile.image_mode != '1':
-                icon = icon.convert(self.profile.image_mode)
-            self.icons[name] = icon
-
+    # ---------- icons ----------
     def _get_icon(self, name: str):
-        return self.icons.get(name)
+        ic = self.icons.get(name)
+        if ic is None:
+            ic = self._icon_provider.get(name)
+            if ic:
+                self.icons[name] = ic
+        return ic
