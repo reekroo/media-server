@@ -1,7 +1,9 @@
+# oleds/displays/screens/ssd1327/performance_screen_1327.py
 #!/usr/bin/env python3
 import math
 from collections import deque
 from ..base import BaseScreen
+from ...ui.canvas import Canvas  # ← новый модуль
 
 class PerformanceScreen1327(BaseScreen):
     HANDLES_BACKGROUND = True
@@ -15,6 +17,8 @@ class PerformanceScreen1327(BaseScreen):
         dm.clear()
         dm.draw_status_bar(stats)
 
+        cv = Canvas.from_display(dm)
+
         ip   = stats.get('ip', 'N/A')
         cpu  = float(stats.get('cpu', 0) or 0.0)
         temp = float(stats.get('temp', 0) or 0.0)
@@ -25,45 +29,25 @@ class PerformanceScreen1327(BaseScreen):
         def gb(b): return f"{(b or 0)/(1024**3):.1f}G"
 
         row = 0
-        row = dm.draw_text_row(row, f"IP {ip}", font=dm.font_small, fill=c)
-        row = dm.draw_text_row(row, f"CPU {cpu:>3.0f}%  {freq/1000:.1f}GHz  {temp:.0f}C", font=dm.font, fill=c)
-        row = dm.draw_text_row(row, f"MEM {gb(mem.get('used'))}/{gb(mem.get('total'))}  {mem.get('percent',0):.0f}%", font=dm.font, fill=c)
-        row = dm.draw_text_row(row, f"SWP {gb(swap.get('used'))}/{gb(swap.get('total'))}  {swap.get('percent',0):.0f}%", font=dm.font, fill=c)
+        row = cv.text_row(row, f"IP {ip}", font=dm.font_small, fill=c)
+        row = cv.text_row(row, f"CPU {cpu:>3.0f}%  {freq/1000:.1f}GHz  {temp:.0f}C", font=dm.font, fill=c)
+        row = cv.text_row(row, f"MEM {gb(mem.get('used'))}/{gb(mem.get('total'))}  {mem.get('percent',0):.0f}%", font=dm.font, fill=c)
+        row = cv.text_row(row, f"SWP {gb(swap.get('used'))}/{gb(swap.get('total'))}  {swap.get('percent',0):.0f}%", font=dm.font, fill=c)
 
-        # Полоса CPU — прижмём ниже текущей строки, но в пределах контента
-        bar_w, bar_h = 120, 12
-        bar_x = dm.content_left
-        bar_y = min(dm.content_bottom - (bar_h + 16),  # оставим место для спарклайна
-                    row + 4)
-        dm.rect_safe((bar_x, bar_y, bar_x + bar_w, bar_y + bar_h), outline=c, width=1)
+        # Полоса CPU и спарклиния — безопасно в пределах контента
+        bar_w = min(120, cv.width)
+        bar_h = 12
+        bar_x = cv.left
+        # немного отступим от текста; следим, чтобы влезло до низа
+        bar_y = min(cv.bottom - (bar_h + 16), cv.top + row * Canvas._line_height(dm.font) + 4)
+        cv.bar(bar_x, bar_y, bar_w, bar_h,
+               value01=max(0.0, min(1.0, (cpu/100.0)*(0.95 + 0.05*math.sin(self._t*2*math.pi/30.0)))),
+               fg=c, bg=dm.theme.background, border=c)
 
-        pulse = 0.95 + 0.05 * math.sin(self._t * 2*math.pi / 30.0)
-        value01 = max(0.0, min(1.0, (cpu / 100.0) * pulse))
-        inner_w = max(0, int(round((bar_w - 2) * value01)))
-        if inner_w > 0:
-            x0 = bar_x + 1; y0 = bar_y + 1
-            x1 = x0 + inner_w - 1; y1 = bar_y + bar_h - 1
-            dm.rect_safe((x0, y0, x1, y1), fill=c)
-
-        # Спарклиния под полосой
+        # Спарклиния
         self._cpu_hist.append(cpu)
         hist = list(self._cpu_hist)
-        if len(hist) >= 2:
-            vmin = min(hist); vmax = max(hist); rng = (vmax - vmin) or 1.0
-            w = min(bar_w, dm.content_width)
-            h = 12
-            step = (w - 1) / (len(hist) - 1)
-            pts = []
-            base_x = bar_x
-            base_y = min(bar_y + bar_h + 4, dm.content_bottom - h)
-            for i, v in enumerate(hist):
-                px = base_x + int(i * step)
-                py = base_y + int(h - 1 - ((v - vmin) / rng) * (h - 1))
-                pts.append((px, py))
-            # обрежем точки по правой/нижней кромке
-            pts = [(min(dm.content_right, max(dm.content_left, x)),
-                    min(dm.content_bottom, max(dm.content_top, y))) for x, y in pts]
-            dm.draw.line(pts, fill=c, width=1)
+        cv.sparkline(bar_x, min(bar_y + bar_h + 4, cv.bottom - 12), bar_w, 12, hist, fg=c)
 
         self._t = (self._t + 1) % 10000
         dm.show()
