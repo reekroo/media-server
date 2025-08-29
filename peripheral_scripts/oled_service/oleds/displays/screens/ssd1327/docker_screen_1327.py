@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from ..base import BaseScreen
 from ...ui.canvas import Canvas
-from ...ui import grid as G
+from ...ui import grid
 
 
 class DockerScreen1327(BaseScreen):
@@ -62,7 +62,6 @@ class DockerScreen1327(BaseScreen):
 
         label = self._status_label(stats)
 
-        # Достаём метрики
         restarts = stats.get("docker_restarts")
         try:
             restarts = int(restarts)
@@ -76,17 +75,11 @@ class DockerScreen1327(BaseScreen):
             exit_code = "N/A"
 
         row = 0
-        # 1) Docker (заголовок)
-        row = G.text_row(cv, dm, row, "Docker", font=dm.font_small, fill=c)
-        # 2) Status
-        row = G.text_row(cv, dm, row, f"Status {label}", font=dm.font, fill=c)
-        # 3) Restarts
-        row = G.text_row(cv, dm, row, f"Restarts {restarts}", font=dm.font, fill=c)
-        # 4) Exit
-        row = G.text_row(cv, dm, row, f"Exit {exit_code}", font=dm.font, fill=c)
-        # 5) Пустая строка
-        row = G.text_row(cv, dm, row, "", font=dm.font, fill=c)
-        # 6) Бокс на всю ширину с центром текста
+        row = grid.text_row(cv, dm, row, "Docker", font=dm.font_small, fill=c)
+        row = grid.text_row(cv, dm, row, f"Status {label}", font=dm.font, fill=c)
+        row = grid.text_row(cv, dm, row, f"Restarts {restarts}", font=dm.font, fill=c)
+        row = grid.text_row(cv, dm, row, f"Exit {exit_code}", font=dm.font, fill=c)
+        row = grid.text_row(cv, dm, row, "", font=dm.font, fill=c)
         row = self._status_box(cv, dm, row, label, rows=2)
 
         dm.show()

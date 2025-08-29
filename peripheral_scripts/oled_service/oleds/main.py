@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import os
 
-from utils.logger import setup_logger
 from oleds.configs.configs import LOG_FILE
 from oleds.displays.manager import DisplayManager
 from oleds.displays.page_factory import make_pages
+from utils.logger import setup_logger
 
 log = setup_logger('OledMain', LOG_FILE)
 

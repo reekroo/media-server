@@ -4,19 +4,8 @@ from ...ui.canvas import Canvas
 from ...ui import grid as G
 
 class SystemScreen1327(BaseScreen):
-    """
-    System (SSD1327):
-      • System (title)
-      • Up 02:13  (или 2d 03:10)
-      • CPU 37% 1.4G  (если не влезает -> CPU 37%)
-      • Mem 36% 0.7/1.9G  (если не влезает -> Mem 36%)
-      • / 22% 13/60G     (если не влезает -> / 22%)
-      • IP 10.0.0.42     (если не влезает -> IP …0.42)
-      • Docker RUN/STOP  (если нет данных -> Docker N/A)
-    """
     HANDLES_BACKGROUND = True
 
-    # ---- helpers ----
     @staticmethod
     def _gb(b):
         if not b or b <= 0: return "0"
@@ -61,7 +50,6 @@ class SystemScreen1327(BaseScreen):
         return A if cv.draw.textlength(A, font=dm.font_small) <= cv.width else B
 
     def _docker_line(self, stats) -> str:
-        # краткий статус контейнера
         raw = (stats.get("docker_status") or "").strip().lower()
         is_run = bool(stats.get("status_docker", False))
         if is_run:
@@ -74,14 +62,12 @@ class SystemScreen1327(BaseScreen):
             label = raw.upper() if raw else "N/A"
         return f"Docker {label}"
 
-    # ---- draw ----
     def draw(self, dm, stats):
         c = dm.color()
         dm.clear()
         dm.draw_status_bar(stats)
         cv = Canvas.from_display(dm)
 
-        # данные
         uptime = stats.get('uptime', '00:00')
         cpu    = float(stats.get('cpu', 0) or 0.0)
         ghz    = float(stats.get('cpu_freq', 0) or 0.0) / 1000.0
@@ -90,21 +76,14 @@ class SystemScreen1327(BaseScreen):
         ip     = stats.get('ip', 'N/A')
 
         row = 0
-        # Title
         row = G.text_row(cv, dm, row, "System", font=dm.font_small, fill=c)
-        # Uptime
         row = G.text_row(cv, dm, row, f"Up {uptime}", font=dm.font, fill=c)
-        # CPU
         row = G.text_row(cv, dm, row, self._cpu_line(cv, dm, cpu, ghz), font=dm.font, fill=c)
-        # Mem (small)
         row = G.text_row(cv, dm, row, self._mem_line(cv, dm, mem), font=dm.font_small, fill=c)
-        # Root disk (small)
         row = G.text_row(cv, dm, row, self._root_line(cv, dm, root), font=dm.font_small, fill=c)
-        # IP (small)
         ip_line_full = f"IP {ip}"
         ip_line = ip_line_full if cv.draw.textlength(ip_line_full, font=dm.font_small) <= cv.width else self._ip_short(ip)
         row = G.text_row(cv, dm, row, ip_line, font=dm.font_small, fill=c)
-        # Docker (small)
         row = G.text_row(cv, dm, row, self._docker_line(stats), font=dm.font_small, fill=c)
 
         dm.show()
