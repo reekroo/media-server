@@ -35,16 +35,16 @@ class SystemScreen1327(BaseScreen):
 
         rp = float(root.get('percent',0) or 0); ru, rt = F.fmt_bytes(root.get('used')), F.fmt_bytes(root.get('total'))
         root_line = G.fit_text(cv, dm.font_small, [
-            f"/ {rp:.0f}% {ru}/{rt}",
-            f"/ {rp:.0f}%"
+            f"SSD {rp:.0f}% {ru}/{rt}",
+            f"SSD {rp:.0f}%"
         ])
 
         ip_line = G.fit_text(cv, dm.font_small, [f"IP {ip}", F.short_ip(ip)])
 
         row=0
         row=G.text_row(cv, dm, row, "System", font=dm.font_small, fill=c)
-        row=G.text_row(cv, dm, row, f"Up {uptime}", font=dm.font, fill=c)
-        row=G.text_row(cv, dm, row, cpu_line, font=dm.font, fill=c)
+        row=G.text_row(cv, dm, row, f"Up {uptime}", font=dm.font_small, fill=c)
+        row=G.text_row(cv, dm, row, cpu_line, font=dm.font_small, fill=c)
         row=G.text_row(cv, dm, row, mem_line, font=dm.font_small, fill=c)
         row=G.text_row(cv, dm, row, root_line, font=dm.font_small, fill=c)
         row=G.text_row(cv, dm, row, ip_line, font=dm.font_small, fill=c)
