@@ -59,11 +59,11 @@ def make_pages(driver) -> List[object]:
         pages: List[object] = [
           #  PerformanceScreen1327(),
           #  StorageScreen1327(),
-            NetworkScreen1327(),
+          #  NetworkScreen1327(),
           #  DockerScreen1327(),
           #  HealthScreen1327(),
           #  SystemScreen1327(),
-          #  DiskIOScreen1327(),
+            DiskIOScreen1327(),
         ]
         
         if _weather_enabled():
