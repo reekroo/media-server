@@ -1,19 +1,13 @@
-# oleds/displays/ui/grid.py
 #!/usr/bin/env python3
 from __future__ import annotations
 from math import ceil
 from typing import Sequence, Optional
-from .canvas import Canvas  # наш Canvas с text/bar/sparkline
+from .canvas import Canvas
 
 def base_lh(dm) -> int:
-    """Единый шаг ряда (по regular-шрифту дисплея)."""
     return Canvas._line_height(dm.font)
 
 def text_row(cv, dm, row: int, text: str, *, font=None, fill=None, pad_left: int=0) -> int:
-    """
-    Текст по сетке рядов: центрирует выбранный шрифт внутри базового ряда
-    и возвращает следующий row. Делает ellipsis по ширине контента.
-    """
     font = font or dm.font
     BASE_LH = base_lh(dm)
     y_row = cv.top + row * BASE_LH
@@ -28,10 +22,6 @@ def bar_row(
     height: int = 12, gap_above: int = 2, gap_below: int = 2,
     min_rows: int = 1, fg=None, bg=None, border=None, width: Optional[int] = None
 ) -> int:
-    """
-    Рисует бар ПОД текущей строкой (row) и сдвигает row на занятые ряды.
-    Если хочешь «бар на 2 ряда», задай min_rows=2.
-    """
     BASE_LH = base_lh(dm)
     y_bar = cv.top + row * BASE_LH + gap_above
     w = min(width or 120, cv.width)
@@ -48,13 +38,32 @@ def spark_row(
     height: int = 12, gap_above: int = 4, gap_below: int = 0,
     min_rows: int = 1, fg=None, width: Optional[int] = None
 ) -> int:
-    """
-    Рисует спарклинию ПОД текущей строкой (row) и сдвигает row.
-    """
     BASE_LH = base_lh(dm)
     y_sp = cv.top + row * BASE_LH + gap_above
     w = min(width or 120, cv.width)
     if y_sp <= cv.bottom and height > 0:
         cv.sparkline(cv.left, y_sp, w, min(height, max(0, cv.bottom - y_sp)), list(values), fg=fg or dm.color())
+    rows_used = max(min_rows, ceil((gap_above + height + gap_below) / BASE_LH))
+    return row + rows_used
+
+def spark_area(
+    cv, dm, row: int, series_list: Sequence[Sequence[float]], *,
+    colors: Optional[Sequence] = None,
+    height: int = 24,
+    gap_above: int = 2,
+    gap_below: int = 0,
+    min_rows: int = 2,
+    width: Optional[int] = None,
+):
+    BASE_LH = base_lh(dm)
+    y = cv.top + row * BASE_LH + gap_above
+    w = min(width or 120, cv.width)
+    h = min(height, max(0, cv.bottom - y))
+
+    if y <= cv.bottom and h > 0:
+        for i, seq in enumerate(series_list):
+            fg = (colors[i] if (colors and i < len(colors)) else dm.color())
+            cv.sparkline(cv.left, y, w, h, list(seq), fg=fg)
+
     rows_used = max(min_rows, ceil((gap_above + height + gap_below) / BASE_LH))
     return row + rows_used

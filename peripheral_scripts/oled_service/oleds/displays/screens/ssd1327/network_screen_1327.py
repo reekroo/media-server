@@ -1,25 +1,31 @@
 #!/usr/bin/env python3
 import os
 import re
+from collections import deque
+
 from ..base import BaseScreen
 from ...ui.canvas import Canvas
-from ...ui import grid as G
-
+from ...ui import grid
 
 class NetworkScreen1327(BaseScreen):
     HANDLES_BACKGROUND = True
 
     def __init__(self):
-        # Нормировка баров: по умолчанию 10 MB/s; можно задать через ENV OLED_NET_CAP_MBPS
-        cap_env = os.getenv("OLED_NET_CAP_MBPS")
+        self._up_hist = deque(maxlen=120)
+        self._dn_hist = deque(maxlen=120)
+        self._ema_up = None
+        self._ema_dn = None
+        self._scale_bps = 1.0
         try:
-            self.cap_bps = float(cap_env) * 1024 * 1024 if cap_env else 10 * 1024 * 1024.0
+            self._alpha = float(os.getenv("OLED_NET_EMA_ALPHA", "0.3"))
         except Exception:
-            self.cap_bps = 10 * 1024 * 1024.0
+            self._alpha = 0.3
+        try:
+            self._decay = float(os.getenv("OLED_NET_TREND_DECAY", "0.90"))
+        except Exception:
+            self._decay = 0.90
 
-    # -------- helpers --------
     def _ip_line(self, cv, dm, ip: str) -> str:
-        """Строка IP с сокращением, если не влезает."""
         full = f"IP {ip}"
         if cv.draw.textlength(full, font=dm.font_small) <= cv.width:
             return full
@@ -30,7 +36,6 @@ class NetworkScreen1327(BaseScreen):
             return "IP N/A"
 
     def _rate_parse(self, s: str) -> float:
-        """ '320K/s' | '2.4M/s' | '500K' -> bytes/s """
         if not s:
             return 0.0
         s = s.strip().lower().replace("/s", "")
@@ -43,7 +48,12 @@ class NetworkScreen1327(BaseScreen):
             val *= 1024 * 1024
         elif unit == "k":
             val *= 1024
-        return val
+        return max(0.0, val)
+
+    def _fmt_bps(self, bps: float) -> str:
+        if bps >= 1024 * 1024:
+            return f"{bps / (1024 * 1024):.1f}M/s"
+        return f"{bps / 1024:.0f}K/s"
 
     def _fmt_status(self, name: str, val) -> str:
         if val is True:
@@ -54,7 +64,15 @@ class NetworkScreen1327(BaseScreen):
             st = "N/A"
         return f"{name} {st}"
 
-    # -------- draw --------
+    def _grey_color(self, dm, level=160):
+        mode = getattr(dm.image, "mode", "L") if getattr(dm, "image", None) is not None else "L"
+        level = int(max(0, min(255, level)))
+        if mode == "L":
+            return level
+        if mode == "1":
+            return 1
+        return (level, level, level)
+
     def draw(self, dm, stats):
         c = dm.color()
         dm.clear()
@@ -62,46 +80,53 @@ class NetworkScreen1327(BaseScreen):
         cv = Canvas.from_display(dm)
 
         ip = stats.get("ip", "N/A")
+        wifi_conn = stats.get("status_wifi_connected", None)
+        lan_conn  = stats.get("status_lan", None)
+        bt_en     = stats.get("status_bluetooth", None)
+
         thr = stats.get("network_throughput") or {}
         up_txt = (thr.get("upload") or "0K/s")
         dn_txt = (thr.get("download") or "0K/s")
 
-        # статусы
-        wifi_conn = stats.get("status_wifi_connected", None)  # только connected
-        lan_conn  = stats.get("status_lan", None)
-        bt_en     = stats.get("status_bluetooth", None)
-
         row = 0
-        # IP строка
-        row = G.text_row(cv, dm, row, self._ip_line(cv, dm, ip), font=dm.font_small, fill=c)
+        row = grid.text_row(cv, dm, row, self._ip_line(cv, dm, ip), font=dm.font_small, fill=c)
+        row = grid.text_row(cv, dm, row, self._fmt_status("WiFi", wifi_conn), font=dm.font_small, fill=c)
+        row = grid.text_row(cv, dm, row, self._fmt_status("LAN",  lan_conn),  font=dm.font_small, fill=c)
+        row = grid.text_row(cv, dm, row, self._fmt_status("BT",   bt_en),     font=dm.font_small, fill=c)
 
-        # Каждому статусу — своя строка (small)
-        row = G.text_row(cv, dm, row, self._fmt_status("WiFi", wifi_conn), font=dm.font_small, fill=c)
-        row = G.text_row(cv, dm, row, self._fmt_status("LAN",  lan_conn),  font=dm.font_small, fill=c)
-        row = G.text_row(cv, dm, row, self._fmt_status("BT",   bt_en),     font=dm.font_small, fill=c)
+        up_bps = self._rate_parse(up_txt)
+        dn_bps = self._rate_parse(dn_txt)
+        rates_line = f"↑{self._fmt_bps(up_bps)}  ↓{self._fmt_bps(dn_bps)}"
 
-        # Трафик: одна строка или две — по месту
-        both = f"↑{up_txt}  ↓{dn_txt}"
-        if cv.draw.textlength(both, font=dm.font) <= cv.width:
-            row = G.text_row(cv, dm, row, both, font=dm.font, fill=c)
+        row = grid.text_row(cv, dm, row, rates_line, font=dm.font, fill=c)
 
-            up_v = max(0.0, min(1.0, self._rate_parse(up_txt) / self.cap_bps))
-            dn_v = max(0.0, min(1.0, self._rate_parse(dn_txt) / self.cap_bps))
+        a = max(0.0, min(1.0, self._alpha))
+        if self._ema_up is None:
+            self._ema_up = up_bps
+        if self._ema_dn is None:
+            self._ema_dn = dn_bps
+        self._ema_up = a * up_bps + (1.0 - a) * self._ema_up
+        self._ema_dn = a * dn_bps + (1.0 - a) * self._ema_dn
 
-            row = G.bar_row(cv, dm, row, up_v, height=10, gap_above=2, gap_below=2, min_rows=1,
-                            fg=c, bg=dm.theme.background, border=c)
-            row = G.bar_row(cv, dm, row, dn_v, height=10, gap_above=2, gap_below=2, min_rows=1,
-                            fg=c, bg=dm.theme.background, border=c)
-        else:
-            # Разносим на две строки с барами под каждой
-            row = G.text_row(cv, dm, row, f"↑{up_txt}", font=dm.font, fill=c)
-            up_v = max(0.0, min(1.0, self._rate_parse(up_txt) / self.cap_bps))
-            row = G.bar_row(cv, dm, row, up_v, height=10, gap_above=2, gap_below=2, min_rows=1,
-                            fg=c, bg=dm.theme.background, border=c)
+        self._up_hist.append(self._ema_up)
+        self._dn_hist.append(self._ema_dn)
 
-            row = G.text_row(cv, dm, row, f"↓{dn_txt}", font=dm.font, fill=c)
-            dn_v = max(0.0, min(1.0, self._rate_parse(dn_txt) / self.cap_bps))
-            row = G.bar_row(cv, dm, row, dn_v, height=10, gap_above=2, gap_below=2, min_rows=1,
-                            fg=c, bg=dm.theme.background, border=c)
+        local_max = max(max(self._up_hist or [0.0]), max(self._dn_hist or [0.0]), 1.0)
+        self._scale_bps = max(local_max, self._scale_bps * self._decay)
+
+        def _norm(seq):
+            s = max(self._scale_bps, 1.0)
+            return [min(100.0, v * 100.0 / s) for v in seq]
+
+        up_norm = _norm(self._up_hist)
+        dn_norm = _norm(self._dn_hist)
+
+        row = grid.spark_area(
+            cv, dm, row,
+            series_list=[up_norm, dn_norm],
+            colors=[self._grey_color(dm, 160), c],
+            height=max(12, grid.base_lh(dm) * 2 - 4),
+            gap_above=2, gap_below=0, min_rows=2
+        )
 
         dm.show()
