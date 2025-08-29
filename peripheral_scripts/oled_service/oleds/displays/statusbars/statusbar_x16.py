@@ -4,7 +4,6 @@ from typing import Dict
 from .base import StatusBarBase
 
 class StatusBarGray16(StatusBarBase):
-    """ Широкий статус-бар (128×128), 5 иконок 16×16 + IP справа """
     def draw(self, dm, statuses: Dict):
         padding = 2
         gap = 2

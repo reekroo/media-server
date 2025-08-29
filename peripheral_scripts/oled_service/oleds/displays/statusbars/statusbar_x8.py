@@ -4,7 +4,6 @@ from typing import Dict
 from .base import StatusBarBase
 
 class StatusBarMono8(StatusBarBase):
-    """ Узкий статус-бар (128×64), 5 иконок 8×8 """
     def draw(self, dm, statuses: Dict):
         icons = [
             "DOCKER_OK" if statuses.get("status_docker") else "DOCKER_FAIL",

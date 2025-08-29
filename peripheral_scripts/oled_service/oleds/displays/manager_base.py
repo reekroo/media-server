@@ -8,12 +8,7 @@ WHITE_1BIT = 255
 WHITE_RGB = (255, 255, 255)
 
 class BaseDisplayManager:
-    """
-    Базовый менеджер: холст, шрифты (из Theme), иконки (IconProvider),
-    общий цикл begin/clear/show, цветовая схема + безопасная раскладка контента.
-    """
     def __init__(self, driver, profile: OledProfile, theme: Theme):
-        # 1) СНАЧАЛА базовые поля
         self.driver = driver
         self.profile = profile
         self.theme = theme
@@ -21,27 +16,21 @@ class BaseDisplayManager:
         self.width = getattr(driver, "width", 128)
         self.height = getattr(driver, "height", 64)
 
-        # 2) Режим картинки берём из профиля, с фолбэком на тему
         image_mode = getattr(self.profile, "image_mode", None) or getattr(self.theme, "image_mode", "1")
 
-        # 3) Холст
         self.image = Image.new(image_mode, (self.width, self.height))
         self.draw = ImageDraw.Draw(self.image)
 
-        # 4) Шрифты из темы
         self.font_small = self.theme.load_font(self.theme.font_small)
         self.font       = self.theme.load_font(self.theme.font_regular)
         self.font_large = self.theme.load_font(self.theme.font_large)
 
-        # 5) Иконки (PNG-пак приоритетно, иначе апскейл 8×8)
         self._icon_provider = IconProvider(image_mode, self.theme.statusbar_icon, self.theme.icon_pack)
         self.icons: Dict[str, Image.Image] = {}
 
-        # 6) Служебное
         self._last_stats: Dict = {}
-        self.statusbar = None  # наследник установит стратегию
+        self.statusbar = None
 
-        # 7) Паспорт контента (чтобы ничего не залезало на статус-бар/края)
         status_h = self.profile.statusbar_icon + (2 if self.profile.statusbar_icon <= 8 else 6)
         self.statusbar_height = status_h
         self.content_pad = 4
@@ -52,14 +41,12 @@ class BaseDisplayManager:
         self.content_width  = max(0, self.content_right - self.content_left + 1)
         self.content_height = max(0, self.content_bottom - self.content_top + 1)
 
-    # --- цвета/фон ---
     def _background_color(self):
         return self.theme.background
 
     def color(self):
         return self.theme.foreground
 
-    # --- публичное ---
     def begin(self, stats: Dict):
         self._last_stats = stats
         self.clear()
@@ -74,7 +61,6 @@ class BaseDisplayManager:
         if self.statusbar:
             self.statusbar.draw(self, statuses)
 
-    # --- utils: строки/кламп/иконки ---
     def line_height(self, font: ImageFont.ImageFont, extra: int = 2) -> int:
         try:
             bbox = font.getbbox("Ag")

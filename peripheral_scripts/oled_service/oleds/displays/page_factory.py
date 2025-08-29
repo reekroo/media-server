@@ -57,12 +57,12 @@ def make_pages(driver) -> List[object]:
         from oleds.displays.screens.ssd1327.disk_io_screen_1327 import DiskIOScreen1327
 
         pages: List[object] = [
-          #  PerformanceScreen1327(),
-          #  StorageScreen1327(),
-          #  NetworkScreen1327(),
-          #  DockerScreen1327(),
-          #  HealthScreen1327(),
-          #  SystemScreen1327(),
+            PerformanceScreen1327(),
+            StorageScreen1327(),
+            NetworkScreen1327(),
+            DockerScreen1327(),
+            HealthScreen1327(),
+            SystemScreen1327(),
             DiskIOScreen1327(),
         ]
         
