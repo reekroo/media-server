@@ -1,34 +1,30 @@
 #!/usr/bin/env python3
+import os
 
-from oled_controller import OledController
-from displays.manager import DisplayManager
-from displays.drivers.ssd1306 import SSD1306_Driver
-from displays.screens.performance_screen import PerformanceScreen
-from displays.screens.storage_screen import StorageScreen
-from displays.screens.health_screen import HealthScreen
-
+from oleds.configs.configs import LOG_FILE
+from oleds.displays.manager import DisplayManager
+from oleds.displays.page_factory import make_pages
 from utils.logger import setup_logger
-from configs.configs import LOG_FILE
 
 log = setup_logger('OledMain', LOG_FILE)
 
+def _make_driver():
+    drv = os.getenv("OLED_DRIVER", "ssd1306").strip().lower()
+    if drv == "ssd1327":
+        from oleds.displays.drivers.ssd1327 import SSD1327_Driver
+        return SSD1327_Driver()
+    else:
+        from oleds.displays.drivers.ssd1306 import SSD1306_Driver
+        return SSD1306_Driver()
+
 def main():
     try:
-        active_driver = SSD1306_Driver()
+        driver = _make_driver()
+        display_manager = DisplayManager(driver=driver)
+        pages = make_pages(driver)
 
-        active_pages = [
-            PerformanceScreen(),
-            StorageScreen(),
-            HealthScreen(),
-        ]
-
-        display_manager = DisplayManager(driver=active_driver)
-
-        controller = OledController(
-            display_manager=display_manager,
-            pages=active_pages
-        )
-
+        from oleds.oled_controller import OledController
+        controller = OledController(display_manager=display_manager, pages=pages)
         controller.run()
     except KeyboardInterrupt:
         log.info("[OledController] stopped by user.")

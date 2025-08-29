@@ -44,6 +44,12 @@ class StatsProvider:
             "status_root_disk": disk['percent'] < 90,
             "status_storage_disk": nvme_health["critical_warning"] == 0,
             "status_wifi": self.network.is_wifi_enabled(),
-            "status_voltage": self.hardware.get_core_voltage() > 4.75
+            "status_voltage": self.hardware.get_core_voltage() > 4.75,
+            
+            "lan_ip": self.network.get_lan_ip(),
+            "wifi_ip": self.network.get_wlan_ip(),
+            "status_lan": self.network.is_lan_connected(),
+            "status_wifi_connected": self.network.is_wifi_connected(),
+            "status_bluetooth": self.network.is_bluetooth_enabled(),
         }
         return stats

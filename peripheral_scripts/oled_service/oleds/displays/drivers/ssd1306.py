@@ -1,6 +1,7 @@
 import adafruit_ssd1306
 from board import SCL, SDA
 import busio
+
 from .base import BaseDisplayDriver
 
 class SSD1306_Driver(BaseDisplayDriver):

@@ -11,3 +11,6 @@ UPDATE_INTERVAL = int(os.environ.get("OLED_UPDATE_INTERVAL", "2"))  # refresh pe
 # Font configuration
 FONT_PATH = os.environ.get("OLED_FONT_PATH", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
 FONT_SIZE = int(os.environ.get("OLED_FONT_SIZE", "10"))
+
+# Weather socket
+WEATHER_SERVICE_SOCKET = os.environ.get("WEATHER_SERVICE_SOCKET", "/tmp/weather_service.sock")

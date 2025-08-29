@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from .base import BaseScreen
+from ..base import BaseScreen
 
 class StorageScreen(BaseScreen):
 

@@ -1,11 +1,21 @@
 [Unit]
-Description=OLED Status Display Service
+Description=OLED Status Display (SSD1306/SSD1327)
 
+Wants=network-online.target
 After=network-online.target
 
 [Service]
+Type=simple
+
+SupplementaryGroups=spi i2c gpio dialout
+
+ExecStartPre=/bin/sleep 3
+
 ExecStart=/home/reekroo/peripheral_scripts/.venv_peripherals/bin/oled-controller
 ExecStop=/home/reekroo/peripheral_scripts/.venv_peripherals/bin/oled-clear-controller
+
+EnvironmentFile=-/etc/default/oled-status
+Environment=PYTHONUNBUFFERED=1
 
 User=root
 Group=root
