@@ -17,6 +17,12 @@ def text_row(cv, dm, row: int, text: str, *, font=None, fill=None, pad_left: int
         cv.text(cv.left + pad_left, y_txt, text, font=font, fill=fill or dm.color(), max_w=cv.width - pad_left)
     return row + 1
 
+def fit_text(cv, font, variants: Sequence[str]) -> str:
+    for s in variants:
+        if cv.draw.textlength(s, font=font) <= cv.width:
+            return s
+    return variants[-1] if variants else ""
+
 def bar_row(
     cv, dm, row: int, value01: float, *,
     height: int = 12, gap_above: int = 2, gap_below: int = 2,
@@ -45,6 +51,42 @@ def spark_row(
         cv.sparkline(cv.left, y_sp, w, min(height, max(0, cv.bottom - y_sp)), list(values), fg=fg or dm.color())
     rows_used = max(min_rows, ceil((gap_above + height + gap_below) / BASE_LH))
     return row + rows_used
+
+def blank_row(row: int, n: int = 1) -> int:
+    return row + max(0, int(n))
+
+def box_row(
+    cv, dm, row: int, text: str, *,
+    rows: int = 2, pad: int = 2, radius: int = 8, font=None
+) -> int:
+    
+    color   = dm.color()
+    BASE_LH = base_lh(dm)
+    y0 = cv.top + row * BASE_LH
+    y1 = min(cv.bottom, cv.top + (row + rows) * BASE_LH - 1)
+    x0 = cv.left
+    x1 = cv.right - 1
+
+    try:
+        cv.draw.rounded_rectangle([x0, y0, x1, y1], outline=color, width=1, radius=radius)
+    except Exception:
+        cv.draw.rectangle([x0, y0, x1, y1], outline=color, width=1)
+
+    inner_w = max(0, (x1 - x0 + 1) - pad * 2)
+    inner_h = max(0, (y1 - y0 + 1) - pad * 2)
+
+    f = font or dm.font
+    tw = cv.draw.textlength(text, font=f)
+    if tw > inner_w:
+        f = dm.font_small
+        tw = cv.draw.textlength(text, font=f)
+
+    lh = Canvas._line_height(f)
+    tx = x0 + pad + max(0, (inner_w - tw) // 2)
+    ty = y0 + pad + max(0, (inner_h - lh) // 2)
+
+    cv.text(tx, ty, text, font=f, fill=color)
+    return row + rows
 
 def spark_area(
     cv, dm, row: int, series_list: Sequence[Sequence[float]], *,
