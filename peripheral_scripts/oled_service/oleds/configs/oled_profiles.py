@@ -49,9 +49,9 @@ SSD1327_PROFILE = OledProfile(
     height=_envint("OLED_HEIGHT", 128),
     image_mode=os.getenv("OLED_IMAGE_MODE", "RGB"),
     statusbar_icon=16,
-    font_small=_envint("OLED_FONT_SMALL", 12),
-    font_regular=_envint("OLED_FONT_REGULAR", 14),
-    font_large=_envint("OLED_FONT_LARGE", 18),
+    font_small=_envint("OLED_FONT_SMALL", 10),
+    font_regular=_envint("OLED_FONT_REGULAR", 12),
+    font_large=_envint("OLED_FONT_LARGE", 14),
     font_path=os.getenv("OLED_FONT_PATH", _default_font_path()),
 )
 

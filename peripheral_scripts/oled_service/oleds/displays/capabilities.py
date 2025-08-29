@@ -4,14 +4,11 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Capabilities:
-    """ Возможности рендера и UX для конкретного дисплея """
     supports_gray: bool
     supports_animation: bool
     supports_charts: bool
-    target_fps: int = 10  # ориентир для анимаций
+    target_fps: int = 10
 
-
-# простейший отрисовщик "полос" и спарклайнов (без numpy)
 class Charts:
     @staticmethod
     def bar(draw, x, y, w, h, value01: float, fg, bg=None, border_fg=None):
