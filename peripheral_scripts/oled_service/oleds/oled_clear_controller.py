@@ -5,10 +5,10 @@ def main():
     try:
         drv = os.getenv("OLED_DRIVER", "ssd1306").strip().lower()
         if drv == "ssd1327":
-            from .displays.drivers.ssd1327 import SSD1327_Driver
+            from oleds.displays.drivers.ssd1327 import SSD1327_Driver
             driver = SSD1327_Driver()
         else:
-            from .displays.drivers.ssd1306 import SSD1306_Driver
+            from oleds.displays.drivers.ssd1306 import SSD1306_Driver
             driver = SSD1306_Driver()
 
         driver.clear()

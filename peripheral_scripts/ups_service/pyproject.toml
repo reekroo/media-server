@@ -1,0 +1,21 @@
+[project]
+name = "ups-service"
+version = "0.1.0"
+authors = [
+  { name="reekroo", email="paul.davidovski@gmail.com" },
+]
+description = "UPS battery monitor for Geekworm X1200 on Raspberry Pi"
+requires-python = ">=3.10"
+
+dependencies = [
+    "smbus2>=0.4.3",
+    "RPi.GPIO>=0.7.1",
+    "common-utils"
+]
+
+[project.scripts]
+ups-service = "src.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

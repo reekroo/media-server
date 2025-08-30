@@ -276,6 +276,7 @@ pip install -e ./bluetooth_policy
 pip install -e ./sound_service
 pip install -e ./button_service
 pip install -e ./oled_service
+pip install -e ./ups_service
 deactivate
 ```
 * backup_serviсe
