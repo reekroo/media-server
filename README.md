@@ -272,6 +272,7 @@ python3 -m venv .venv_peripherals
 source .venv_peripherals/bin/activate
 pip install -e ./common_utils
 pip install -e ./network_policy
+pip install -e ./bluetooth_policy
 pip install -e ./sound_service
 pip install -e ./button_service
 pip install -e ./oled_service
@@ -399,6 +400,7 @@ sudo systemctl enable sound-boot.service
 sudo systemctl enable sound-shutdown.service
 sudo systemctl enable nvme-powermode-manager.service
 sudo systemctl enable wifi-lan-manager.service
+sudo systemctl enable bluetooth-manager.service
 ```
 
 ⚠️ The `nvme-powermode-manager.service` requires `nvme-cli` to be installed.
