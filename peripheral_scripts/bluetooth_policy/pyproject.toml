@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bluetooth-policy"
+version = "0.1.0"
+authors = [{ name = "reekroo", email = "paul.davidovski@gmail.com" }]
+description = "Service to force-disable Bluetooth at boot on Raspberry Pi."
+requires-python = ">=3.9"
+dependencies = [
+  "common-utils"
+]
+
+[project.scripts]
+bluetooth-policy-apply = "bluetooth_policy.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["bluetooth_policy*"]

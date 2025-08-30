@@ -1,0 +1,11 @@
+[Unit]
+Description=Force-disable Bluetooth at boot (BluetoothPolicy)
+Before=bluetooth.service
+After=local-fs.target systemd-udev-settle.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/reekroo/peripheral_scripts/.venv_peripherals/bin/network-policy-apply
+
+[Install]
+WantedBy=multi-user.target

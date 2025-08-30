@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional, Tuple
 from PIL import Image, ImageFont
 
-from oleds.models.icons import ICON_DATA
+from oleds.models.icons_x8 import ICON_DATA
 
 def _default_font_path() -> str:
     candidates = [

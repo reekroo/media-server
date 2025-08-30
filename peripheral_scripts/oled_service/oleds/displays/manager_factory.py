@@ -3,8 +3,7 @@ from __future__ import annotations
 import os
 from oleds.displays.manager_base import BaseDisplayManager
 from oleds.displays.statusbars.statusbar_x8 import StatusBarMono8
-from oleds.displays.statusbars.statusbar_x16 import StatusBarGray16
-from oleds.displays.ui.statusbar import StatusBar16
+from oleds.displays.statusbars.statusbar import StatusBar16
 from oleds.displays.capabilities import Capabilities
 from oleds.configs.oled_profiles import PROFILES, OledProfile
 from oleds.configs.themes import get_theme
