@@ -42,12 +42,9 @@ class StatusBarSSD1327:
         bx = right_edge - w
         by = y
         try:
-            # Вызываем нашу функцию, она сама управляет цветами
             draw_battery(dm.draw, bx, by, w=w, h=h)
         except Exception as e:
-            # Если что-то пойдет не так, мы увидим ошибку в логе, а не пустую батарею
             log.error(f"CRITICAL: Battery widget failed to draw: {e}", exc_info=True)
-            # Рисуем крест как индикатор ошибки
             dm.draw.line((bx, by, bx + w, by + h), fill=self.fg)
             dm.draw.line((bx, by + h, bx + w, by), fill=self.fg)
         return bx, by, w, h

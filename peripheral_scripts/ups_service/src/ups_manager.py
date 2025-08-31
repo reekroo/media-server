@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import os
 import json
 import time
@@ -17,12 +16,7 @@ from .configs import (
     DRY_RUN, SHUTDOWN_CMD,
 )
 
-
 class UpsManager:
-    """
-    Главный цикл опроса ИБП с улучшенной стабильностью чтения данных.
-    """
-
     def __init__(self, logger):
         self.log = logger
         self.bus = smbus2.SMBus(I2C_BUS)
@@ -41,31 +35,28 @@ class UpsManager:
         )
 
     def _read_word_robustly(self, reg: int) -> Optional[int]:
-        """ Читает слово из регистра с 3 попытками в случае ошибки. """
         for i in range(3):
             try:
                 data = self.bus.read_i2c_block_data(I2C_ADDR, reg, 2)
                 return (data[0] << 8) | data[1]  # MSB << 8 | LSB
             except IOError as e:
                 self.log.warning("I2C read error on attempt %d/%d: %s", i + 1, 3, e)
-                time.sleep(0.1) # Короткая пауза перед повторной попыткой
+                time.sleep(0.1)
         return None
 
     def _read_soc(self) -> float:
-        """ Читает SOC, возвращает 0.0 если чтение не удалось. """
         raw = self._read_word_robustly(0x04)
         if raw is None:
             self.log.error("Failed to read SOC after 3 attempts.")
-            return 0.0 # Возвращаем безопасное значение
+            return 0.0
         soc = raw / 256.0
         return max(0.0, min(100.0, soc))
 
     def _read_voltage(self) -> float:
-        """ Читает напряжение, возвращает 0.0 если чтение не удалось. """
         raw = self._read_word_robustly(0x02)
         if raw is None:
             self.log.error("Failed to read Voltage after 3 attempts.")
-            return 0.0 # Возвращаем безопасное значение
+            return 0.0
         return (raw * 78.125) / 1_000_000.0
 
     def _is_ac(self) -> bool:
@@ -88,7 +79,6 @@ class UpsManager:
         if self._shutdown_fired:
             return
         now = time.time()
-        # Добавим проверку, что SOC не равен 0 из-за ошибки чтения
         low = (not ac_present) and (0 < soc_percent <= LOW_BATTERY_PERCENT)
         if low:
             if self._low_batt_since is None:
@@ -121,7 +111,6 @@ class UpsManager:
                     soc = self._read_soc()
                     volt = self._read_voltage()
 
-                    # Пропускаем запись, если чтение было неудачным (вернулся 0)
                     if soc == 0.0 and volt == 0.0:
                         self.log.warning("Skipping update due to read failure.")
                     else:

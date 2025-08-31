@@ -1,17 +1,11 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import smbus2
 import RPi.GPIO as GPIO
 
 from .base import UpsProvider, UpsReading
 from ..configs import SETTINGS
 
-
 class GeekwormX1200(UpsProvider):
-    """
-    Провайдер чтения для платы Geekworm X1200.
-    Читает слова из регистров с ручной сборкой байтов; рассчитывает SOC и напряжение.
-    """
 
     def __init__(self):
         self._bus = smbus2.SMBus(SETTINGS.i2c_bus)
@@ -23,12 +17,10 @@ class GeekwormX1200(UpsProvider):
         )
 
     def read(self) -> UpsReading:
-        # 0x04 — SOC: MSB=целая часть, LSB=дробная (1/256)
         soc_data = self._bus.read_i2c_block_data(SETTINGS.i2c_addr, 0x04, 2)
         soc_raw = (soc_data[0] << 8) | soc_data[1]
         soc = max(0.0, min(100.0, soc_raw / 256.0))
 
-        # 0x02 — напряжение; коэффициент как в менеджере
         volt_data = self._bus.read_i2c_block_data(SETTINGS.i2c_addr, 0x02, 2)
         volt_raw = (volt_data[0] << 8) | volt_data[1]
         voltage = (volt_raw * 78.125) / 1_000_000.0
