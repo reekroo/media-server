@@ -3,9 +3,9 @@ from __future__ import annotations
 import time
 from typing import Dict, Tuple, Optional
 
-from oleds.widgets.battery import draw_battery
 from .ssd1327_configs import BarConfig
 from .ssd1327_utils import text_y_center, icon_image, choose_icon_name
+from oleds.widgets.batteries.battery import draw_battery
 
 class StatusBarSSD1327:
 
@@ -40,7 +40,7 @@ class StatusBarSSD1327:
         bx = right_edge - w
         by = y
         try:
-            draw_battery(dm.draw, bx, by, w=w, h=h)
+            draw_battery(dm.draw, bx, by, w=w, h=h, fg=self.fg, bg=self.bg)
         except Exception:
             dm.draw.rectangle((bx, by, bx+w-1, by+h-1), outline=self.fg)
             dm.draw.rectangle((bx+w-3, by + h//3, bx+w-1, by + 2*h//3), fill=self.fg)
