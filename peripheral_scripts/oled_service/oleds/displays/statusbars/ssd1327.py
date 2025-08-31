@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import time
+import logging
 from typing import Dict, Tuple, Optional
 
 from .ssd1327_configs import BarConfig
 from .ssd1327_utils import text_y_center, icon_image, choose_icon_name
 from oleds.widgets.batteries.battery import draw_battery
 
+log = logging.getLogger(__name__)
+
 class StatusBarSSD1327:
 
     def __init__(self, fg: int = 255, bg: int = 0, config: BarConfig | None = None):
-
         if abs(fg - bg) < 80:
             fg = 255 if bg < 128 else 0
         
@@ -40,11 +42,14 @@ class StatusBarSSD1327:
         bx = right_edge - w
         by = y
         try:
-            draw_battery(dm.draw, bx, by, w=w, h=h, fg=self.fg, bg=self.bg)
-        except Exception:
-            dm.draw.rectangle((bx, by, bx+w-1, by+h-1), outline=self.fg)
-            dm.draw.rectangle((bx+w-3, by + h//3, bx+w-1, by + 2*h//3), fill=self.fg)
-            dm.draw.rectangle((bx+2, by+2, bx+w-4, by+h-3), outline=self.fg)
+            # Вызываем нашу функцию, она сама управляет цветами
+            draw_battery(dm.draw, bx, by, w=w, h=h)
+        except Exception as e:
+            # Если что-то пойдет не так, мы увидим ошибку в логе, а не пустую батарею
+            log.error(f"CRITICAL: Battery widget failed to draw: {e}", exc_info=True)
+            # Рисуем крест как индикатор ошибки
+            dm.draw.line((bx, by, bx + w, by + h), fill=self.fg)
+            dm.draw.line((bx, by + h, bx + w, by), fill=self.fg)
         return bx, by, w, h
 
     def _draw_icon(self, dm, name: Optional[str], x: int, y: int) -> int:
@@ -87,8 +92,7 @@ class StatusBarSSD1327:
     def render(self, dm, stats: Dict) -> None:
         W, _ = dm.image.size
         y_elem = self.cfg.pad_top
-        left_x = 0 + 0
-
+        left_x = 0
         right_edge = W
         
         tx, _, tw = self.dwor_clock(dm, y_elem, right_edge)
