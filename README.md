@@ -276,6 +276,7 @@ pip install -e ./bluetooth_policy
 pip install -e ./sound_service
 pip install -e ./button_service
 pip install -e ./oled_service
+pip install -e ./ups_service
 deactivate
 ```
 * backup_serviсe
@@ -359,6 +360,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now sound-controller.service
 sudo systemctl enable --now oled-status.service
 sudo systemctl enable --now button-manager.service
+sudo systemctl enable --now ups-service.service
 sudo systemctl enable --now location-monitor.service
 sudo systemctl enable --now earthquake-monitor.service
 sudo systemctl enable --now weather-monitor.service
@@ -372,6 +374,7 @@ sudo systemctl enable --now backup.service
 sudo systemctl status sound-controller.service
 sudo systemctl status oled-status.service
 sudo systemctl status button-manager.service
+sudo systemctl status ups-service.service
 sudo systemctl status location-monitor.service
 sudo systemctl status earthquake-monitor.service
 sudo systemctl status weather-monitor.service
