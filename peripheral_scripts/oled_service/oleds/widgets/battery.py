@@ -1,9 +1,9 @@
-import json, os, time
+import json, time
 from typing import Optional, Tuple
 from PIL import ImageDraw
 
 try:
-    from src.configs import UPS_STATUS_PATH, UPS_STATUS_STALE_SEC
+    from oleds.configs.configs import UPS_STATUS_PATH, UPS_STATUS_STALE_SEC
 except Exception:
     UPS_STATUS_PATH = "/run/peripherals/ups/status.json"
     UPS_STATUS_STALE_SEC = 120

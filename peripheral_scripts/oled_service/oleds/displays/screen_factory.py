@@ -11,9 +11,13 @@ def _profile_from_env_or_name(driver) -> str:
     return "ssd1327" if getattr(driver, "height", 64) >= 96 else "ssd1306"
 
 def _weather_enabled() -> bool:
-    v = os.getenv("OLED_ENABLE_WEATHER", "1").strip().lower()
-    if v in ("0","false","off","no"): return False
+    isWeatherEnabled = os.getenv("OLED_ENABLE_WEATHER", "1").strip().lower()
+    
+    if isWeatherEnabled in ("0","false","off","no"): 
+        return False
+    
     path = os.getenv("WEATHER_SERVICE_SOCKET", "/tmp/weather_service.sock")
+    
     try:
         return os.path.exists(path)
     except Exception:

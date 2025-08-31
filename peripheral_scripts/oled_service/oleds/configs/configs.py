@@ -15,5 +15,6 @@ FONT_SIZE = int(os.environ.get("OLED_FONT_SIZE", "10"))
 # Weather socket
 WEATHER_SERVICE_SOCKET = os.environ.get("WEATHER_SERVICE_SOCKET", "/tmp/weather_service.sock")
 
+# Ups status
 UPS_STATUS_PATH = os.environ.get("UPS_STATUS_PATH", "/run/peripherals/ups/status.json")
 UPS_STATUS_STALE_SEC = int(os.environ.get("UPS_STATUS_STALE_SEC", "120"))

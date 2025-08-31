@@ -3,7 +3,7 @@ from typing import Dict
 
 from .base import StatusBarBase
 
-class StatusBarMono8(StatusBarBase):
+class StatusBarSSD1306(StatusBarBase):
     def draw(self, dm, statuses: Dict):
         icons = [
             "DOCKER_OK" if statuses.get("status_docker") else "DOCKER_FAIL",
@@ -12,7 +12,9 @@ class StatusBarMono8(StatusBarBase):
             "WIFI_OK" if statuses.get("status_wifi") else "WIFI_FAIL",
             "VOLTAGE_OK" if statuses.get("status_voltage") else "VOLTAGE_FAIL",
         ]
+
         positions = [0, 30, 60, 90, 120]
+        
         for i, name in enumerate(icons):
             icon = dm._get_icon(name)
             if icon:
