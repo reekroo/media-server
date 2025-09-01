@@ -520,6 +520,13 @@ Your ID here is: 1a2b3c4d5e6f7g8h9i0j.
 
 ### Run immediately (one-shot)
 ```bash
+#first variant
+cd ~/backup_serviсe
+sudo /home/reekroo/backup_serviсe/.venv_backup_serviсe/bin/python -m src.main --now
+
+#second variant
+cd ~/backup_serviсe
+source .venv_backup_serviсe/bin/activate
 python -m backup_service.main --now
 ```
 
