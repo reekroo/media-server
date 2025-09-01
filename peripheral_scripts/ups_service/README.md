@@ -28,15 +28,18 @@ Same layout and conventions as your other services: src/ code, logging, configs,
 ```
 ups-service/
 ├─ src/
-│   ├─ main.py              # Entry point
-│   ├─ configs.py           # Global settings
-│   ├─ ups_logger.py        # Rotating logger
-│   ├─ ups_manager.py       # Core manager loop
-│   └─ providers/           # Hardware-specific providers
-│        ├─ base.py
-│        └─ geekworm_x1200.py
-├─ pyproject.toml           # Dependencies + venv install
-├─ Makefile                 # Minimal CLI (install/start/stop/logs)
+│   ├─ providers/
+│   │   └─ geekworm_x1200.py
+│   │   └─ base.py
+│   ├─ contracts.py
+│   ├─ configs.py
+│   ├─ display_soc_calculator.py
+│   ├─ shutdown_policy.py
+│   ├─ status_writer.py
+│   ├─ ups_service.py
+│   └─ main.py
+├─ pyproject.toml
+├─ Makefile
 └─ README.md
 ```
 
@@ -59,10 +62,10 @@ ups-service/
 
 ```json
 {
-  "ts": 1725001234,
+  "ts": 1725182017.45,
   "ac_present": true,
-  "charging": true,
-  "soc_percent": 84.5,
-  "voltage_v": 3.925
+  "voltage_v": 4.18,
+  "soc_chip_percent": 98.5,
+  "soc_display_percent": 99.1
 }
 ```
