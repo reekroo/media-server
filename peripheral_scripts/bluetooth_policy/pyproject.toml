@@ -13,8 +13,8 @@ dependencies = [
 ]
 
 [project.scripts]
-bluetooth-policy-apply = "bluetooth_policy.main:main"
+bluetooth-policy-apply = "bluetooth_managers.main:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["bluetooth_policy*"]
+include = ["bluetooth_managers*"]
