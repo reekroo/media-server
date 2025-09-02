@@ -18,7 +18,7 @@ help:
 status:
 	@$(RFKILL) list 2>/dev/null | awk '1'
 	@echo ""
-	@echo "Подсказка: Soft blocked: yes -> turn on, no -> turn off"
+	@echo "Soft blocked: yes -> turn on, no -> turn off"
 
 off:
 	@ if [ ! -x "$(RFKILL)" ]; then echo "ERROR: rfkill no found: $(RFKILL)"; exit 1; fi

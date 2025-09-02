@@ -1,6 +1,3 @@
-import logging
-import sys
-
 from . import configs
 from .ups_service import UpsService
 from .shutdown_policy import ShutdownPolicy, ShutdownConfig
@@ -8,16 +5,13 @@ from .status_writer import StatusWriter
 from .providers.geekworm_x1200 import GeekwormX1200
 from .display_soc_calculator import DisplaySoCCalculator
 
-def main():
-    file_handler = logging.FileHandler(configs.UPS_LOG_FILE, mode='a')
-    stdout_handler = logging.StreamHandler(sys.stdout)
+from utils.logger import setup_logger
 
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - UpsService - %(levelname)s - %(message)s',
-        handlers=[file_handler, stdout_handler]
+def main():
+    logger = setup_logger(
+        logger_name='UpsService',
+        log_file=configs.UPS_LOG_FILE
     )
-    logger = logging.getLogger(__name__)
 
     try:
         provider = GeekwormX1200(
