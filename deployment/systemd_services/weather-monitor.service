@@ -4,7 +4,7 @@ Description=Weather Monitor Service
 After=network-online.target
 
 [Service]
-ExecStart=/home/reekroo/weather_service/.venv_weather_service/bin/weather-service
+ExecStart=/home/reekroo/weather_monitor/.venv_weather_monitor/bin/weather-monitor
 
 User=root
 Group=root

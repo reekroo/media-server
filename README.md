@@ -322,12 +322,12 @@ pip install -e .
 deactivate
 ```
 
-* weather_service
+* weather_monitor
 
 ```Bash
-cd ~/weather_service
-python3 -m venv .venv_weather_service
-source .venv_weather_service/bin/activate
+cd ~/weather_monitor
+python3 -m venv .venv_weather_monitor
+source .venv_weather_monitor/bin/activate
 pip install -e .
 deactivate
 ```
