@@ -288,6 +288,7 @@ python3 -m venv .venv_backup_service
 source .venv_backup_service/bin/activate
 pip install -e .
 
+#copy client secret to the root service folder
 #run main script manually to activate google account
 
 python -m src.main
