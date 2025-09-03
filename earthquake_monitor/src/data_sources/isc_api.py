@@ -1,82 +1,81 @@
-import requests
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone, timedelta
-import configs
-from earthquake_logger import get_logger
-from data_sources.base import DataSource
+from typing import List, Dict
+from datetime import datetime, timezone
 
-log = get_logger(__name__)
+from .base import BaseApiDataSource
+from models.earthquake_event import EarthquakeEvent
 
-class IscApiDataSource(DataSource):
+class IscApiDataSource(BaseApiDataSource):
     API_URL = "https://www.isc.ac.uk/fdsnws/event/1/query"
 
-    def _parse_quakeml(self, xml_string):
-        try:
-            if not xml_string or not xml_string.strip().startswith('<'):
-                log.warning("[IscApiDataSource] Received empty or non-XML response. Skipping.")
-                return None
-            
-            root = ET.fromstring(xml_string)
-            event_parameters = root.find('{http://quakeml.org/xmlns/bed/1.2}eventParameters')
-
-            if event_parameters is None:
-                return None
-
-            features = []
-            for event in event_parameters.findall('{http://quakeml.org/xmlns/bed/1.2}event'):
-                event_id = event.get('{http://quakeml.org/xmlns/quakeml/1.2}publicID')
-                
-                desc = event.find('{http://quakeml.org/xmlns/bed/1.2}description/{http://quakeml.org/xmlns/bed/1.2}text')
-                mag_value = event.find('{http://quakeml.org/xmlns/bed/1.2}magnitude/{http://quakeml.org/xmlns/bed/1.2}mag/{http://quakeml.org/xmlns/bed/1.2}value')
-                
-                feature = {
-                    'type': 'Feature',
-                    'id': event_id,
-                    'properties': {
-                        'mag': float(mag_value.text) if mag_value is not None else None,
-                        'place': desc.text if desc is not None else 'Unknown',
-                    }
-                }
-                features.append(feature)
-
-            return {'features': features}
-        except Exception as e:
-            log.error(f"[IscApiDataSource] Unexpected error during XML parsing: {e}", exc_info=True)
-            return None
+    def _build_request_params(self, latitude: float, longitude: float) -> (str, Dict, Dict):
+        radius_km = self._config.get('SEARCH_RADIUS_KM', 250)
+        radius_deg = radius_km / 111.0
         
-    def get_earthquakes(self, latitude, longitude):
-        log.info("[IscApiDataSource] Querying ISC data source...")
-        
-        time_window = timedelta(minutes=configs.API_TIME_WINDOW_MINUTES)
-        now_utc = datetime.now(timezone.utc)
-        start_time_utc = now_utc - time_window
-        radius_deg = configs.SEARCH_RADIUS_KM / 111.0
+        start_time_dt = datetime.fromisoformat(self._get_start_time_iso().replace('Z', '+00:00'))
 
         params = {
             "latitude": latitude,
             "longitude": longitude,
             "maxradius": f"{radius_deg:.2f}",
-            "minmagnitude": configs.MIN_API_MAGNITUDE,
+            "minmagnitude": self._config.get('MIN_API_MAGNITUDE'),
             "orderby": "time",
-            "starttime": start_time_utc.strftime('%Y-%m-%dT%H:%M:%S'),
+            "starttime": start_time_dt.strftime('%Y-%m-%dT%H:%M:%S'),
         }
-
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-
-        try:
-            response = requests.get(self.API_URL, params=params, headers=headers, timeout=10)
-                        
-            if response.status_code == 204:
-                log.info("[IscApiDataSource] Received 204 No Content, no new events.")
-                return None 
-            
-            log.info(f"[IscApiDataSource] Response status code: {response.status_code}")
-            response.raise_for_status()
-            
-            return self._parse_quakeml(response.text)
         
-        except requests.RequestException as e:
-            log.error(f"[IscApiDataSource] Network or API error: {e}")
-            return None
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36'
+        }
+        
+        return self.API_URL, params, headers
+
+    def _parse_response(self, response_text: str) -> List[EarthquakeEvent]:
+        events = []
+        try:
+            if not response_text or not response_text.strip().startswith('<'):
+                self._log.warning(f"[{self.name}] Received empty or non-XML response. Skipping.")
+                return []
+            
+            root = ET.fromstring(response_text)
+            
+            ns = {
+                'q': "http://quakeml.org/xmlns/quakeml/1.2",
+                'bed': "http://quakeml.org/xmlns/bed/1.2"
+            }
+            
+            event_params = root.find('bed:eventParameters', ns)
+            if event_params is None:
+                return []
+
+            for event in event_params.findall('bed:event', ns):
+                event_id = event.get('{http://quakeml.org/xmlns/quakeml/1.2}publicID')
+                
+                def find_text(path):
+                    element = event.find(path, ns)
+                    return element.text if element is not None else None
+
+                mag_str = find_text('bed:magnitude/bed:mag/bed:value')
+                place = find_text('bed:description/bed:text')
+                lat_str = find_text('bed:origin/bed:latitude/bed:value')
+                lon_str = find_text('bed:origin/bed:longitude/bed:value')
+                time_str = find_text('bed:origin/bed:time/bed:value')
+
+                if not all([event_id, mag_str, lat_str, lon_str, time_str]):
+                    self._log.warning(f"[{self.name}] Skipping event due to missing essential fields in XML.")
+                    continue
+
+                timestamp_dt = datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+                
+                events.append(EarthquakeEvent(
+                    event_id=event_id,
+                    magnitude=float(mag_str),
+                    place=place or 'Unknown',
+                    longitude=float(lon_str),
+                    latitude=float(lat_str),
+                    timestamp=int(timestamp_dt.timestamp())
+                ))
+
+            return events
+        except (ET.ParseError, ValueError, TypeError) as e:
+            self._log.error(f"[{self.name}] Unexpected error during XML parsing: {e}", exc_info=True)
+            return []

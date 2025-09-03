@@ -1,40 +1,45 @@
-import requests
-from datetime import datetime, timezone, timedelta
+import json
+from typing import List, Dict
+from typing import List
 
-import configs
-from earthquake_logger import get_logger
-from data_sources.base import DataSource
+from .base import BaseApiDataSource
+from models.earthquake_event import EarthquakeEvent
 
-log = get_logger(__name__)
-
-class UsgsApiDataSource(DataSource):
+class UsgsApiDataSource(BaseApiDataSource):
     API_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query"
 
-    def get_earthquakes(self, latitude, longitude):
-        log.info("[UsgsApiDataSource] Querying USGS data source...")
-
-        time_window = timedelta(minutes=configs.API_TIME_WINDOW_MINUTES)
-        now_utc = datetime.now(timezone.utc)
-        start_time_utc = now_utc - time_window
-
+    def _build_request_params(self, latitude: float, longitude: float) -> (str, Dict, Dict):
         params = {
             "format": "geojson",
             "latitude": latitude,
             "longitude": longitude,
-            "maxradiuskm": configs.SEARCH_RADIUS_KM,
-            "minmagnitude": configs.MIN_API_MAGNITUDE,
+            "maxradiuskm": self._config.get('SEARCH_RADIUS_KM'),
+            "minmagnitude": self._config.get('MIN_API_MAGNITUDE'),
             "orderby": "time",
-            "starttime": start_time_utc.isoformat(),
+            "starttime": self._get_start_time_iso(),
         }
+        return self.API_URL, params, {}
 
+    def _parse_response(self, response_text: str) -> List[EarthquakeEvent]:
         try:
-            response = requests.get(self.API_URL, params=params, timeout=10)
-            
-            log.info(f"[UsgsApiDataSource] Response status code: {response.status_code}")
-            response.raise_for_status()
-            
-            return response.json()
-        
-        except requests.RequestException as e:
-            log.error(f"[UsgsApiDataSource] Network or API error: {e}")
-            return None
+            data = json.loads(response_text)
+            events = []
+            for feature in data.get('features', []):
+                props = feature.get('properties', {})
+                geom = feature.get('geometry', {})
+                
+                if props.get('mag') is None or not geom.get('coordinates'):
+                    continue
+                
+                events.append(EarthquakeEvent(
+                    event_id=feature.get('id'),
+                    magnitude=float(props['mag']),
+                    place=props.get('place', 'Unknown'),
+                    longitude=geom['coordinates'][0],
+                    latitude=geom['coordinates'][1],
+                    timestamp=props.get('time', 0) // 1000
+                ))
+            return events
+        except (json.JSONDecodeError, KeyError) as e:
+            self._log.error(f"[{self.name}] Error parsing JSON response: {e}")
+            return []

@@ -1,32 +1,34 @@
 import logging
 import sys
 import os
-from configs import LOG_FILE_PATH, LOG_MAX_BYTES, LOG_BACKUP_COUNT
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 
-file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-console_formatter = logging.Formatter('%(message)s')
+def setup_logger(logger_name: str, log_file: str, level=logging.INFO, max_bytes: int = 10*1024*1024, backup_count: int = 5) -> logging.Logger:
 
-root_logger = logging.getLogger()
-root_logger.setLevel(logging.INFO)
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(level)
+    
+    if logger.handlers:
+        return logger
 
-if root_logger.hasHandlers():
-    root_logger.handlers.clear()
+    file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    console_formatter = logging.Formatter('%(message)s')
 
-os.makedirs(os.path.dirname(LOG_FILE_PATH), exist_ok=True)
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setFormatter(console_formatter)
+    logger.addHandler(stream_handler)
 
-file_handler = ConcurrentRotatingFileHandler(
-    filename=LOG_FILE_PATH,
-    maxBytes=LOG_MAX_BYTES,
-    backupCount=LOG_BACKUP_COUNT,
-    encoding='utf-8'
-)
-file_handler.setFormatter(file_formatter)
-root_logger.addHandler(file_handler)
+    try:
+        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+        file_handler = ConcurrentRotatingFileHandler(
+            filename=log_file,
+            maxBytes=max_bytes,
+            backupCount=backup_count,
+            encoding='utf-8'
+        )
+        file_handler.setFormatter(file_formatter)
+        logger.addHandler(file_handler)
+    except Exception as e:
+        logger.warning(f"File logging disabled: {e}")
 
-stream_handler = logging.StreamHandler(sys.stdout)
-stream_handler.setFormatter(console_formatter)
-root_logger.addHandler(stream_handler)
-
-def get_logger(name):
-    return logging.getLogger(name)
+    return logger
