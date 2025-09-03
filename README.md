@@ -258,6 +258,7 @@ Update your Pi's packages and firmware.
 sudo apt update
 sudo apt upgrade -y
 sudo rpi-eeprom-update -a
+sudo apt install socat
 ```
 
 ## Setting Up Python Virtual Environments (venv)
@@ -279,12 +280,12 @@ pip install -e ./oled_service
 pip install -e ./ups_service
 deactivate
 ```
-* backup_serviсe
+* backup_service
 
 ```Bash
-cd ~/backup_serviсe
-python3 -m venv .venv_backup_serviсe
-source .venv_backup_serviсe/bin/activate
+cd ~/backup_service
+python3 -m venv .venv_backup_service
+source .venv_backup_service/bin/activate
 pip install -e .
 
 #run main script manually to activate google account
@@ -299,7 +300,7 @@ deactivate
 
 #for immidiate run the solution use the command from console
 
-sudo /home/reekroo/backup_serviсe/.venv_backup_serviсe/bin/python -m src.main --now
+sudo /home/reekroo/backup_service/.venv_backup_service/bin/python -m src.main --now
 ```
 
 * location_service

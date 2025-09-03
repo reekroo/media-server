@@ -41,9 +41,9 @@ scrape_configs:
       - targets:
           - localhost
         labels:
-          job: backup_serviсe
+          job: backup_service
           host: raspberrypi
-          __path__: /mnt/logs/backup_serviсe_logs/*.log
+          __path__: /mnt/logs/backup_service_logs/*.log
 
   - job_name: weather monitor
     static_configs:
