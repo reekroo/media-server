@@ -1,31 +1,30 @@
 import socket
 import json
-
+import logging
 from .base import ILocationProvider
-from configs import LOCATION_SERVICE_SOCKET
-from earthquake_logger import get_logger
-
-log = get_logger(__name__)
 
 class SocketLocationProvider(ILocationProvider):
+    def __init__(self, logger: logging.Logger, socket_path: str, timeout: int = 5):
+        self._log = logger
+        self._socket_path = socket_path
+        self._timeout = timeout
+
     def get_location(self) -> dict | None:
-        log.info("Attempting to get location from external location_service...")
+        self._log.info(f"Attempting to get location from socket: {self._socket_path}...")
         
         try:
-            client_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            client_socket.settimeout(5)
-            client_socket.connect(LOCATION_SERVICE_SOCKET)
-            
-            data = client_socket.recv(1024)
-            client_socket.close()
-            
-            if data:
-                location = json.loads(data.decode('utf-8'))
-                log.info("Successfully received location from service: %s", location)
-                return location
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client_socket:
+                client_socket.settimeout(self._timeout)
+                client_socket.connect(self._socket_path)
+                
+                data = client_socket.recv(1024)
+                
+                if data:
+                    location = json.loads(data.decode('utf-8'))
+                    self._log.info("Successfully received location from service: %s", location)
+                    return location
+            return None
             
         except (socket.error, FileNotFoundError, json.JSONDecodeError, socket.timeout) as e:
-            log.warning("Failed to get location from service socket: %s", e)
+            self._log.warning(f"Failed to get location from service socket: {e}")
             return None
-        
-        return None

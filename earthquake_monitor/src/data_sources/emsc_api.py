@@ -1,46 +1,49 @@
-import requests
-from datetime import datetime, timezone, timedelta
+import json
+from typing import List, Dict
 
-import configs
-from earthquake_logger import get_logger
-from data_sources.base import DataSource
+from .base import BaseApiDataSource
+from models.earthquake_event import EarthquakeEvent
 
-log = get_logger(__name__)
-
-class EmscApiDataSource(DataSource):
+class EmscApiDataSource(BaseApiDataSource):
     API_URL = "https://www.seismicportal.eu/fdsnws/event/1/query"
 
-    def get_earthquakes(self, latitude, longitude):
-        log.info("[EmscApiDataSource] Querying EMSC data source...")
-
-        time_window = timedelta(minutes=configs.API_TIME_WINDOW_MINUTES)
-        now_utc = datetime.now(timezone.utc)
-        start_time_utc = now_utc - time_window        
-        radius_deg = configs.SEARCH_RADIUS_KM / 111.0
-
+    def _build_request_params(self, latitude: float, longitude: float) -> (str, Dict, Dict):
+        radius_km = self._config.get('SEARCH_RADIUS_KM', 250)
+        radius_deg = radius_km / 111.0
+        
         params = {
             "format": "json",
             "latitude": latitude,
             "longitude": longitude,
             "maxradius": f"{radius_deg:.2f}",
-            "minmagnitude": configs.MIN_API_MAGNITUDE,
+            "minmagnitude": self._config.get('MIN_API_MAGNITUDE'),
             "orderby": "time",
-            "start": start_time_utc.isoformat(),
+            "start": self._get_start_time_iso(),
         }
+        return self.API_URL, params, {}
 
+    def _parse_response(self, response_text: str) -> List[EarthquakeEvent]:
         try:
-            response = requests.get(self.API_URL, params=params, timeout=10)
-            response.raise_for_status()
-            
-            if response.status_code == 204:
-                log.info("[EmscApiDataSource] Received 204 No Content, no new events.")
-                return None 
-
-            log.info(f"[EmscApiDataSource] Response status code: {response.status_code}")
-            response.raise_for_status()
-
-            return response.json()
-        
-        except requests.RequestException as e:
-            log.error(f"[EmscApiDataSource] Network or API error: {e}")
-            return None
+            data = json.loads(response_text)
+            events = []
+            for feature in data.get('features', []):
+                props = feature.get('properties', {})
+                geom = feature.get('geometry', {})
+                
+                if props.get('mag') is None or not geom or not geom.get('coordinates'):
+                    continue
+                
+                timestamp_ms = props.get('time', 0)
+                
+                events.append(EarthquakeEvent(
+                    event_id=feature.get('id'),
+                    magnitude=float(props['mag']),
+                    place=props.get('place', 'Unknown'),
+                    longitude=geom['coordinates'][0],
+                    latitude=geom['coordinates'][1],
+                    timestamp=timestamp_ms // 1000
+                ))
+            return events
+        except (json.JSONDecodeError, KeyError, IndexError) as e:
+            self._log.error(f"[{self.name}] Error parsing JSON response: {e}")
+            return []

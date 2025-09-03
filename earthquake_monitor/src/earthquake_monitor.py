@@ -1,87 +1,82 @@
-#!/usr/bin/env python3
-
 import time
+import logging
 from collections import deque
 from typing import List
-from locations.base import ILocationProvider
-from data_sources.base import DataSource
-from alerters.base import BaseAlerter
-from earthquake_logger import get_logger
 
-log = get_logger(__name__)
+from alerters.base import BaseAlerter
+from locations.base import ILocationProvider
+from data_sources.base import BaseApiDataSource
+from models.earthquake_event import EarthquakeEvent
 
 class EarthquakeMonitor:
-    def __init__(self, 
-                 data_sources: List[DataSource], 
-                 location_providers: List[ILocationProvider] = None,
-                 alerters: List[BaseAlerter] = None,
-                 alert_levels_config=None, 
+    def __init__(self,
+                 data_sources: List[BaseApiDataSource],
+                 location_providers: List[ILocationProvider],
+                 alerters: List[BaseAlerter],
+                 alert_levels_config: List[dict],
+                 logger: logging.Logger,
                  max_processed_events: int = 100):
-        self._data_sources = data_sources or []
-        self._location_providers = location_providers or []
-        self._alerters = alerters or []
-        self._alert_levels = alert_levels_config or []
+        self._data_sources = data_sources
+        self._location_providers = location_providers
+        self._alerters = alerters
+        self._alert_levels = sorted(alert_levels_config, key=lambda x: x['min_magnitude'], reverse=True)
         self._processed_event_ids = deque(maxlen=max_processed_events)
-        log.info("[EarthquakeMonitor] initialized.")
+        self._log = logger
+        self._log.info("EarthquakeMonitor initialized.")
 
     def _get_current_location(self) -> dict | None:
         for provider in self._location_providers:
             location = provider.get_location()
             if location:
                 return location
-        log.error("Failed to get location from all available providers.")
+        self._log.error("Failed to get location from all available providers.")
         return None
 
     def check_and_alert(self) -> None:
-        log.info("[EarthquakeMonitor] Checking for events...")
+        self._log.info("Checking for new earthquake events...")
 
-        current_location = self._get_current_location() if self._location_providers else {"lat": 0.0, "lon": 0.0}
+        current_location = self._get_current_location()
         if not current_location:
-            log.error("Could not determine location, skipping weather check.")
+            self._log.error("Could not determine location, skipping check cycle.")
             return
 
-        all_features = []
+        all_events: List[EarthquakeEvent] = []
         for source in self._data_sources:
-            try:
-                data = source.get_earthquakes(current_location['lat'], current_location['lon'])
-                if data and data.get('features'):
-                    all_features.extend(data['features'])
-            except Exception as e:
-                log.error(f"[EarthquakeMonitor] Failed to get data from {type(source).__name__}: {e}")
-
-        if not all_features:
-            log.info("[EarthquakeMonitor] No new events found from any source.")
+            events = source.get_earthquakes(current_location['lat'], current_location['lon'])
+            all_events.extend(events)
+            
+        if not all_events:
+            self._log.info("No events found from any source.")
             return
+            
+        unique_events = {event.event_id: event for event in all_events}        
+        new_events = [event for event in unique_events.values() if event.event_id not in self._processed_event_ids]
 
-        new_events = [e for e in all_features if e.get('id') not in self._processed_event_ids]
         if not new_events:
-            log.info("[EarthquakeMonitor] Found events, but they have already been processed.")
+            self._log.info("Found events, but they have already been processed.")
             return
 
-        strongest_event = max(new_events, key=lambda e: e['properties'].get('mag', 0))
+        strongest_event = max(new_events, key=lambda e: e.magnitude)
+        
         for event in new_events:
-            self._processed_event_ids.append(event['id'])
+            self._processed_event_ids.append(event.event_id)
 
-        mag = strongest_event['properties'].get('mag', 0)
-        place = strongest_event['properties'].get('place', 'Unknown')
+        self._trigger_alert_for_event(strongest_event)
 
+    def _trigger_alert_for_event(self, event: EarthquakeEvent) -> None:
         for level_cfg in self._alert_levels:
-            if mag >= level_cfg.get('min_magnitude', 0):
-                level_id = level_cfg.get('level_id', 1)
-                melody_name = level_cfg.get('melody_name') or f"ALERT_LEVEL_{level_id}"
-                duration = level_cfg.get('duration', 0)
-
-                log.warning("--- STRONGEST NEW EVENT DETECTED ---")
-                log.warning(f"Magnitude: {mag} (Threshold: {level_cfg.get('min_magnitude')})")
-                log.warning(f"Place: {place}")
+            if event.magnitude >= level_cfg['min_magnitude']:
+                self._log.warning("--- STRONGEST NEW EVENT DETECTED ---")
+                self._log.warning(f"Magnitude: {event.magnitude} (Threshold: {level_cfg['min_magnitude']})")
+                self._log.warning(f"Place: {event.place}")
 
                 for alerter in self._alerters:
                     alerter.alert(
-                        level=level_id,
-                        magnitude=mag,
-                        place=place,
-                        melody_name=melody_name,
-                        duration=duration
+                        level=level_cfg['level_id'],
+                        magnitude=event.magnitude,
+                        place=event.place,
+                        melody_name=level_cfg['melody_name'],
+                        duration=level_cfg['duration']
                     )
                 break
 
@@ -91,6 +86,6 @@ class EarthquakeMonitor:
                 self.check_and_alert()
                 time.sleep(interval_seconds)
         except KeyboardInterrupt:
-            log.info("[EarthquakeMonitor] Monitor service stopped by user.")
+            self._log.info("Monitor service stopped by user.")
         finally:
-            log.info("[EarthquakeMonitor] Monitor service has been shut down.")
+            self._log.info("Monitor service has been shut down.")

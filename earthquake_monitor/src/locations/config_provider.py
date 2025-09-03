@@ -1,10 +1,11 @@
+import logging
 from .base import ILocationProvider
-from configs import DEFAULT_LATITUDE, DEFAULT_LONGITUDE
-from earthquake_logger import get_logger
-
-log = get_logger(__name__)
 
 class ConfigLocationProvider(ILocationProvider):
+    def __init__(self, logger: logging.Logger, default_lat: float, default_lon: float):
+        self._log = logger
+        self._default_location = {'lat': default_lat, 'lon': default_lon}
+
     def get_location(self) -> dict:
-        log.warning("Using fallback location from local config.")
-        return {'lat': DEFAULT_LATITUDE, 'lon': DEFAULT_LONGITUDE}
+        self._log.warning("Using fallback location from local config.")
+        return self._default_location
