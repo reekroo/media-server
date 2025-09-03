@@ -7,6 +7,10 @@ import json
 class WeatherScreen1327(BaseScreen):
     HANDLES_BACKGROUND = True
 
+    # def should_render(self, dm, stats: dict) -> bool:
+    #     weather_data = stats.get("weather") or stats.get("weather_data")
+    #     return weather_data is not None
+
     @staticmethod
     def _as_float(v, default=None):
         try:

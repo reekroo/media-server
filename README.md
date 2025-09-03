@@ -258,6 +258,7 @@ Update your Pi's packages and firmware.
 sudo apt update
 sudo apt upgrade -y
 sudo rpi-eeprom-update -a
+sudo apt install socat
 ```
 
 ## Setting Up Python Virtual Environments (venv)
@@ -279,14 +280,15 @@ pip install -e ./oled_service
 pip install -e ./ups_service
 deactivate
 ```
-* backup_serviсe
+* backup_service
 
 ```Bash
-cd ~/backup_serviсe
-python3 -m venv .venv_backup_serviсe
-source .venv_backup_serviсe/bin/activate
+cd ~/backup_service
+python3 -m venv .venv_backup_service
+source .venv_backup_service/bin/activate
 pip install -e .
 
+#copy client secret to the root service folder
 #run main script manually to activate google account
 
 python -m src.main
@@ -299,7 +301,7 @@ deactivate
 
 #for immidiate run the solution use the command from console
 
-sudo /home/reekroo/backup_serviсe/.venv_backup_serviсe/bin/python -m src.main --now
+sudo /home/reekroo/backup_service/.venv_backup_service/bin/python -m src.main --now
 ```
 
 * location_service
@@ -322,12 +324,12 @@ pip install -e .
 deactivate
 ```
 
-* weather_service
+* weather_monitor
 
 ```Bash
-cd ~/weather_service
-python3 -m venv .venv_weather_service
-source .venv_weather_service/bin/activate
+cd ~/weather_monitor
+python3 -m venv .venv_weather_monitor
+source .venv_weather_monitor/bin/activate
 pip install -e .
 deactivate
 ```
@@ -520,6 +522,13 @@ Your ID here is: 1a2b3c4d5e6f7g8h9i0j.
 
 ### Run immediately (one-shot)
 ```bash
+#first variant
+cd ~/backup_serviсe
+sudo /home/reekroo/backup_serviсe/.venv_backup_serviсe/bin/python -m src.main --now
+
+#second variant
+cd ~/backup_serviсe
+source .venv_backup_serviсe/bin/activate
 python -m backup_service.main --now
 ```
 

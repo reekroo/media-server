@@ -1,57 +1,72 @@
 #!/usr/bin/env python3
-import os, socket, json
+import os
+import socket
+import json
+import logging
+import time
 from collections import namedtuple
 from typing import Optional
 
 WeatherData = namedtuple(
     "WeatherData",
     [
-        "location_name",
-        "temperature",
-        "feels_like",
-        "pressure",
-        "humidity",
-        "description",
-        "source",
+        "location_name", "temperature", "feels_like", "pressure",
+        "humidity", "description", "source",
     ]
 )
 
+def _safe_float(value, default=0.0):
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return default
+
+def _safe_int(value, default=0):
+    if value is None:
+        return default
+    try:
+        return int(float(value))
+    except (ValueError, TypeError):
+        return default
+
 class WeatherProvider:
-
-    def __init__(self, path: Optional[str] = None):
+    def __init__(self, logger: logging.Logger, path: Optional[str] = None):
+        self._log = logger
         self.path = path or os.getenv("WEATHER_SERVICE_SOCKET", "/tmp/weather_service.sock")
+        self._log.info(f"WeatherProvider initialized for socket path: {self.path}")
 
-    def get_weather(self, timeout: float = 0.25) -> Optional[WeatherData]:
-        try:
-            s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            s.settimeout(timeout)
-            s.connect(self.path)
+    def get_weather(self, timeout: float = 2.0) -> Optional[WeatherData]:
+        for attempt in range(3):
+            try:
+                with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+                    s.settimeout(timeout)
+                    s.connect(self.path)
+                    raw = s.recv(4096)
+                    if not raw:
+                        continue
+                
+                txt = raw.decode("utf-8", errors="ignore").strip()
+                if not txt:
+                    continue
 
-            raw = s.recv(4096)
-            s.close()
-            if not raw:
-                return None
+                obj = json.loads(txt)
+                
+                return WeatherData(
+                    location_name=str(obj.get("location_name") or "Unknown"),
+                    temperature=_safe_float(obj.get("temperature")),
+                    feels_like=_safe_float(obj.get("feels_like")),
+                    pressure=_safe_int(obj.get("pressure")),
+                    humidity=_safe_int(obj.get("humidity")),
+                    description=str(obj.get("description") or "").strip(),
+                    source=str(obj.get("source") or "n/a").strip(),
+                )
             
-            txt = raw.decode("utf-8", errors="ignore").strip()
-            
-            if not txt:
-                return None
-            
-            obj = json.loads(txt)
-            
-            def get(k, default=None):
-                return obj.get(k, obj.get(k.lower(), default))
-
-            wd = WeatherData(
-                location_name = get("location_name", "Unknown"),
-                temperature   = float(get("temperature", 0.0)),
-                feels_like    = float(get("feels_like", 0.0)),
-                pressure      = int(get("pressure", 0)),
-                humidity      = int(get("humidity", 0)),
-                description   = str(get("description", "")).strip(),
-                source        = str(get("source", "n/a")).strip(),
-            )
-            return wd
+            except Exception as e:
+                self._log.warning(f"Failed to get weather on attempt {attempt+1}: {e}")
+                if attempt < 2:
+                    time.sleep(1)
         
-        except (FileNotFoundError, ConnectionRefusedError, socket.timeout, json.JSONDecodeError, OSError):
-            return None
+        self._log.error("Failed to get weather data after all attempts.")
+        return None

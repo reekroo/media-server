@@ -17,7 +17,7 @@ CREDENTIALS_FILE_PATH = Path(__file__).parent.parent / "credentials.json"
 TOKEN_FILE_PATH = Path(__file__).parent.parent / "token.json"
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
-LOG_FILE_PATH = Path(__file__).parent.parent / "logs/backup_serviсe.log"
+LOG_FILE_PATH = Path(__file__).parent.parent / "logs/backup_service.log"
 LOG_LEVEL = "INFO"
 LOG_MAX_BYTES = 5 * 1024 * 1024
 LOG_BACKUP_COUNT = 3

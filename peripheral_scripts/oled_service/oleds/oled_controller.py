@@ -1,8 +1,9 @@
-#!/usr/bin/env python3
+#!/usr/-bin/env python3
 import time
 
 from oleds.configs.configs import LOG_FILE, PAGE_INTERVAL, UPDATE_INTERVAL
 from oleds.providers.stats_provider import StatsProvider
+from oleds.providers.weather_provider import WeatherProvider
 from utils.logger import setup_logger
 
 log = setup_logger('OledController', LOG_FILE)
@@ -14,6 +15,8 @@ class OledController:
         self.pages = list(pages) if pages else []
         self.current_page_index = 0
         
+        self.weather_provider = WeatherProvider(logger=log)
+
         log.info("[OledController] Initialized with %d pages.", len(self.pages))
 
     def _next_index(self, idx: int) -> int:
@@ -63,6 +66,8 @@ class OledController:
         while True:
             try:
                 stats = self.provider.get_all_stats()
+
+                stats["weather"] = self.weather_provider.get_weather()
 
                 found = self._pick_renderable_page(stats)
                 if not found:

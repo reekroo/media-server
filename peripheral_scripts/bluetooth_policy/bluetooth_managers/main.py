@@ -1,13 +1,24 @@
 #!/usr/bin/env python3
-from .bluetooth_manager import BluetoothPolicy, log
+from . import configs
+from .policy import BluetoothPolicy
+from utils.logger import setup_logger
 
 def main():
+    logger = setup_logger(
+        logger_name="BluetoothPolicy", 
+        log_file=configs.LOG_FILE
+    )
+    
     try:
-        policy = BluetoothPolicy()
+        policy = BluetoothPolicy(
+            logger=logger, 
+            method=configs.BT_BLOCK_METHOD, 
+            device=configs.BT_DEVICE
+        )
         policy.apply()
-        log.info("[BluetoothPolicy] Policy applied successfully.")
+        logger.info("Policy applied successfully.")
     except Exception as e:
-        log.error(f"[BluetoothPolicy] Failed to apply policy: {e}", exc_info=True)
+        logger.error(f"Failed to apply policy: {e}", exc_info=True)
 
 if __name__ == "__main__":
     main()

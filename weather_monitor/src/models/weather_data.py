@@ -9,6 +9,7 @@ WeatherData = namedtuple(
         'pressure',
         'humidity',
         'description',
+        'wind_speed',
         'source'
     ]
 )

@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
-
 UPS_STATUS_PATH = "/run/peripherals/ups/status.json"
 
-UPS_STATUS_STALE_SEC = 120
-
 CACHE_TTL_SEC = 1.0
-
-LOW_BATTERY_THRESHOLD = 20
 
 BATTERY_WIDTH = 28
 BATTERY_HEIGHT = 12

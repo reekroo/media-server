@@ -12,22 +12,13 @@ def _profile_from_env_or_name(driver) -> str:
 
 def _weather_enabled() -> bool:
     isWeatherEnabled = os.getenv("OLED_ENABLE_WEATHER", "1").strip().lower()
-    
-    if isWeatherEnabled in ("0","false","off","no"): 
-        return False
-    
-    path = os.getenv("WEATHER_SERVICE_SOCKET", "/tmp/weather_service.sock")
-    
-    try:
-        return os.path.exists(path)
-    except Exception:
-        return False
+    return isWeatherEnabled not in ("0", "false", "off", "no")
 
 def _reorder(pages: List[object]) -> List[object]:
     order = os.getenv("OLED_PAGES")
     if not order:
         return pages
-    
+
     key_to_page = {
         "perf":      next((p for p in pages if "performance" in p.__class__.__name__.lower()), None),
         "storage":   next((p for p in pages if "storage" in p.__class__.__name__.lower()), None),
@@ -38,14 +29,14 @@ def _reorder(pages: List[object]) -> List[object]:
         "system":    next((p for p in pages if "system" in p.__class__.__name__.lower()), None),
         "iofocus":   next((p for p in pages if "diskio" in p.__class__.__name__.lower() or "io" in p.__class__.__name__.lower()), None),
     }
-    
+
     result = []
-    
+
     for token in [t.strip().lower() for t in order.split(",")]:
         pg = key_to_page.get(token)
         if pg is not None:
             result.append(pg)
-    
+
     return result or pages
 
 def make_pages(driver) -> List[object]:
@@ -69,7 +60,7 @@ def make_pages(driver) -> List[object]:
             SystemScreen1327(),
             DiskIOScreen1327(),
         ]
-        
+
         if _weather_enabled():
             from .screens.ssd1327.weather_screen_1327 import WeatherScreen1327
             pages.append(WeatherScreen1327())
@@ -79,8 +70,8 @@ def make_pages(driver) -> List[object]:
         from oleds.displays.screens.ssd1306.health_screen import HealthScreen
 
         pages = [
-            PerformanceScreen(), 
-            StorageScreen(), 
+            PerformanceScreen(),
+            StorageScreen(),
             HealthScreen()
         ]
 

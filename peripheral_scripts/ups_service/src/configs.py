@@ -19,6 +19,11 @@ POLL_INTERVAL_SEC = float(os.environ.get("UPS_POLL_INTERVAL_SEC", "5"))
 LOW_BATTERY_PERCENT = float(os.environ.get("UPS_LOW_BATTERY_PERCENT", "10"))
 LOW_BATT_DEBOUNCE_SEC = float(os.environ.get("UPS_LOW_BATT_DEBOUNCE_SEC", "60"))
 
+CRITICAL_VOLTAGE_V = float(os.environ.get("UPS_CRITICAL_VOLTAGE_V", "3.1"))
+
+VOLTAGE_MIN = float(os.environ.get("UPS_VOLTAGE_MIN", "3.0"))
+VOLTAGE_MAX = float(os.environ.get("UPS_VOLTAGE_MAX", "4.2"))
+
 DRY_RUN = os.environ.get("UPS_DRY_RUN", "0") == "1"
 SHUTDOWN_CMD = tuple(os.environ.get(
     "UPS_SHUTDOWN_CMD",
