@@ -1,4 +1,6 @@
 import json
+import calendar 
+from datetime import datetime, timezone
 from typing import List, Dict
 
 from .base import BaseApiDataSource
@@ -22,27 +24,40 @@ class EmscApiDataSource(BaseApiDataSource):
         }
         return self.API_URL, params, {}
 
-    def _parse_response(self, response_text: str) -> List[EarthquakeEvent]:
+    def _parse_response(self, response_text: str) -> list[EarthquakeEvent]:
         try:
             data = json.loads(response_text)
             events = []
             for feature in data.get('features', []):
-                props = feature.get('properties', {})
-                geom = feature.get('geometry', {})
-                
-                if props.get('mag') is None or not geom or not geom.get('coordinates'):
+                try:
+                    props = feature.get('properties', {})
+                    geom = feature.get('geometry', {})
+
+                    if props.get('mag') is None or not geom or not geom.get('coordinates'):
+                        continue
+                    
+                    time_value = props.get('time')
+                    if time_value is None:
+                        continue
+
+                    timestamp_sec = 0
+                    try:
+                        timestamp_sec = int(time_value) // 1000
+                    except ValueError:
+                        aware_dt_object = datetime.fromisoformat(time_value)
+                        timestamp_sec = int(aware_dt_object.timestamp())
+
+                    events.append(EarthquakeEvent(
+                        event_id=feature.get('id'),
+                        magnitude=float(props['mag']),
+                        place=props.get('place', 'Unknown'),
+                        longitude=geom['coordinates'][0],
+                        latitude=geom['coordinates'][1],
+                        timestamp=timestamp_sec
+                    ))
+                except (ValueError, TypeError) as e:
+                    self._log.warning(f"[{self.name}] Skipping an event due to data conversion error: {e}. Data: {feature}")
                     continue
-                
-                timestamp_ms = props.get('time', 0)
-                
-                events.append(EarthquakeEvent(
-                    event_id=feature.get('id'),
-                    magnitude=float(props['mag']),
-                    place=props.get('place', 'Unknown'),
-                    longitude=geom['coordinates'][0],
-                    latitude=geom['coordinates'][1],
-                    timestamp=timestamp_ms // 1000
-                ))
             return events
         except (json.JSONDecodeError, KeyError, IndexError) as e:
             self._log.error(f"[{self.name}] Error parsing JSON response: {e}")
