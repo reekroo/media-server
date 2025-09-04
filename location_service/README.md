@@ -31,7 +31,6 @@ location-service/
 └─ pyproject.toml
 ```
 
-
 # Installation
 
 Requires Python ≥ 3.9. Uses requests and concurrent-log-handler (declared in pyproject.toml).
@@ -53,7 +52,6 @@ pip install .
 | `DEFAULT_LONGITUDE`       | `27.1428`                          | Fallback longitude.          |
 | `LOCATION_SERVICE_SOCKET` | `/tmp/location_service.sock`       | UNIX socket path.            |
 | `UPDATE_INTERVAL_SECONDS` | `3600`                             | Refresh interval (seconds).  |
-
 
 # Systemd Integration
 

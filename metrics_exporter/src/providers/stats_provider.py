@@ -1,19 +1,13 @@
-from providers.system_provider import SystemProvider
-from providers.network_provider import NetworkProvider
-from providers.disk_provider import DiskProvider
-from providers.docker_provider import DockerProvider
-from providers.hardware_provider import HardwareProvider
-
 class StatsProvider:
-    def __init__(self):
-        self.system = SystemProvider()
-        self.network = NetworkProvider()
-        self.root_disk = DiskProvider(path='/')
-        self.storage_disk = DiskProvider(path='/mnt/storage/')
-        self.docker = DockerProvider()
-        self.hardware = HardwareProvider()
+    def __init__(self, system_p, network_p, root_disk_p, storage_disk_p, docker_p, hardware_p):
+        self.system = system_p
+        self.network = network_p
+        self.root_disk = root_disk_p
+        self.storage_disk = storage_disk_p
+        self.docker = docker_p
+        self.hardware = hardware_p
 
-    def get_all_stats(self):
+    def get_all_stats(self) -> dict:
         stats = {
             "ip": self.network.get_ip_address(),
             "cpu": self.system.get_cpu_usage(),
