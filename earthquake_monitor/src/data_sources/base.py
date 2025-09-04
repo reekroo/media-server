@@ -24,7 +24,9 @@ class BaseApiDataSource(ABC):
                 self._log.info(f"[{self.name}] Received 204 No Content, no new events.")
                 return []
             
-            return self._parse_response(response.text)
+            events = self._parse_response(response.text)
+            self._log.info(f"[{self.name}] Successfully parsed response, found {len(events)} event(s).")
+            return events
         
         except Exception as e:
             self._log.error(f"[{self.name}] Failed to fetch or parse data: {e}")

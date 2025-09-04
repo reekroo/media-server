@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
-from typing import List, Dict
+import calendar 
 from datetime import datetime, timezone
+from typing import List, Dict
 
 from .base import BaseApiDataSource
 from models.earthquake_event import EarthquakeEvent
@@ -29,7 +30,7 @@ class IscApiDataSource(BaseApiDataSource):
         
         return self.API_URL, params, headers
 
-    def _parse_response(self, response_text: str) -> List[EarthquakeEvent]:
+    def _parse_response(self, response_text: str) -> list[EarthquakeEvent]:
         events = []
         try:
             if not response_text or not response_text.strip().startswith('<'):
@@ -63,16 +64,17 @@ class IscApiDataSource(BaseApiDataSource):
                 if not all([event_id, mag_str, lat_str, lon_str, time_str]):
                     self._log.warning(f"[{self.name}] Skipping event due to missing essential fields in XML.")
                     continue
-
-                timestamp_dt = datetime.fromisoformat(time_str.replace('Z', '+00:00'))
                 
+                aware_dt_object = datetime.fromisoformat(time_str)
+                timestamp_sec = int(aware_dt_object.timestamp())
+
                 events.append(EarthquakeEvent(
                     event_id=event_id,
                     magnitude=float(mag_str),
                     place=place or 'Unknown',
                     longitude=float(lon_str),
                     latitude=float(lat_str),
-                    timestamp=int(timestamp_dt.timestamp())
+                    timestamp=timestamp_sec
                 ))
 
             return events
