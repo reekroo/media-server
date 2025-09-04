@@ -1,10 +1,11 @@
+import logging
 from .base import ILocationProvider
-from configs import DEFAULT_LATITUDE,DEFAULT_LONGITUDE
-from location_logger import get_logger
-
-log = get_logger(__name__)
 
 class ConfigFallbackProvider(ILocationProvider):
+    def __init__(self, default_lat: float, default_lon: float, logger: logging.Logger):
+        self._location = {'lat': default_lat, 'lon': default_lon}
+        self.log = logger
+    
     def determine_location(self) -> dict:
-        log.warning("Using fallback location from config.")
-        return {'lat': DEFAULT_LATITUDE, 'lon': DEFAULT_LONGITUDE}
+        self.log.warning("Using fallback location from config.")
+        return self._location
