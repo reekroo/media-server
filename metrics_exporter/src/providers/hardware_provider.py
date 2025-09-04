@@ -1,7 +1,10 @@
 import subprocess
 import json
+import logging
 
 class HardwareProvider:
+    def __init__(self, logger: logging.Logger):
+        self.log = logger
 
     def get_core_voltage(self):
         try:

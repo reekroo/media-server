@@ -1,9 +1,11 @@
 import netifaces as ni
 import psutil
 import time
+import logging
 
 class NetworkProvider:
-    def __init__(self, lan_if='eth0', wlan_if='wlan0'):
+    def __init__(self, logger: logging.Logger, lan_if: str = 'eth0', wlan_if: str = 'wlan0'):
+        self.log = logger
         self.lan_if = lan_if
         self.wlan_if = wlan_if
         self.last_check_time = 0.0

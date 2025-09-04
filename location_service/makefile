@@ -6,8 +6,8 @@ LOG_FILE ?= /home/reekroo/peripheral_scripts/logs/location.log
 help:
 	@echo "Location Service - manual commands"
 	@echo ""
-	@echo "  make run-once   # Run the service in foreground once (without systemd)"
-	@echo "  make logs       # Show last 200 lines of logs"
+	@echo "  make run-once    # Run the service in foreground once (without systemd)"
+	@echo "  make logs        # Show last 200 lines of logs"
 	@echo "  make logs-follow # Follow logs in realtime"
 
 .PHONY: run-once

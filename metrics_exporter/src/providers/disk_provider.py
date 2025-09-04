@@ -1,25 +1,31 @@
 import psutil
 import time
+import logging
 
 class DiskProvider:
-    def __init__(self, path='/'):
+    def __init__(self, path: str, logger: logging.Logger):
         self.path = path
+        self.log = logger
         self.last_check_time = 0.0
         self.last_read_bytes = 0
         self.last_write_bytes = 0
         self._prime_counters()
 
     def _prime_counters(self):
-        _ = psutil.disk_io_counters()
-        self.last_check_time = time.time()
-        self.last_read_bytes = _.read_bytes
-        self.last_write_bytes = _.write_bytes
+        try:
+            io = psutil.disk_io_counters()
+            self.last_check_time = time.time()
+            self.last_read_bytes = io.read_bytes
+            self.last_write_bytes = io.write_bytes
+        except Exception as e:
+            self.log.error(f"Failed to prime disk IO counters: {e}")
 
     def get_usage(self):
         try:
             usage = psutil.disk_usage(self.path)
             return {"used": usage.used, "total": usage.total, "percent": usage.percent}
         except FileNotFoundError:
+            self.log.warning(f"Disk path not found for usage stats: {self.path}")
             return {"used": 0, "total": 0, "percent": 0}
 
     def get_io(self):

@@ -1,7 +1,10 @@
 import psutil
 import time
+import logging
 
 class SystemProvider:
+    def __init__(self, logger: logging.Logger):
+        self.log = logger
     
     def get_cpu_usage(self):
         return psutil.cpu_percent()
@@ -16,12 +19,12 @@ class SystemProvider:
         
     def get_cpu_temp(self):
         try:
-            temps = psutil.sensors_temperatures()
-            if 'cpu_thermal' in temps:
-                return temps['cpu_thermal'][0].current
-        except (AttributeError, KeyError, IndexError):
-            pass
-        return 0.0
+            with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
+                temp = int(f.read().strip()) / 1000.0
+                return temp
+        except (FileNotFoundError, IndexError, ValueError):
+            self.log.warning("Could not read CPU temperature from thermal_zone0.")
+            return 0.0
         
     def get_cpu_frequency(self):
         try:
