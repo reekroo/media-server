@@ -1,24 +1,23 @@
-import requests
+import logging
 from .base import ILocationProvider
-from location_logger import get_logger
-
-log = get_logger(__name__)
+from utils.http_client import HttpClient
 
 class IpInfoProvider(ILocationProvider):
+    URL = 'https://ipinfo.io/json'
+
+    def __init__(self, http_client: HttpClient, logger: logging.Logger):
+        self._http_client = http_client
+        self.log = logger
+
     def determine_location(self) -> dict | None:
         try:
-            log.info("Attempting to determine location via ipinfo.io...")
-            
-            response = requests.get('https://ipinfo.io/json', timeout=10)
-            response.raise_for_status()
-            
-            data = response.json()
+            self.log.info("Attempting to determine location via ipinfo.io...")
+            data = self._http_client.get_json(self.URL)
             
             lat, lon = map(float, data['loc'].split(','))
-            log.info("Successfully determined location from IP: (%s, %s)", lat, lon)
+            self.log.info("Successfully determined location from IP: (%s, %s)", lat, lon)
             
             return {'lat': lat, 'lon': lon}
-        
         except Exception as e:
-            log.error("Failed to get location from ipinfo.io: %s", e)
+            self.log.error("Failed to get location from ipinfo.io: %s", e)
             return None

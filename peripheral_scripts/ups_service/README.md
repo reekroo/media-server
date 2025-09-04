@@ -17,6 +17,8 @@ It tracks battery voltage and state of charge (SoC), detects AC adapter presence
 
 - CLI entrypoint — Run with ups-service (defined in pyproject.toml).
 
+# Project Structure
+
 ```bash
 ups-service/
 ├─ src/

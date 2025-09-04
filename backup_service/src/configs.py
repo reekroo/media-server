@@ -5,7 +5,7 @@ SOURCE_DIRECTORIES = [
     os.getenv("BACKUP_SOURCE_DIR", "/mnt/storage/configs")
 ]
 
-TEMP_ARCHIVE_PATH = os.getenv("BACKUP_TEMP_PATH", "/tmp/backups")
+TEMP_ARCHIVE_PATH = Path(os.getenv("BACKUP_TEMP_PATH", "/tmp/backups"))
 
 SCHEDULE_UNIT = "weeks"
 SCHEDULE_INTERVAL = 1
@@ -21,8 +21,3 @@ LOG_FILE_PATH = Path(__file__).parent.parent / "logs/backup_service.log"
 LOG_LEVEL = "INFO"
 LOG_MAX_BYTES = 5 * 1024 * 1024
 LOG_BACKUP_COUNT = 3
-
-def setup_directories():
-    Path(TEMP_ARCHIVE_PATH).mkdir(parents=True, exist_ok=True)
-
-setup_directories()
