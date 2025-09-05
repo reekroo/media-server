@@ -37,9 +37,14 @@ Requires Python ≥ 3.9. Uses requests and concurrent-log-handler (declared in p
 
 Install inside your virtual environment or system
 
-```bash
-pip install .
+```Bash
+cd ~/location_service
+python3 -m venv .venv_location_service
+source .venv_location_service/bin/activate
+pip install -e .
+deactivate
 ```
+
 # Configuration
 
 | Variable / Setting        | Default                            | Notes                        |

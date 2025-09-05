@@ -14,16 +14,6 @@
 
 - CLI entrypoint backup-service with --now to run once and exit.
 
-# Installation
-
-Requires Python ≥ 3.9. Uses requests and concurrent-log-handler (declared in pyproject.toml).
-
-Install inside your virtual environment or system
-
-```bash
-pip install .
-```
-
 # Google Account Setup
 
 To work, the service needs permission to access your Google Drive. This is a one-time setup.
@@ -47,6 +37,34 @@ This is the ID of the folder on your Google Drive where the archives will be upl
 * Open it. The ID will be at the end of the URL in your browser's address bar.
 Example: https://drive.google.com/drive/folders/1a2b3c4d5e6f7g8h9i0j
 Your ID here is: 1a2b3c4d5e6f7g8h9i0j.
+
+# Installation
+
+Requires Python ≥ 3.9. Uses requests and concurrent-log-handler (declared in pyproject.toml).
+
+Install inside your virtual environment or system
+
+```Bash
+cd ~/backup_service
+python3 -m venv .venv_backup_service
+source .venv_backup_service/bin/activate
+pip install -e .
+
+#copy client secret to the root service folder
+#run main script manually to activate google account
+
+python -m src.main
+
+#authenticate as an real user
+#provided generated code to the console window
+#your pesonal token is generated
+
+deactivate
+
+#for immidiate run the solution use the command from console
+
+sudo /home/reekroo/backup_service/.venv_backup_service/bin/python -m src.main --now
+```
 
 # Configuration
 
