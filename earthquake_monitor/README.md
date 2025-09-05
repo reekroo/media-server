@@ -32,6 +32,18 @@ earthquake-monitor/
 └─ pyproject.toml                # dependencies + CLI
 ```
 
+# Installation
+
+Install inside your virtual environment or system
+
+```Bash
+cd ~/earthquake_monitor
+python3 -m venv .venv_earthquake_monitor
+source .venv_earthquake_monitor/bin/activate
+pip install -e .
+deactivate
+```
+
 # Configuration
 
 | Setting                                  | Default                                      | Purpose                                     |
@@ -51,16 +63,26 @@ earthquake-monitor/
 
 Take the systemd file from here: https://github.com/reekroo/media-server/tree/main/deployment/systemd_services
 
-Install inside your virtual environment or system
-
-```bash
-pip install .
-```
-
 ## Enable & Run
 
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable metrics-exporter
 sudo systemctl start metrics-exporter
+```
+
+# Running Unit Tests
+
+To verify the functionality of your scripts, navigate to the project directory and run the tests.
+
+```Bash
+cd ~/earthquake_monitor
+source .venv_earthquake_monitor/bin/activate
+python3 -m unittest discover -s tests -p "test_*.py"
+```
+
+```Bash
+cd ~/earthquake_monitor
+source .venv_earthquake_monitor/bin/activate
+python3 -m tests.integration_test_alert
 ```

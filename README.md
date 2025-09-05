@@ -218,7 +218,7 @@ sudo apt install socat
 
 It is recommended to use a separate virtual environment for each project.
 
-* peripheral_scripts
+* peripheral scripts
 
 ```Bash
 cd ~/peripheral_scripts
@@ -233,7 +233,8 @@ pip install -e ./oled_service
 pip install -e ./ups_service
 deactivate
 ```
-* backup_service
+
+* backup service
 
 ```Bash
 cd ~/backup_service
@@ -257,7 +258,7 @@ deactivate
 sudo /home/reekroo/backup_service/.venv_backup_service/bin/python -m src.main --now
 ```
 
-* location_service
+* location service
 
 ```Bash
 cd ~/location_service
@@ -267,7 +268,7 @@ pip install -e .
 deactivate
 ```
 
-* earthquake_monitor
+* earthquake monitor
 
 ```Bash
 cd ~/earthquake_monitor
@@ -277,7 +278,7 @@ pip install -e .
 deactivate
 ```
 
-* weather_monitor
+* weather monitor
 
 ```Bash
 cd ~/weather_monitor
@@ -422,18 +423,18 @@ make up
 
 ## Monitoring & Control Services  
 
-- (backup service)[]
-- (location service)[]
-- (earthquake monitor)[]
-- (weather monitor)[]
-- (metrics exporter)[]
+- [backup service](https://github.com/reekroo/media-server/tree/main/backup_service)
+- [location service](https://github.com/reekroo/media-server/tree/main/location_service)
+- [earthquake monitor](https://github.com/reekroo/media-server/tree/main/earthquake_monitor)
+- [weather monitor](https://github.com/reekroo/media-server/tree/main/weather_monitor)
+- [metrics exporter](https://github.com/reekroo/media-server/tree/main/metrics_exporter)
 
 ## Peripheral scripts  & Services
 
-- (common utils)[]
-- (bluetooth policy)[]
-- (network policy)[]
-- (sound service)[]
-- (button service)[]
-- (oled service)[]
-- (ups service)[]
+- [common utils](https://github.com/reekroo/media-server/tree/main/peripheral_scripts/common_utils)
+- [bluetooth policy](https://github.com/reekroo/media-server/tree/main/peripheral_scripts/bluetooth_policy)
+- [network policy](https://github.com/reekroo/media-server/tree/main/peripheral_scripts/network_policy)
+- [sound service](https://github.com/reekroo/media-server/tree/main/peripheral_scripts/sound_service)
+- [button service](https://github.com/reekroo/media-server/tree/main/peripheral_scripts/button_service)
+- [oled service](https://github.com/reekroo/media-server/tree/main/peripheral_scripts/oled_service)
+- [ups service](https://github.com/reekroo/media-server/tree/main/peripheral_scripts/ups_service)

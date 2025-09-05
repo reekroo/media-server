@@ -12,6 +12,20 @@ A lightweight Prometheus exporter for Raspberry Pi that collects system, disk, n
 
 - Config via configs.py – log paths, poll interval, interfaces, disk paths, port.
 
+# Installation
+
+Requires Python ≥ 3.9. Uses requests and concurrent-log-handler (declared in pyproject.toml).
+
+Install inside your virtual environment or system
+
+```Bash
+cd ~/metrics_exporter
+python3 -m venv .venv_metrics_exporter
+source .venv_metrics_exporter/bin/activate
+pip install -e .
+deactivate
+```
+
 # Configuration
 
 | Setting                            | Default                     | Notes                                            |

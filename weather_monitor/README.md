@@ -78,8 +78,12 @@ Requires Python ≥ 3.9. Declared dependencies: requests, concurrent-log-handler
 
 Install inside your virtual environment or system
 
-```bash
-pip install .
+```Bash
+cd ~/weather_monitor
+python3 -m venv .venv_weather_monitor
+source .venv_weather_monitor/bin/activate
+pip install -e .
+deactivate
 ```
 
 ## Enable & Run
