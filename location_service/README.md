@@ -40,6 +40,7 @@ Install inside your virtual environment or system
 ```bash
 pip install .
 ```
+
 # Configuration
 
 | Variable / Setting        | Default                            | Notes                        |
