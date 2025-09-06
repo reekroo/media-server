@@ -1,4 +1,4 @@
-root = "/media/nvme/movies"
+root = "/mnt/storage/media"
 max_depth = 6
 include_ext = [".mkv",".mp4",".avi",".mov"]
 state_path = "state/media_index.json"

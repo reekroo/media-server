@@ -1,0 +1,11 @@
+enabled = true
+max_items = 25
+
+[feeds]
+general = [
+  "https://feeds.bbci.co.uk/turkce/rss.xml",
+  "https://www.cnnturk.com/feed/rss/all/news"
+]
+economy = [
+  "https://www.ntv.com.tr/ekonomi.rss"
+]

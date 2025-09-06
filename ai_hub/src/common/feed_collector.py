@@ -30,6 +30,7 @@ class FeedCollector:
     async def _fetch_and_parse_feed(self, url: str) -> List[FeedItem]:
         items: List[FeedItem] = []
         try:
+            logger.info(f"Fetching feed: {url}")
             async with self._session.get(url, timeout=15) as response:
                 response.raise_for_status()
                 feed_text = await response.text()
@@ -44,10 +45,9 @@ class FeedCollector:
                     link=getattr(entry, "link", ""),
                 )
                 items.append(item)
-                
-        except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-            logger.warning(f"Failed to fetch feed {url}: {e}")
+            logger.info(f"Successfully fetched {len(items)} items from {url}")
         except Exception as e:
-            logger.error(f"An error occurred while processing feed {url}: {e}", exc_info=True)
+            # ИЗМЕНЕНИЕ: Используем exception для полного трейсбека в логах
+            logger.exception(f"Failed to fetch or parse feed {url}. Error: {e}")
             
         return items

@@ -1,21 +1,35 @@
-# configs/schedule.toml
-
 [daily_brief]
+enabled = true
+cron = "0 8 * * *"
+
+[news_digest]
+enabled = true
+cron = "15 8 * * *"
+
+[gaming_digest]
 enabled = true
 cron = "30 8 * * *"
 
-[media_digest]
+[dinner_ideas]
+enabled = true
+cron = "45 16 * * *"
+
+[turkish_news]
 enabled = true
 cron = "0 18 * * *"
+
+[media_digest]
+enabled = true
+cron = "15 18 * * *"
+
+[entertainment]
+enabled = true
+cron = "0 19 * * *"
 
 [sys_digest]
 enabled = true
 cron = "0 9,15,21 * * *"
 
-[news_digest]
+[log_digest]
 enabled = true
-cron = "0 10 * * *"
-
-[gaming_digest]
-enabled = true
-cron = "0 11 * * *"
+cron = "5 9,15,21 * * *"

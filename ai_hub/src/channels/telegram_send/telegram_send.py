@@ -1,12 +1,13 @@
 from __future__ import annotations
 import asyncio
+import logging
 from typing import Iterable
-
 from telegram import Bot
 from telegram.error import TimedOut, NetworkError
 from telegram.request import HTTPXRequest
 
 MAX_CHUNK_SIZE = 4096
+logger = logging.getLogger(__name__)
 
 class TelegramClient:
     def __init__(self, token: str):
@@ -18,6 +19,10 @@ class TelegramClient:
         self.bot = Bot(token=self._token, request=req)
 
     async def send_text(self, chat_id: str, text: str) -> None:
+        if not text or not text.strip():
+            logger.warning("Attempted to send an empty or whitespace-only message. Aborting.")
+            return
+
         clean_chat_id = (chat_id or "").strip()
         if not clean_chat_id:
             return
@@ -41,10 +46,5 @@ class TelegramClient:
 
     @staticmethod
     def _chunk_text(text: str, size: int = MAX_CHUNK_SIZE) -> Iterable[str]:
-        """Splits text into chunks of a specified size."""
-        if not text or not text.strip():
-            yield " "
-            return
-        
         for i in range(0, len(text), size):
             yield text[i:i + size]

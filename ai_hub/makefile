@@ -8,7 +8,7 @@ help:
 	@echo "Targets:"
 	@echo "  venv        - create venv"
 	@echo "  install     - install deps"
-	@echo "  run-runner  - start APScheduler jobs (3 дайджеста)"
+	@echo "  run-runner  - start APScheduler jobs"
 	@echo "  run-chat    - start Telegram chat bot"
 	@echo "  lint/test   - lints & tests"
 

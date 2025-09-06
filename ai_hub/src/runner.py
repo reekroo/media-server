@@ -1,8 +1,10 @@
 import asyncio
 import zoneinfo
 import logging
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+
 from .app import App
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -27,6 +29,11 @@ async def main():
         message = await app.run_sys_digest()
         await app.send_notification(message)
 
+    async def log_digest_job(): 
+        logging.info("Running log digest job...")
+        message = await app.run_log_digest()
+        await app.send_notification(message)
+    
     async def news_digest_job():
         logging.info("Running news digest job...")
         messages = await app.run_news_digest()
@@ -40,12 +47,33 @@ async def main():
         for msg in messages:
             await app.send_notification(msg)
 
+    async def turkish_news_job():
+        logging.info("Running Turkish news digest job...")
+        messages = await app.run_turkish_news_digest()
+        for msg in messages:
+            await app.send_notification(msg)
+            await asyncio.sleep(1)
+
+    async def entertainment_job():
+        logging.info("Running entertainment digest job...")
+        message = await app.run_entertainment_digest()
+        await app.send_notification(message)
+
+    async def dinner_job():
+        logging.info("Running dinner ideas job...")
+        message = await app.run_dinner_digest()
+        await app.send_notification(message)
+
     job_map = {
         "daily_brief": daily_brief_job,
         "media_digest": media_digest_job,
+        "entertainment_digest": entertainment_job,
         "sys_digest": sys_digest_job,
+        "log_digest": log_digest_job,
         "news_digest": news_digest_job,
+        "turkish_news_digest": turkish_news_job,
         "gaming_digest": gaming_digest_job,
+        "dinner_ideas": dinner_job,
     }
 
     if app.settings.schedule:
@@ -57,17 +85,12 @@ async def main():
                     sched.add_job(
                         job_func,
                         CronTrigger.from_crontab(cron_str, timezone=tz),
-                        id=job_name,
-                        coalesce=True,
-                        misfire_grace_time=600
+                        id=job_name, coalesce=True, misfire_grace_time=600
                     )
                     logging.info(f"Scheduled job '{job_name}' with cron: '{cron_str}'")
-                else:
-                    logging.warning(f"Job '{job_name}' is configured in schedule.toml but has no matching function.")
     else:
         logging.warning("schedule.toml not found or empty. No jobs scheduled.")
     
-
     sched.start()
     logging.info("Scheduler started. Press Ctrl+C to exit.")
 
