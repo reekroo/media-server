@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
 import sys
-
 import configs
 from weather_logger import setup_logger
 from utils.http_client import HttpClient
@@ -8,6 +6,7 @@ from providers.openweathermap import OpenWeatherMapProvider
 from providers.weatherapi import WeatherApiProvider
 from outputs.console_output import ConsoleOutput
 from outputs.socket_output import SocketOutput
+from outputs.file_output import FileOutput
 from locations.config_provider import ConfigLocationProvider
 from locations.socket_provider import SocketLocationProvider
 from weather_controller import WeatherController
@@ -53,14 +52,25 @@ def main():
             SocketOutput(socket_path=configs.WEATHER_SERVICE_SOCKET, logger=logger)
         ]
 
+        scheduled_outputs = [
+            FileOutput(
+                file_path=configs.WEATHER_JSON_FILE_PATH,
+                logger=logger
+            )
+        ]
+
         controller = WeatherController(
             weather_providers=weather_providers,
             outputs=outputs,
             location_providers=location_providers,
-            logger=logger
+            logger=logger,
+            scheduled_outputs=scheduled_outputs
         )
 
-        controller.run(interval_seconds=configs.INTERVAL_SECONDS)
+        controller.run(
+            interval_seconds=configs.INTERVAL_SECONDS,
+            scheduled_interval_seconds=configs.JSON_INTERVAL_SECONDS
+        )
 
     except KeyboardInterrupt:
         logger.info("Service stopped by user.")
