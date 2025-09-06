@@ -1,4 +1,5 @@
 import configs
+import threading
 from earthquake_logger import setup_logger
 from earthquake_monitor import EarthquakeMonitor
 from utils.http_client import HttpClient
@@ -8,6 +9,9 @@ from data_sources.isc_api import IscApiDataSource
 from alerters.sound_alerter import SoundAlerter
 from locations.socket_provider import SocketLocationProvider
 from locations.config_provider import ConfigLocationProvider
+from historical_data_fetcher import HistoricalDataFetcher
+from outputs.json_file_output import JsonFileOutput
+from scheduler import DataExportScheduler
 
 def main():
     main_logger = setup_logger('earthquake_monitor', configs.LOG_FILE_PATH)
@@ -43,6 +47,23 @@ def main():
         )
     ]
 
+    main_logger.info("Initializing historical data export service...")
+    json_output = JsonFileOutput(logger=main_logger)
+    historical_fetcher = HistoricalDataFetcher(
+        data_sources=data_sources,
+        location_providers=location_providers,
+        logger=main_logger
+    )
+    scheduler = DataExportScheduler(
+        fetcher=historical_fetcher,
+        output=json_output,
+        logger=main_logger,
+        output_path='/run/monitors/earthquakes/last7d.json',
+        interval_minutes=20,
+        fetch_days=7
+    )
+    scheduler_thread = scheduler.start(run_immediately=True)
+
     monitor = EarthquakeMonitor(
         data_sources=data_sources,
         location_providers=location_providers,
@@ -52,8 +73,14 @@ def main():
         logger=main_logger
     )
 
-    monitor.run(configs.CHECK_INTERVAL_SECONDS)    
-    main_logger.info("Earthquake Monitor service has been shut down.")
+    try:
+        monitor.run(configs.CHECK_INTERVAL_SECONDS)
+    except KeyboardInterrupt:
+        main_logger.info("Shutdown signal received. Stopping services...")
+    finally:
+        scheduler.stop()
+        scheduler_thread.join()
+        main_logger.info("Earthquake Monitor service has been shut down.")
 
 if __name__ == "__main__":
     main()

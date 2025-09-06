@@ -1,6 +1,5 @@
 import xml.etree.ElementTree as ET
-import calendar 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Dict
 
 from .base import BaseApiDataSource
@@ -9,11 +8,11 @@ from models.earthquake_event import EarthquakeEvent
 class IscApiDataSource(BaseApiDataSource):
     API_URL = "https://www.isc.ac.uk/fdsnws/event/1/query"
 
-    def _build_request_params(self, latitude: float, longitude: float) -> (str, Dict, Dict):
+    def _build_request_params(self, latitude: float, longitude: float, start_time_iso: str) -> (str, Dict, Dict):
         radius_km = self._config.get('SEARCH_RADIUS_KM', 250)
         radius_deg = radius_km / 111.0
         
-        start_time_dt = datetime.fromisoformat(self._get_start_time_iso().replace('Z', '+00:00'))
+        start_time_dt = datetime.fromisoformat(start_time_iso.replace('Z', '+00:00'))
 
         params = {
             "latitude": latitude,
