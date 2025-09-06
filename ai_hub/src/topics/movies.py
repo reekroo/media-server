@@ -8,6 +8,7 @@ class MoviesRecommend(TopicHandler):
         prefs = dict(payload.get("prefs") or {})
         prefs_txt = ", ".join(f"{k}={v}" for k, v in prefs.items())
         title_block = "\n".join(f"- {t}" for t in titles)
+        
         return textwrap.dedent(f"""
             You are a movie curator. Based ONLY on the user's LOCAL LIBRARY list below,
             pick ~10 watch-next suggestions and group them (e.g., mood, genre, classics, new-to-watch).
@@ -23,5 +24,6 @@ class MoviesRecommend(TopicHandler):
             - 2–3 short groups; each line: Title — one-line reason
             - Finish with 1–2 top picks for tonight
         """).strip()
+    
     def postprocess(self, llm_text: str) -> str:
         return (llm_text or "").strip()

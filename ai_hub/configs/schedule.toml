@@ -1,0 +1,21 @@
+# configs/schedule.toml
+
+[daily_brief]
+enabled = true
+cron = "30 8 * * *"
+
+[media_digest]
+enabled = true
+cron = "0 18 * * *"
+
+[sys_digest]
+enabled = true
+cron = "0 9,15,21 * * *"
+
+[news_digest]
+enabled = true
+cron = "0 10 * * *"
+
+[gaming_digest]
+enabled = true
+cron = "0 11 * * *"

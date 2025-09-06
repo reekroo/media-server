@@ -1,159 +1,83 @@
-from __future__ import annotations
-import asyncio, zoneinfo, os
-from pathlib import Path
+import asyncio
+import zoneinfo
+import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from .core.settings import Settings
-from .core.agents.factory import agent_factory
-from .core.router import Orchestrator
-from .topics.weather import WeatherSummary
-from .topics.quakes import QuakesAssessment
-from .topics.movies import MoviesRecommend
-from .digests.brief.composer import build_daily_brief
-from .digests.media.collector import collect_new_titles
-from .digests.media.recommender import build_media_recommendations
-from .digests.media.templates import render_media_digest
-from .digests.sys.build import build_system_digest
-from .channels.console.console import send_to_console
-from .channels.telegram_send.telegram_send import send_text as tg_send
+from .app import App
 
-def build_orchestrator(settings: Settings) -> Orchestrator:
-    agent = agent_factory(api_key=settings.GEMINI_API_KEY)
-    topics = {"weather.summary": WeatherSummary(),"quakes.assess": QuakesAssessment(),"movies.recommend": MoviesRecommend()}
-    return Orchestrator(agent, topics)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-async def job_daily_brief(settings: Settings):
-    orch = build_orchestrator(settings)
-    import tomllib
-    cfg = tomllib.loads(Path('configs/daily.toml').read_text('utf-8')) if Path('configs/daily.toml').exists() else {}
-    include_q = bool(cfg.get('brief', {}).get('include_quakes', True))
-    qpath = Path(cfg.get('quakes_json', str(settings.QUAKES_JSON))) if cfg.get('quakes_json') else settings.QUAKES_JSON
-    wpath = Path(cfg.get('weather_json', str(settings.WEATHER_JSON))) if cfg.get('weather_json') else settings.WEATHER_JSON
-    txt = await build_daily_brief(orch, wpath, qpath, include_quakes=include_q)
-    if settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_CHAT_ID:
-        await tg_send(settings.TELEGRAM_BOT_TOKEN, settings.TELEGRAM_CHAT_ID, txt)
-    else:
-        send_to_console(txt)
-
-async def job_media_digest(settings: Settings):
-    cfg_path = Path("configs/media.toml"); import tomllib
-    cfg = tomllib.loads(cfg_path.read_text("utf-8")) if cfg_path.exists() else {}
-    root = Path(cfg.get("root", str(settings.MOVIES_ROOT)))
-    include_ext = cfg.get("include_ext", [".mkv",".mp4",".avi",".mov"])
-    state_path = Path(cfg.get("state_path", "state/media_index.json"))
-    max_depth = int(cfg.get("max_depth", 6))
-    new_titles = collect_new_titles(root=root, state_path=state_path, include_ext=include_ext, max_depth=max_depth)
-    orch = build_orchestrator(settings); prefs = cfg.get("recommender", {})
-    rec_text = await build_media_recommendations(orch, root=root, prefs=prefs, cap=cfg.get("cap", 600))
-    msg = render_media_digest(new_titles=new_titles, recommend_text=rec_text, soon_text=None)
-    if settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_CHAT_ID:
-        await tg_send(settings.TELEGRAM_BOT_TOKEN, settings.TELEGRAM_CHAT_ID, msg)
-    else:
-        send_to_console(msg)
-
-async def job_sys_digest(settings: Settings):
-    digest, msg = build_system_digest(config_path=Path("configs/sys.toml"), incidents_dir=Path("state/incidents"), state_path=Path("state/sys_digest.json"))
-    if settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_CHAT_ID:
-        await tg_send(settings.TELEGRAM_BOT_TOKEN, settings.TELEGRAM_CHAT_ID, msg)
-    else:
-        send_to_console(msg)
-
-async def _async_main():
-    s = Settings()
-    tz = zoneinfo.ZoneInfo(s.TZ)
+async def main():
+    app = App()
+    tz = zoneinfo.ZoneInfo(app.settings.TZ)
     sched = AsyncIOScheduler(timezone=tz)
 
-    # расписания
-    sched.add_job(lambda: asyncio.create_task(job_daily_brief(s)),
-                  CronTrigger(hour=8, minute=30),
-                  id="daily_brief", coalesce=True, misfire_grace_time=600)
+    async def daily_brief_job():
+        logging.info("Running daily brief job...")
+        message = await app.run_daily_brief()
+        await app.send_notification(message)
 
-    sched.add_job(lambda: asyncio.create_task(job_media_digest(s)),
-                  CronTrigger(hour=19, minute=0),
-                  id="media_digest", coalesce=True, misfire_grace_time=600)
+    async def media_digest_job():
+        logging.info("Running media digest job...")
+        message = await app.run_media_digest()
+        await app.send_notification(message)
 
-    sched.add_job(lambda: asyncio.create_task(job_sys_digest(s)),
-                  CronTrigger(hour="9,15,21", minute=0),
-                  id="sys_digest", coalesce=True, misfire_grace_time=600)
+    async def sys_digest_job():
+        logging.info("Running system digest job...")
+        message = await app.run_sys_digest()
+        await app.send_notification(message)
 
-    # если у тебя в файле есть _register_extra_jobs(sched, s) для news/gaming — не забудь вызвать:
-    try:
-        _register_extra_jobs  # type: ignore[name-defined]
-        _register_extra_jobs(sched, s)  # type: ignore[misc]
-    except NameError:
-        pass
+    async def news_digest_job():
+        logging.info("Running news digest job...")
+        messages = await app.run_news_digest()
+        for msg in messages:
+            await app.send_notification(msg)
+            await asyncio.sleep(1)
+
+    async def gaming_digest_job():
+        logging.info("Running gaming digest job...")
+        messages = await app.run_gaming_digest()
+        for msg in messages:
+            await app.send_notification(msg)
+
+    job_map = {
+        "daily_brief": daily_brief_job,
+        "media_digest": media_digest_job,
+        "sys_digest": sys_digest_job,
+        "news_digest": news_digest_job,
+        "gaming_digest": gaming_digest_job,
+    }
+
+    if app.settings.schedule:
+        for job_name, schedule_entry in app.settings.schedule.model_dump().items():
+            if schedule_entry and schedule_entry.get("enabled", False):
+                job_func = job_map.get(job_name)
+                if job_func:
+                    cron_str = schedule_entry["cron"]
+                    sched.add_job(
+                        job_func,
+                        CronTrigger.from_crontab(cron_str, timezone=tz),
+                        id=job_name,
+                        coalesce=True,
+                        misfire_grace_time=600
+                    )
+                    logging.info(f"Scheduled job '{job_name}' with cron: '{cron_str}'")
+                else:
+                    logging.warning(f"Job '{job_name}' is configured in schedule.toml but has no matching function.")
+    else:
+        logging.warning("schedule.toml not found or empty. No jobs scheduled.")
+    
 
     sched.start()
+    logging.info("Scheduler started. Press Ctrl+C to exit.")
 
-    # держим цикл живым
-    stop = asyncio.Event()
     try:
-        await stop.wait()
+        await asyncio.Event().wait()
     except (KeyboardInterrupt, SystemExit):
-        pass
+        logging.info("Scheduler shutting down...")
     finally:
         sched.shutdown(wait=False)
-
-def main():
-    asyncio.run(_async_main())
+        await app.close_resources()
 
 if __name__ == "__main__":
-    main()
-
-
-
-from .topics.news import NewsDigestTopic
-from .topics.gaming import GamingDigestTopic
-from .digests.news.collector import collect_feeds as collect_news
-from .digests.news.templates import render_news_digest
-from .digests.gaming.collector import collect_feeds as collect_gaming
-from .digests.gaming.templates import render_gaming_digest
-
-import tomllib
-
-async def job_news_digest(settings: Settings):
-    cfgp = Path("configs/news.toml")
-    if not cfgp.exists(): return
-    cfg = tomllib.loads(cfgp.read_text("utf-8"))
-    if not cfg.get("enabled", False): return
-    max_items = int(cfg.get("max_items", 20))
-    orch = build_orchestrator(settings)
-    # For each section in feeds
-    feeds = cfg.get("feeds", {})
-    topic = NewsDigestTopic()
-    for section, urls in (feeds or {}).items():
-        items = collect_news(list(urls), max_items=max_items)
-        if not items: continue
-        prompt_payload = {"items": items, "section": section}
-        text = await orch.run("news.digest", prompt_payload) if "news.digest" in orch.topics else await topic.postprocess(await orch.agent.generate(topic.build_prompt(prompt_payload)))
-        msg = render_news_digest(section, text)
-        if settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_CHAT_ID:
-            await tg_send(settings.TELEGRAM_BOT_TOKEN, settings.TELEGRAM_CHAT_ID, msg)
-        else:
-            send_to_console(msg)
-
-async def job_gaming_digest(settings: Settings):
-    cfgp = Path("configs/gaming.toml")
-    if not cfgp.exists(): return
-    cfg = tomllib.loads(cfgp.read_text("utf-8"))
-    if not cfg.get("enabled", False): return
-    max_items = int(cfg.get("max_items", 20))
-    orch = build_orchestrator(settings)
-    feeds = cfg.get("feeds", {})
-    topic = GamingDigestTopic()
-    items = []
-    for _, urls in (feeds or {}).items():
-        items.extend(collect_gaming(list(urls), max_items=max_items))
-    if not items: return
-    payload = {"items": items[:max_items]}
-    text = await orch.run("gaming.digest", payload) if "gaming.digest" in orch.topics else await topic.postprocess(await orch.agent.generate(topic.build_prompt(payload)))
-    msg = render_gaming_digest(text)
-    if settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_CHAT_ID:
-        await tg_send(settings.TELEGRAM_BOT_TOKEN, settings.TELEGRAM_CHAT_ID, msg)
-    else:
-        send_to_console(msg)
-
-# register extra jobs
-def _register_extra_jobs(sched, s):
-    sched.add_job(lambda: asyncio.create_task(job_news_digest(s)),  CronTrigger(hour=10, minute=0), id="news_digest", coalesce=True, misfire_grace_time=600)
-    sched.add_job(lambda: asyncio.create_task(job_gaming_digest(s)), CronTrigger(hour=11, minute=0), id="gaming_digest", coalesce=True, misfire_grace_time=600)
+    asyncio.run(main())

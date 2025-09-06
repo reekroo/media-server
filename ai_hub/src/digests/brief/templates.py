@@ -4,7 +4,11 @@ BRIEF_SYSTEM_HINT = (
 )
 
 BRIEF_FORMAT = """\
-🌤️ Weather
-{weather}
-
-{quakes_block}Have a good day!"""
+    🌤️ Weather
+    {weather}
+    
+    🌍 Earthquakes
+    {quakes}
+    
+    Have a good day!
+"""

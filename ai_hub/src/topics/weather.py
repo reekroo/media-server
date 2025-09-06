@@ -20,5 +20,6 @@ class WeatherSummary(TopicHandler):
             "- One-liner summary.\n"
             "- Optional bullets for umbrella/heat/wind and alerts.\n"
         )
+
     def postprocess(self, llm_text: str) -> str:
         return (llm_text or "").strip()

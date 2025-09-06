@@ -1,23 +1,24 @@
 import json
-from pathlib import Path
-from ...core.settings import Settings
-from ...core.agents.factory import agent_factory
 from ...core.router import Orchestrator
-from ...topics.clarify import ClarifyIncident
-
-def _orch():
-    s = Settings()
-    return Orchestrator(agent_factory(s.GEMINI_API_KEY), {"clarify.incident": ClarifyIncident()})
+from ...core.settings import Settings
 
 async def cmd_why(update, context):
-    args = context.args
-    if not args:
+    orchestrator: Orchestrator = context.bot_data["orchestrator"]
+    settings: Settings = context.bot_data["settings"]
+
+    if not context.args:
         return await update.message.reply_text("Usage: /why <incident_id>")
-    inc_id = args[0]
-    inc_path = Path(f"state/incidents/{inc_id}.json")
+    
+    inc_id = context.args[0]
+    inc_path = settings.STATE_DIR / "incidents" / f"{inc_id}.json"
+    
     if not inc_path.exists():
         return await update.message.reply_text("Incident not found.")
-    incident = json.loads(inc_path.read_text(encoding="utf-8"))
-    orch = _orch()
-    text = await orch.run("clarify.incident", {"incident": incident})
+        
+    try:
+        incident_data = json.loads(inc_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, IOError) as e:
+        return await update.message.reply_text(f"Could not read incident data: {e}")
+
+    text = await orchestrator.run("clarify.incident", {"incident": incident_data})
     await update.message.reply_text(text[:4000])

@@ -21,5 +21,6 @@ class QuakesAssessment(TopicHandler):
             "3) Aftershock likelihood qualitatively (low/med/high) with caveat\n"
             "4) Attention level and a brief why\n"
         )
+    
     def postprocess(self, llm_text: str) -> str:
         return (llm_text or "").strip()

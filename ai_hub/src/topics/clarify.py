@@ -14,9 +14,12 @@ class ClarifyIncident(TopicHandler):
         last_digest = payload.get("last_digest")
         inc_json = json.dumps(inc, ensure_ascii=False)
         prompt = f"{_HINT}\n\nIncident JSON:\n{inc_json}\n"
+        
         if last_digest:
             prompt += f"\nLast digest JSON:\n{json.dumps(last_digest, ensure_ascii=False)}\n"
         prompt += "Output as short sections with bullets, no code blocks."
+        
         return prompt
+    
     def postprocess(self, llm_text: str) -> str:
         return (llm_text or "").strip()

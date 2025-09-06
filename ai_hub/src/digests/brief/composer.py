@@ -1,33 +1,51 @@
 from __future__ import annotations
-from pathlib import Path
 import json
-from typing import Optional
+from pathlib import Path
+from typing import Any, Optional
 from ...core.router import Orchestrator
 from .templates import BRIEF_FORMAT
 
-def _read_json_or_none(p: Optional[Path]) -> dict:
-    if not p or not p.exists():
-        return {}
-    return json.loads(p.read_text(encoding="utf-8"))
+class DailyBriefComposer:
+    def __init__(self, orchestrator: Orchestrator):
+        self._orchestrator = orchestrator
 
-async def build_daily_brief(
-    orch: Orchestrator,
-    weather_json: Path,
-    quakes_json: Optional[Path] = None,
-    include_quakes: bool = True,
-) -> str:
-    weather_payload = _read_json_or_none(weather_json)
-    weather_text = await orch.run("weather.summary", weather_payload)
+    async def compose(
+        self,
+        weather_json: Path,
+        quakes_json: Optional[Path] = None,
+        include_quakes: bool = True,
+    ) -> str:
+        weather_text = await self._get_weather_text(weather_json)
+        
+        quakes_text = ""
+        if include_quakes:
+            quakes_text = await self._get_quakes_text(quakes_json)
 
-    quakes_block = ""
-    if include_quakes and quakes_json:
-        quakes_payload = _read_json_or_none(quakes_json)
-        if quakes_payload:
-            quakes_text = await orch.run("quakes.assess", quakes_payload)
-            quakes_block = f"🌍 Seismic\n{quakes_text}\n\n"
+        brief = BRIEF_FORMAT.format(
+            weather=weather_text,
+            quakes=quakes_text,
+        )
+        return brief.strip()
 
-    brief = BRIEF_FORMAT.format(
-        weather=weather_text.strip(),
-        quakes_block=quakes_block,
-    )
-    return brief.strip()
+    async def _get_weather_text(self, data_path: Path) -> str:
+        payload = self._read_json_or_none(data_path)
+        if not payload:
+            return "Weather data is currently unavailable."
+        
+        return await self._orchestrator.run("weather.summary", payload)
+
+    async def _get_quakes_text(self, data_path: Optional[Path]) -> str:
+        payload = self._read_json_or_none(data_path)
+        if not payload:
+            return "" 
+            
+        return await self._orchestrator.run("quakes.assess", payload)
+
+    @staticmethod
+    def _read_json_or_none(path: Optional[Path]) -> dict[str, Any]:
+        if not path or not path.exists():
+            return {}
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, IOError):
+            return {}

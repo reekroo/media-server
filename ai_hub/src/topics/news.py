@@ -1,18 +1,14 @@
 from __future__ import annotations
-import textwrap, json
+import textwrap
 from .base import TopicHandler
+from .utils import format_items_for_prompt
 
 class NewsDigestTopic(TopicHandler):
     def build_prompt(self, payload: dict) -> str:
-        # payload: {"items":[{"title":..., "summary":..., "link":...}, ...], "section":"general"}
         items = payload.get("items", [])[:30]
         section = payload.get("section", "news")
-        lines = []
-        for it in items:
-            t = it.get("title","")
-            s = it.get("summary","")
-            lines.append(f"- {t} — {s}")
-        block = "\n".join(lines)
+        block = format_items_for_prompt(items)
+
         return textwrap.dedent(f"""
             You are an editor for a morning {section} briefing. Summarize the items below into 5–8 bullets:
             - Focus on what changed, why it matters, and what's next.

@@ -9,13 +9,13 @@ class GeminiSDKAgent(Agent):
         self._model = genai.GenerativeModel(model)
 
     async def generate(self, prompt: str) -> str:
-        resp = self._model.generate_content(prompt)
+        resp = await self._model.generate_content_async(prompt)
         return (resp.text or "").strip()
 
     async def stream(self, prompt: str):
-        stream = self._model.generate_content(prompt, stream=True)
+        stream = await self._model.generate_content_async(prompt, stream=True)
         acc = ""
-        for ev in stream:
+        async for ev in stream:
             if getattr(ev, "text", None):
                 acc += ev.text
                 yield acc

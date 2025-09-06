@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Iterable
-from .model import DigestSummary, UnitReport
+from .model import DigestSummary, UnitReport, Issue
 
 def _badge(level: str) -> str:
     return {"OK": "✅", "WARN": "⚠️", "FAIL": "🛑"}.get(level, "❔")
@@ -8,17 +8,21 @@ def _badge(level: str) -> str:
 def _fmt_report(r: UnitReport) -> str:
     head = f"{_badge(r.level)} {r.unit} — {r.level}"
     details = [f"active={r.status.active}, restarts={r.status.restarts}"]
+    
     if r.issues:
-        uniq = {}
-        for i in r.issues:
-            key = f"{i.category}:{i.pattern}"
-            uniq[key] = i
-        issues_txt = ", ".join(f"{i.category}({i.pattern})" for i in uniq.values())
+        unique_issues = sorted(list(set(
+            (i.category, i.pattern) for i in r.issues
+        )))
+        issues_txt = ", ".join(f"{cat}({pat})" for cat, pat in unique_issues)
         details.append(f"issues: {issues_txt}")
+
     if r.samples:
         samples = "\n".join(f"  • {ln[:160]}" for ln in r.samples[:3])
         details.append("samples:\n" + samples)
-    return head + ("\n" + "\n".join(details) if details else "")
+        
+    body = "\n".join(details)
+    return f"{head}\n{body}" if body else head
+
 
 def render_digest(d: DigestSummary) -> str:
     lines = [f"🖥️ System status (since {d.lookback}, min={d.min_priority}) — overall: {d.overall}", ""]
