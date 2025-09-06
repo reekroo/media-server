@@ -15,23 +15,17 @@ def _orch() -> Orchestrator:
     return Orchestrator(agent, topics)
 
 def news_digest(config: str = "configs/news.toml", section: str | None = None) -> str:
-    """
-    MCP tool: news.digest
-    params:
-      - config: путь к TOML конфигу новостных фидов.
-      - section: конкретный раздел (например 'general' или 'tech'); если None — первый раздел.
-    returns: str — краткая сводка новостей по разделу.
-    """
     cfgp = Path(config)
     if not cfgp.exists():
         return "news: config not found"
+    
     cfg = tomllib.loads(cfgp.read_text("utf-8"))
     feeds = cfg.get("feeds", {})
     max_items = int(cfg.get("max_items", 20))
+
     if not feeds:
         return "news: no feeds configured"
 
-    # выбрать раздел
     key = section if section in feeds else (next(iter(feeds.keys())) if feeds else None)
     if not key:
         return "news: no section available"
@@ -45,5 +39,6 @@ def news_digest(config: str = "configs/news.toml", section: str | None = None) -
 
     async def _run():
         return await orch.run("news.digest", payload)
+    
     summary = asyncio.run(_run())
     return render_news_digest(key, summary)

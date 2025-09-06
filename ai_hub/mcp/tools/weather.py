@@ -12,12 +12,6 @@ def _orch() -> Orchestrator:
     return Orchestrator(agent, topics)
 
 def weather_summary(payload: dict) -> str:
-    """
-    MCP tool: weather.summary
-    params:
-      - payload: dict с данными погоды (тот же JSON, что ты кладёшь в файлы).
-    returns: str — короткое саммари.
-    """
     orch = _orch()
     async def _run():
         return await orch.run("weather.summary", payload or {})
