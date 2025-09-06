@@ -1,0 +1,11 @@
+enabled = false
+max_items = 20
+
+[feeds]
+general = [
+  "https://feeds.bbci.co.uk/news/rss.xml",
+  "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
+]
+tech = [
+  "https://www.theverge.com/rss/index.xml"
+]

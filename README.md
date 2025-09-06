@@ -288,12 +288,22 @@ pip install -e .
 deactivate
 ```
 
-* metrics_exporter
+* metrics exporter
 
 ```Bash
 cd ~/metrics_exporter
 python3 -m venv .venv_metrics_exporter
 source .venv_metrics_exporter/bin/activate
+pip install -e .
+deactivate
+```
+
+* ai hub
+
+```Bash
+cd ~/ai_hub
+python3 -m venv .venv_ai_hub
+source .venv_ai_hub/bin/activate
 pip install -e .
 deactivate
 ```
@@ -322,6 +332,8 @@ sudo systemctl enable --now earthquake-monitor.service
 sudo systemctl enable --now weather-monitor.service
 sudo systemctl enable --now metrics-exporter.service
 sudo systemctl enable --now backup.service
+sudo systemctl enable --now ai-hub.service
+sudo systemctl enable --now ai-hub-chat.service
 ```
 
 3. Check the status of the running services:
@@ -336,6 +348,8 @@ sudo systemctl status earthquake-monitor.service
 sudo systemctl status weather-monitor.service
 sudo systemctl status metrics-exporter.service
 sudo systemctl status backup.service
+sudo systemctl status ai-hub.service
+sudo systemctl status ai-hub-chat.service
 ```
 
 ℹ️ To view real-time logs for a specific service, use:

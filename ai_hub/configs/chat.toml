@@ -1,0 +1,3 @@
+max_history_turns = 6
+language = "en"
+allow_clarify = true

@@ -1,0 +1,17 @@
+lookback = "24h"
+min_priority = "warning"
+max_restarts = 3
+state_path = "state/sys_digest.json"
+
+units = [
+  "oled-status.service",
+  "ups-service.service",
+  "bluetooth-manager.service",
+  "backup.service",
+  "ai-hub.service"
+]
+
+[patterns]
+disk = ["I/O error","EXT4-fs error","nvme.*timeout"]
+net  = ["link is down","No route to host","connection refused"]
+app  = ["Traceback","Unhandled","DeviceNotFoundError"]

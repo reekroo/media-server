@@ -1,0 +1,6 @@
+weather_json = "/run/monitors/weather/latest.json"
+quakes_json  = "/run/monitors/earthquakes/last7d.json"
+
+[brief]
+language = "en"
+include_quakes = true
