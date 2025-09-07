@@ -1,6 +1,8 @@
 from __future__ import annotations
 from pathlib import Path
 import tomllib
+import os
+import zoneinfo
 from typing import Dict, Any, List
 
 from pydantic import BaseModel, Field, model_validator, field_validator
@@ -50,10 +52,14 @@ class ScheduleEntry(BaseModel):
 
 class ScheduleConfig(BaseModel):
     daily_brief: ScheduleEntry | None = None
+    dinner_ideas: ScheduleEntry | None = None
     media_digest: ScheduleEntry | None = None
-    sys_digest: ScheduleEntry | None = None
+    entertainment_digest: ScheduleEntry | None = None
     news_digest: ScheduleEntry | None = None
+    turkish_news_digest: ScheduleEntry | None = None
     gaming_digest: ScheduleEntry | None = None
+    sys_digest: ScheduleEntry | None = None
+    log_digest: ScheduleEntry | None = None
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -63,14 +69,19 @@ class Settings(BaseSettings):
         arbitrary_types_allowed=True,
     )
 
-    DEFAULT_LANG: str = Field(default="ru", description="Default communication language")
+    DEFAULT_LANG: str = Field(
+        default="ru", 
+        description="Default communication language")
+    TZ: str = Field(
+        default_factory=lambda: os.environ.get("TZ", "Europe/Istanbul"),
+        description="IANA timezone for scheduler (e.g. Europe/Istanbul, UTC)",
+    )
 
     GEMINI_API_KEY: str
     GEMINI_MODEL: str = 'gemini-2.5-flash'
     TELEGRAM_BOT_TOKEN: str | None = None
     TELEGRAM_CHAT_ID: str | None = None
     TELEGRAM_ADMIN_IDS: List[str] = Field(default_factory=list)
-    TZ: str = "UTC"
 
     BASE_DIR: Path = PROJECT_ROOT
     STATE_DIR: Path = PROJECT_ROOT / "state"
@@ -83,6 +94,15 @@ class Settings(BaseSettings):
     chat: Dict[str, Any] | None = None
     schedule: ScheduleConfig | None = None
     
+    @field_validator("TZ")
+    @classmethod
+    def _validate_tz(cls, v: str) -> str:
+        try:
+            zoneinfo.ZoneInfo(v)
+        except Exception:
+            return "UTC"
+        return v
+
     @field_validator("TELEGRAM_ADMIN_IDS", mode='before')
     @classmethod
     def _parse_admin_ids(cls, v: Any) -> List[str]:

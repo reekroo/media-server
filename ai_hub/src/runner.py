@@ -1,106 +1,137 @@
+from __future__ import annotations
 import asyncio
-import zoneinfo
 import logging
+import zoneinfo
+from typing import Any, Iterable
+from types import SimpleNamespace
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from .app import App
+from .container import build_services
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+log = logging.getLogger(__name__)
 
-async def main():
-    app = App()
-    tz = zoneinfo.ZoneInfo(app.services.settings.TZ)
+def _as_messages(result: Any) -> list[str]:
+    if result is None:
+        return []
+    if isinstance(result, str):
+        return [result]
+    if isinstance(result, Iterable) and not isinstance(result, (bytes, bytearray, dict)):
+        try:
+            items = list(result)
+        except Exception:
+            return [str(result)]
+        return [x if isinstance(x, str) else str(x) for x in items]
+    return [str(result)]
+
+async def main() -> None:
+    log.info("Building application services...")
+    services = build_services()
+    app_ctx = SimpleNamespace(
+        services=services,
+        dispatcher=services.dispatcher,
+        agent=services.agent,
+        orchestrator=services.orchestrator,
+        settings=services.settings,
+    )
+    
+    services.dispatcher.set_app(app_ctx)
+
+    tz = zoneinfo.ZoneInfo(services.settings.TZ)
     sched = AsyncIOScheduler(timezone=tz)
 
-    async def daily_brief_job():
-        logging.info("Running daily brief job...")
-        message = await app.run_daily_brief()
-        await app.send_notification(message)
-
-    async def media_digest_job():
-        logging.info("Running media digest job...")
-        message = await app.run_media_digest()
-        await app.send_notification(message)
-
-    async def sys_digest_job():
-        logging.info("Running system digest job...")
-        message = await app.run_sys_digest()
-        await app.send_notification(message)
-
-    async def log_digest_job(): 
-        logging.info("Running log digest job...")
-        message = await app.run_log_digest()
-        await app.send_notification(message)
-    
-    async def news_digest_job():
-        logging.info("Running news digest job...")
-        messages = await app.run_news_digest()
-        for msg in messages:
-            await app.send_notification(msg)
-            await asyncio.sleep(1)
-
-    async def gaming_digest_job():
-        logging.info("Running gaming digest job...")
-        messages = await app.run_gaming_digest()
-        for msg in messages:
-            await app.send_notification(msg)
-
-    async def turkish_news_job():
-        logging.info("Running Turkish news digest job...")
-        messages = await app.run_turkish_news_digest()
-        for msg in messages:
-            await app.send_notification(msg)
-            await asyncio.sleep(1)
-
-    async def entertainment_job():
-        logging.info("Running entertainment digest job...")
-        message = await app.run_entertainment_digest()
-        await app.send_notification(message)
-
-    async def dinner_job():
-        logging.info("Running dinner ideas job...")
-        message = await app.run_dinner_digest()
-        await app.send_notification(message)
-
-    job_map = {
-        "daily_brief": daily_brief_job,
-        "media_digest": media_digest_job,
-        "entertainment_digest": entertainment_job,
-        "sys_digest": sys_digest_job,
-        "log_digest": log_digest_job,
-        "news_digest": news_digest_job,
-        "turkish_news_digest": turkish_news_job,
-        "gaming_digest": gaming_digest_job,
-        "dinner_ideas": dinner_job,
+    job_name_map: dict[str, str] = {
+        "daily_brief": "daily_brief",
+        "dinner_ideas": "dinner",
+        "media_digest": "media",
+        "entertainment_digest": "entertainment",
+        "news_digest": "news",
+        "turkish_news_digest": "news_tr",
+        "gaming_digest": "gaming",
+        "sys_digest": "sys",
+        "log_digest": "logs",
     }
 
-    if app.services.settings.schedule:
-        for job_name, schedule_entry in app.services.settings.schedule.model_dump().items():
-            if schedule_entry and schedule_entry.get("enabled", False):
-                job_func = job_map.get(job_name)
-                if job_func:
-                    cron_str = schedule_entry["cron"]
-                    sched.add_job(
-                        job_func,
-                        CronTrigger.from_crontab(cron_str, timezone=tz),
-                        id=job_name, coalesce=True, misfire_grace_time=600
-                    )
-                    logging.info(f"Scheduled job '{job_name}' with cron: '{cron_str}'")
-    else:
-        logging.warning("schedule.toml not found or empty. No jobs scheduled.")
-    
+    schedule_cfg = getattr(services.settings, "schedule", None)
+
+    if not schedule_cfg:
+        log.warning("No schedule configured (settings.schedule is empty). Exiting.")
+        try:
+            if getattr(services, "http_session", None):
+                await services.http_session.close()
+        finally:
+            return
+
+    raw = schedule_cfg.model_dump() if hasattr(schedule_cfg, "model_dump") else dict(schedule_cfg)
+
+    async def _run_and_notify(job_key: str, **kwargs: Any) -> None:
+        log.info("Running job '%s' ...", job_key)
+        try:
+            result = await services.dispatcher.run(job_key, app=app_ctx, **kwargs)
+        except Exception:
+            log.exception("Job '%s' failed", job_key)
+            return
+
+        messages = _as_messages(result)
+        if not messages:
+            log.info("Job '%s' produced no output", job_key)
+            return
+
+        tg = getattr(services, "telegram_client", None)
+        chat_id = getattr(services.settings, "TELEGRAM_CHAT_ID", None)
+        for msg in messages:
+            if tg and chat_id:
+                try:
+                    await tg.send_text(chat_id=chat_id, text=msg)
+                except Exception:
+                    log.exception("Failed to send Telegram notification for job '%s'", job_key)
+            else:
+                log.info("[NO-TELEGRAM] %s", msg)
+
+    log.info("Registering CRON jobs...")
+
+    for key, entry in raw.items():
+        if not isinstance(entry, dict): continue
+        if not entry.get("enabled"): continue
+        
+        cron_expr = entry.get("cron")
+
+        if not cron_expr: continue
+
+        job_key = job_name_map.get(key)
+
+        if not job_key:
+            log.warning("No dispatcher job mapped for schedule key '%s' (cron=%r) — skipping", key, cron_expr)
+            continue
+
+        try:
+            trigger = CronTrigger.from_crontab(cron_expr, timezone=tz)
+        except Exception:
+            log.exception("Invalid CRON expression for '%s': %r — skipping", key, cron_expr)
+            continue
+
+        sched.add_job(_run_and_notify, trigger, name=key, kwargs={"job_key": job_key})
+        log.info("Scheduled '%s' (dispatcher job '%s') at CRON %s [%s]", key, job_key, cron_expr, tz.key)
+
+    log.info("Starting scheduler...")
     sched.start()
-    logging.info("Scheduler started. Press Ctrl+C to exit.")
 
     try:
-        await asyncio.Event().wait()
-    except (KeyboardInterrupt, SystemExit):
-        logging.info("Scheduler shutting down...")
+        while True:
+            await asyncio.sleep(3600)
     finally:
+        log.info("Shutting down scheduler...")
         sched.shutdown(wait=False)
-        await app.close_resources()
+        try:
+            if getattr(services, "http_session", None):
+                await services.http_session.close()
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     asyncio.run(main())

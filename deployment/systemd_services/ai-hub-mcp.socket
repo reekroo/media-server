@@ -1,0 +1,12 @@
+[Unit]
+Description=AI Hub MCP Socket
+
+[Socket]
+ListenStream=/run/ai-hub-mcp.sock
+SocketUser=reekroo
+SocketGroup=reekroo
+SocketMode=0660
+Accept=yes
+
+[Install]
+WantedBy=sockets.target

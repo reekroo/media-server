@@ -1,0 +1,19 @@
+[Unit]
+Description=AI Hub MCP (per-connection) Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+
+WorkingDirectory=/home/reekroo/ai_hub
+EnvironmentFile=/etc/default/ai-hub
+ExecStart=/home/reekroo/ai_hub/.venv_ai_hub/bin/python -m src.mcp.server
+
+StandardInput=socket
+StandardOutput=socket
+StandardError=journal
+Restart=on-failure
+
+User=root
+Group=root
