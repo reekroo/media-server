@@ -35,7 +35,10 @@ class TelegramClient:
         for attempt in range(retries):
             try:
                 await self.bot.send_message(
-                    chat_id=chat_id, text=text, disable_web_page_preview=True
+                    chat_id=chat_id, 
+                    text=text, 
+                    disable_web_page_preview=True, 
+                    parse_mode='Markdown'
                 )
                 return
             except (TimedOut, NetworkError):

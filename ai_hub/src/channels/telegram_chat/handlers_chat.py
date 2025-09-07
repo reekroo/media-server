@@ -36,7 +36,8 @@ async def on_message(update, context):
                 await context.bot.edit_message_text(
                     chat_id=response_msg.chat.id,
                     message_id=response_msg.message_id,
-                    text=full_response[:4000]
+                    text=full_response[:4000],
+                    parse_mode='Markdown'
                 )
     except BadRequest as e:
         if "Message is not modified" not in str(e):
@@ -47,7 +48,7 @@ async def on_message(update, context):
             await context.bot.edit_message_text(
                 chat_id=response_msg.chat_id,
                 message_id=response_msg.message_id,
-                text="Sorry, an error occurred while processing your request."
+                text="Sorry, an error occurred while processing your request.",
             )
         except Exception:
             pass

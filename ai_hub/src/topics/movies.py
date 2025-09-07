@@ -11,19 +11,20 @@ class MoviesRecommend(TopicHandler):
         
         return textwrap.dedent(f"""
             You are a movie curator. Based ONLY on the user's LOCAL LIBRARY list below,
-            pick ~10 watch-next suggestions and group them (e.g., mood, genre, classics, new-to-watch).
-            Do NOT recommend titles that are not present in the list. If duplicates/remuxes exist,
-            suggest the best version.
+            pick ~10 watch-next suggestions and group them.
+            
+            IMPORTANT: Format your response using simple Markdown. Use asterisks for bold (*bold text*). Do NOT use HTML tags.
 
             Preferences: {prefs_txt}
 
             Local Library:
             {title_block}
 
-            Output:
-            - 2–3 short groups; each line: Title — one-line reason
-            - Finish with 1–2 top picks for tonight
+            Output requirements:
+            - Use asterisks for group headings (e.g., *Epic Sci-Fi Sagas*).
+            - Each line should be a list item: Title — one-line reason.
+            - Finish with *Top Picks for Tonight:*.
         """).strip()
-    
+
     def postprocess(self, llm_text: str) -> str:
         return (llm_text or "").strip()

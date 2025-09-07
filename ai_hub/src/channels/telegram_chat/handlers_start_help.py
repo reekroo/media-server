@@ -17,7 +17,9 @@ I can help you in a few ways:
 """
 
 async def cmd_start(update, context):
-    await update.message.reply_text(HELP_MESSAGE)
+    await update.message.reply_text(
+        HELP_MESSAGE, 
+        parse_mode='Markdown')
     
     settings: Settings = context.bot_data.get("settings")
     dispatcher: DigestDispatcher = context.bot_data.get("dispatcher")
@@ -31,12 +33,13 @@ async def cmd_start(update, context):
             
             if admin_commands:
                 admin_help_text = (
-                    "--- \n"
                     "*Admin Commands:*\n"
                     "You can trigger any digest on demand:\n\n"
                     + "\n".join(admin_commands)
                 )
-                await update.message.reply_text(admin_help_text, parse_mode='Markdown')
+                await update.message.reply_text(
+                    admin_help_text, 
+                    parse_mode='Markdown')
         except Exception:
             await update.message.reply_text("Could not generate the list of admin commands.")
 

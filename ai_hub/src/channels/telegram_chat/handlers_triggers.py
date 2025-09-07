@@ -23,14 +23,16 @@ async def _run_digest(update, context, digest_name: str, **kwargs):
         await context.bot.edit_message_text(
             text=final_text[:4096],
             chat_id=msg.chat_id,
-            message_id=msg.message_id
+            message_id=msg.message_id,
+            parse_mode='Markdown'
         )
     except Exception as e:
         logger.exception(f"Failed to run digest '{digest_name}' via command.")
         await context.bot.edit_message_text(
             text=f"❌ An error occurred while running '{digest_name}':\n\n`{e}`",
             chat_id=msg.chat_id,
-            message_id=msg.message_id
+            message_id=msg.message_id,
+            parse_mode='Markdown'
         )
 
 @admin_only
