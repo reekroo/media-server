@@ -66,7 +66,7 @@ class Settings(BaseSettings):
     DEFAULT_LANG: str = Field(default="ru", description="Default communication language")
 
     GEMINI_API_KEY: str
-    GEMINI_MODEL: str = 'gemini-1.5-flash'
+    GEMINI_MODEL: str = 'gemini-2.5-flash'
     TELEGRAM_BOT_TOKEN: str | None = None
     TELEGRAM_CHAT_ID: str | None = None
     TELEGRAM_ADMIN_IDS: List[str] = Field(default_factory=list)
