@@ -8,7 +8,7 @@ Type=simple
 
 WorkingDirectory=/home/reekroo/ai_hub
 EnvironmentFile=/etc/default/ai-hub
-ExecStart=/home/reekroo/ai_hub/.venv_ai_hub/bin/python -m src.mcp.server
+ExecStart=/home/reekroo/ai_hub/.venv_ai_hub/bin/python -m mcp.server
 
 StandardInput=socket
 StandardOutput=socket

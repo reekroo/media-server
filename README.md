@@ -454,6 +454,10 @@ make up
 - [weather monitor](https://github.com/reekroo/media-server/tree/main/weather_monitor)
 - [metrics exporter](https://github.com/reekroo/media-server/tree/main/metrics_exporter)
 
+## AI Hub Services
+
+- [ai hub](https://github.com/reekroo/media-server/tree/main/ai_hub)
+
 ## Peripheral scripts  & Services
 
 - [common utils](https://github.com/reekroo/media-server/tree/main/peripheral_scripts/common_utils)

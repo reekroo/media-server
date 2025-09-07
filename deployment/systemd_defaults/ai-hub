@@ -4,3 +4,6 @@ GEMINI_MODEL=<fill_in>
 TELEGRAM_BOT_TOKEN=<fill_in>
 TELEGRAM_CHAT_ID=-<fill_in>
 TELEGRAM_ADMIN_IDS=<fill_in>
+
+TZ=Europe/Istanbul
+DEFAULT_LANG=ru
