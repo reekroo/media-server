@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 
 async def main():
     app = App()
-    tz = zoneinfo.ZoneInfo(app.settings.TZ)
+    tz = zoneinfo.ZoneInfo(app.services.settings.TZ)
     sched = AsyncIOScheduler(timezone=tz)
 
     async def daily_brief_job():
@@ -76,8 +76,8 @@ async def main():
         "dinner_ideas": dinner_job,
     }
 
-    if app.settings.schedule:
-        for job_name, schedule_entry in app.settings.schedule.model_dump().items():
+    if app.services.settings.schedule:
+        for job_name, schedule_entry in app.services.settings.schedule.model_dump().items():
             if schedule_entry and schedule_entry.get("enabled", False):
                 job_func = job_map.get(job_name)
                 if job_func:

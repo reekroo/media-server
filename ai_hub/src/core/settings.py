@@ -3,16 +3,19 @@ from pathlib import Path
 import tomllib
 from typing import Dict, Any, List
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent 
 
 class DailyConfig(BaseModel):
+    weather_json: str ="/run/monitors/weather/latest.json"
+    quakes_json: str ="/run/monitors/earthquakes/last7d.json"
+    language: str = "ru"
     include_quakes: bool = True
 
 class MediaRecommenderConfig(BaseModel):
-    language: str = "en"
+    language: str = "ru"
     genres: List[str] = Field(default_factory=list)
 
 class MediaConfig(BaseModel):
@@ -60,10 +63,13 @@ class Settings(BaseSettings):
         arbitrary_types_allowed=True,
     )
 
+    DEFAULT_LANG: str = Field(default="ru", description="Default communication language")
+
     GEMINI_API_KEY: str
     GEMINI_MODEL: str = 'gemini-1.5-flash'
     TELEGRAM_BOT_TOKEN: str | None = None
     TELEGRAM_CHAT_ID: str | None = None
+    TELEGRAM_ADMIN_IDS: List[str] = Field(default_factory=list)
     TZ: str = "UTC"
 
     BASE_DIR: Path = PROJECT_ROOT
@@ -76,6 +82,20 @@ class Settings(BaseSettings):
     gaming: FeedBasedConfig | None = None
     chat: Dict[str, Any] | None = None
     schedule: ScheduleConfig | None = None
+    
+    @field_validator("TELEGRAM_ADMIN_IDS", mode='before')
+    @classmethod
+    def _parse_admin_ids(cls, v: Any) -> List[str]:
+        if isinstance(v, str):
+            return [item.strip() for item in v.split(',') if item.strip()]
+        
+        if isinstance(v, (int, float)):
+            return [str(v)]
+            
+        if v is None:
+            return []
+        
+        return v
 
     @model_validator(mode='after')
     def _load_and_parse_toml_configs(self) -> 'Settings':

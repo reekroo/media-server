@@ -3,8 +3,12 @@ from ...core.router import Orchestrator
 from ...core.settings import Settings
 
 async def cmd_why(update, context):
-    orchestrator: Orchestrator = context.bot_data["orchestrator"]
-    settings: Settings = context.bot_data["settings"]
+    orchestrator: Orchestrator = context.bot_data.get("orchestrator")
+    settings: Settings = context.bot_data.get("settings")
+
+    if not (orchestrator and settings):
+        await update.message.reply_text("Error: Core components are not configured.")
+        return
 
     if not context.args:
         return await update.message.reply_text("Usage: /why <incident_id>")
