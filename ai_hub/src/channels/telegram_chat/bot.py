@@ -22,6 +22,16 @@ async def post_init(application: Application) -> None:
     application.bot_data["orchestrator"] = services.orchestrator
     application.bot_data["settings"] = services.settings
 
+    from types import SimpleNamespace
+    app_ctx = SimpleNamespace(
+        dispatcher=services.dispatcher,
+        agent=services.agent,
+        orchestrator=services.orchestrator,
+        settings=services.settings,
+        services=services,
+    )
+    services.dispatcher.set_app(app_ctx)
+
     logger.info("Application context initialized and added to bot_data.")
 
 def main():

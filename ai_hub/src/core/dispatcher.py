@@ -1,24 +1,37 @@
-import logging
-from typing import Dict, Callable, Awaitable
+from __future__ import annotations
+import asyncio
+import inspect
+from typing import Any, Awaitable, Callable, Dict
 
-logger = logging.getLogger(__name__)
+JobFunc = Callable[..., Awaitable[Any]]
 
-class DigestDispatcher:
-    def __init__(self):
-        self._jobs: Dict[str, Callable[..., Awaitable]] = {}
+class Dispatcher:
+    def __init__(self, app: Any | None = None) -> None:
+        self.app = app
+        self._jobs: Dict[str, JobFunc] = {}
 
-    def register(self, name: str, job_func: Callable[..., Awaitable]):
-        logger.info(f"Registering job '{name}' in dispatcher.")
-        self._jobs[name] = job_func
+    def set_app(self, app: Any) -> None:
+        self.app = app
 
-    async def run(self, name: str, **kwargs) -> list[str]:
-        if name not in self._jobs:
-            logger.error(f"Attempted to run unregistered job: {name}")
-            return [f"Error: Job '{name}' is not registered."]
-        
-        job_func = self._jobs[name]
-        result = await job_func(**kwargs)
+    def register(self, name: str, func: JobFunc) -> None:
+        if not asyncio.iscoroutinefunction(func):
+            raise TypeError(f"Job '{name}' must be an async function")
+        self._jobs[name] = func
 
-        if isinstance(result, str): return [result]
-        if isinstance(result, list): return result
-        return []
+    async def run(self, name: str, **kwargs: Any) -> Any:
+        func = self._jobs.get(name)
+        if func is None:
+            raise KeyError(f"Unknown job '{name}'. Registered: {', '.join(sorted(self._jobs)) or '—'}")
+
+        sig = inspect.signature(func)
+        if "app" in sig.parameters and "app" not in kwargs:
+            if self.app is None:
+                raise RuntimeError(f"Job '{name}' expects 'app' but dispatcher has no app set. "
+                                   f"Either pass app=... or call dispatcher.set_app(app).")
+            kwargs["app"] = self.app
+
+        return await func(**kwargs)
+
+DigestDispatcher = Dispatcher
+
+__all__ = ["Dispatcher", "DigestDispatcher", "JobFunc"]

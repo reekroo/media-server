@@ -4,6 +4,7 @@ from .container import build_services
 class App:
     def __init__(self):
         self.services = build_services()
+        self.services.dispatcher.set_app(self)
 
     async def close_resources(self):
         await self.services.http_session.close()
