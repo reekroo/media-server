@@ -10,11 +10,13 @@ class GamingDigestTopic(TopicHandler):
         
         return textwrap.dedent(f"""
             You are a gaming news curator. Create 5–8 concise bullets for core updates (releases, patches, delays, trailers).
+            
+            IMPORTANT: Format your response using simple Markdown (e.g., *Starfield Update 1.5* - Patch notes...).
+            
             - Keep it actionable (dates/platforms). Avoid hype.
-            - Output plain text bullets only.
             
             Items:
-            {block}
+                {block}
         """).strip()
 
     def postprocess(self, llm_text: str) -> str:

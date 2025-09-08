@@ -71,7 +71,7 @@ def build_services() -> Services:
         telegram_client=telegram_client
     )
 
-    _register_jobs(dispatcher)
+    _register_jobs(dispatcher, services)
 
     logging.info("All services and jobs are built and registered.")
     return services
@@ -91,7 +91,7 @@ def _build_orchestrator(agent: Agent) -> Orchestrator:
     }
     return Orchestrator(agent, topics)
 
-def _register_jobs(dispatcher):
+def _register_jobs(dispatcher: DigestDispatcher, services: Services):
     logging.info("Registering jobs manually...")
 
     job_map = {

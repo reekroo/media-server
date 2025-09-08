@@ -4,8 +4,10 @@ max_restarts = 3
 state_path = "state/sys_digest.json"
 
 units = [
-  "ai-hub-chat.service",
   "ai-hub.service",
+  "ai-hub-chat.service",
+  "ai-hub-mcp.socket",
+  "ai-hub-mcp@.service",
   "location-monitor.service",
   "earthquake-monitor.service",
   "weather-monitor.service",

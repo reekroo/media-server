@@ -16,10 +16,12 @@ class TurkishNewsDigestTopic(TopicHandler):
             Analyze the following news items from Turkish sources on the topic of '{section}'.
             Your final summary MUST be in English.
 
+            IMPORTANT: Format your response using simple Markdown bullets (`- ` or `* `).
+
             Create 5-8 concise bullets focusing on the most important events, what changed, and why it matters.
 
             News Items (in Turkish):
-            {block}
+                {block}
         """).strip()
 
     def postprocess(self, llm_text: str) -> str:

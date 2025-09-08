@@ -13,6 +13,8 @@ class DinnerRecipeTopic(TopicHandler):
             Suggest 3-4 simple, easy-to-prepare recipes for tonight's dinner.
             The meals should be healthy, delicious, and not require advanced skills or a lot of cleanup.
 
+            IMPORTANT: Format your response using simple Markdown. Use asterisks for bold (*bold text*).
+
             Strictly follow these preferences:
             - Cuisine style: {prefs.get("cuisine", "any")}
             - Exclude these ingredients: {prefs.get("exclude_ingredients", "none")}
@@ -21,12 +23,11 @@ class DinnerRecipeTopic(TopicHandler):
             - Other notes: {prefs.get("other", "none")}
 
             For each recipe, provide:
-            1. A catchy name for the dish.
+            1. A catchy name for the dish in bold (e.g., *Speedy Chicken Stir-Fry*).
             2. A one-sentence description explaining why it's a good choice.
             3. A bulleted list of the main ingredients.
 
             Do not provide full cooking instructions, only the ideas and main components.
-            Structure the output clearly with each recipe as a separate section.
         """).strip()
 
     def postprocess(self, llm_text: str) -> str:

@@ -15,15 +15,14 @@ class MoviesRecommend(TopicHandler):
             
             IMPORTANT: Format your response using simple Markdown. Use asterisks for bold (*bold text*). Do NOT use HTML tags.
 
-            Preferences: {prefs_txt}
-
+            Preferences: 
+                {prefs_txt}
             Local Library:
-            {title_block}
-
+                {title_block}
             Output requirements:
-            - Use asterisks for group headings (e.g., *Epic Sci-Fi Sagas*).
-            - Each line should be a list item: Title — one-line reason.
-            - Finish with *Top Picks for Tonight:*.
+                - Use asterisks for group headings (e.g., *Epic Sci-Fi Sagas*).
+                - Each line should be a list item: Title — one-line reason.
+                - Finish with *Top Picks for Tonight:*.
         """).strip()
 
     def postprocess(self, llm_text: str) -> str:

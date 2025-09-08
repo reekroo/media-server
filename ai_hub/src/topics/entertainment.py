@@ -13,16 +13,18 @@ class EntertainmentDigestTopic(TopicHandler):
             You are a film and TV critic for a modern magazine.
             From the news items below, create a concise and engaging digest about what's new and upcoming.
 
-            Focus on:
-            1.  Major new releases (movies and TV series).
-            2.  Significant trailers or announcements.
-            3.  Interesting casting news.
+            IMPORTANT: Format your response using simple Markdown. Use asterisks for bold section titles (*Movies*).
 
-            Structure your output into two short sections: "Movies" and "TV/Series".
+            Focus on:
+            1. Major new releases (movies and TV series).
+            2. Significant trailers or announcements.
+            3. Interesting casting news.
+
+            Structure your output into two short sections: *Movies* and *TV/Series*.
             Keep it brief, witty, and to the point.
 
             News Items:
-            {block}
+                {block}
         """).strip()
 
     def postprocess(self, llm_text: str) -> str:

@@ -7,7 +7,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 
 async def _run(app: App, messages: list[str], job: str, **kwargs):
     res = await app.services.dispatcher.run(job, app=app, **kwargs)
-
     if not res:
         return
     

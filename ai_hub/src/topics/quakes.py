@@ -1,6 +1,8 @@
 from __future__ import annotations
 import json
+import textwrap
 from .base import TopicHandler
+
 
 _SYS_HINT = (
     "You are a seismology assistant. Earthquake prediction is not reliable—do NOT claim forecasts. "
@@ -11,16 +13,21 @@ _SYS_HINT = (
 class QuakesAssessment(TopicHandler):
     def build_prompt(self, payload: dict) -> str:
         payload_json = json.dumps(payload or {}, ensure_ascii=False)
-        return (
-            f"{_SYS_HINT}\n"
-            "Data JSON follows; structure may vary but includes 'events' with ts/mag/lat/lon/depth.\n"
-            f"{payload_json}\n"
-            "Output sections:\n"
-            "1) Trend summary (magnitudes & frequency)\n"
-            "2) Spatial clusters (if any)\n"
-            "3) Aftershock likelihood qualitatively (low/med/high) with caveat\n"
-            "4) Attention level and a brief why\n"
-        )
+        return textwrap.dedent(f"""
+            {_SYS_HINT}
+            
+            IMPORTANT: Format your response using simple Markdown. Use asterisks for bold section titles (*Trend Summary*).
+            
+            Data JSON follows; structure may vary but includes 'events' with ts/mag/lat/lon/depth.
+
+            {payload_json}
+
+            Output sections:
+            *Trend Summary* (magnitudes & frequency)
+            *Spatial Clusters* (if any)
+            *Aftershock Likelihood* (low/med/high) with caveat
+            *Attention Level* and a brief why            
+        """).strip()
     
     def postprocess(self, llm_text: str) -> str:
         return (llm_text or "").strip()

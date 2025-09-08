@@ -32,6 +32,7 @@ class TelegramClient:
 
     async def _send_with_retries(self, chat_id: str, text: str, *, retries: int = 3) -> None:
         delay = 1.0
+        
         for attempt in range(retries):
             try:
                 await self.bot.send_message(

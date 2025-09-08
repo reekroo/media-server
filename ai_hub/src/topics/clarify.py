@@ -13,11 +13,15 @@ class ClarifyIncident(TopicHandler):
         inc = payload.get("incident", {})
         last_digest = payload.get("last_digest")
         inc_json = json.dumps(inc, ensure_ascii=False)
-        prompt = f"{_HINT}\n\nIncident JSON:\n{inc_json}\n"
+        
+        prompt = (
+            f"{_HINT}\n\n"
+            "IMPORTANT: Format your response using simple Markdown. Use asterisks for bold section titles (*What Happened*).\n\n"
+            f"Incident JSON:\n{inc_json}\n"
+        )
         
         if last_digest:
             prompt += f"\nLast digest JSON:\n{json.dumps(last_digest, ensure_ascii=False)}\n"
-        prompt += "Output as short sections with bullets, no code blocks."
         
         return prompt
     

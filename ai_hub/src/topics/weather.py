@@ -12,13 +12,11 @@ class WeatherSummary(TopicHandler):
     def build_prompt(self, payload: dict) -> str:
         payload_json = json.dumps(payload or {}, ensure_ascii=False)
         return (
-            f"{_SYS_HINT}\n"
+            f"{_SYS_HINT}\n\n"
+            "IMPORTANT: Format any lists or alerts using simple Markdown bullets (`- `).\n\n"
             "Input JSON (keys may include ts, temp_c, feels_like_c, humidity, wind_mps, "
             "precip_mm_last_hour, alerts[]):\n"
             f"{payload_json}\n"
-            "Output in plain text (no JSON):\n"
-            "- One-liner summary.\n"
-            "- Optional bullets for umbrella/heat/wind and alerts.\n"
         )
 
     def postprocess(self, llm_text: str) -> str:
