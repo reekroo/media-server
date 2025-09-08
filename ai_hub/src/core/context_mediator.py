@@ -1,93 +1,54 @@
 from __future__ import annotations
-from typing import Iterable
+from typing import Optional, Dict
 
 from telegram import Bot
-from telegram.constants import ParseMode
-from telegram.error import BadRequest
 
-MAX_TG = 4096
-SOFT_LIMIT = 3900
+# outbound building blocks
+from .outbound.lang_resolver import TargetLanguageResolver
+from .outbound.translator.base import Translator
+from .outbound.translator.noop import NoopTranslator
+from .outbound.translator.gemini_sdk_translator import SdkTranslator  # ← используем SDK-адаптер
+from .outbound.chunker import Chunker
+from .outbound.deliverer import TelegramDeliverer, TelegramLimits
+from .outbound.mediator import OutboundMediator
 
-def sanitize_markdown_legacy(text: str) -> str:
-    out: list[str] = []
-    in_code = False
-    i = 0
-    while i < len(text):
-        ch = text[i]
-        prev = text[i - 1] if i > 0 else ""
-        if ch == "`" and prev != "\\":
-            in_code = not in_code
-            out.append(ch)
-        else:
-            if not in_code and ch in {"[", "]", "_"}:
-                out.append("\\" + ch)
-            else:
-                out.append(ch)
-        i += 1
-    return "".join(out)
+# твои реальные настройки и фабрика агентов
+from .settings import Settings
+from .agents.factory import agent_factory
 
-def smart_chunks(text: str, size: int = SOFT_LIMIT) -> Iterable[str]:
-    if not text:
-        return
+_MEDIATOR_CACHE: Dict[int, OutboundMediator] = {}
 
-    def join_pars(buf: list[str]) -> str:
-        return "\n\n".join(buf)
+def _build_mediator(bot: Bot) -> OutboundMediator:
+    limits = TelegramLimits()
+    chunker = Chunker(limits.soft_limit)
+    deliverer = TelegramDeliverer(bot, limits)
 
-    pars = text.split("\n\n")
-    buf: list[str] = []
+    settings = Settings()
+    default_lang = settings.DEFAULT_LANG or "en"
 
-    for p in pars:
-        if len(p) <= size:
-            candidate = (join_pars(buf) + ("\n\n" if buf else "") + p) if buf else p
-            if len(candidate) <= size:
-                buf.append(p)
-            else:
-                if buf:
-                    yield join_pars(buf)
-                buf = [p]
-            continue
+    # Translator через твой SDK-агент; если ключа нет — no-op
+    translator: Translator
+    if getattr(settings, "GEMINI_API_KEY", None):
+        agent = agent_factory(settings)          # твой агент на официальном SDK
+        translator = SdkTranslator(agent)
+    else:
+        translator = NoopTranslator()
 
-        if buf:
-            yield join_pars(buf)
-            buf = []
+    # ВРЕМЕННО: не используем язык чата — только conversation_lang → default
+    resolver = TargetLanguageResolver(
+        default_lang=default_lang,
+        chat_lang_lookup=lambda _chat_id: None,  # отключено до внедрения
+    )
 
-        lines = p.split("\n")
-        current = ""
-        for line in lines:
-            if not current:
-                current = line
-            elif len(current) + 1 + len(line) <= size:
-                current += "\n" + line
-            else:
-                if current:
-                    yield current
-                start = 0
-                n = len(line)
-                while start < n:
-                    end = min(start + size, n)
-                    cut = line.rfind(" ", start, end)
-                    if cut == -1 or cut <= start:
-                        cut = end
-                    yield line[start:cut]
-                    start = cut + (1 if cut < n and line[cut:cut + 1] == " " else 0)
-                current = ""
-        if current:
-            yield current
+    return OutboundMediator(translator, resolver, chunker, deliverer)
 
-    if buf:
-        out = "\n\n".join(buf)
-        if len(out) <= size:
-            yield out
-        else:
-            start = 0
-            n = len(out)
-            while start < n:
-                end = min(start + size, n)
-                cut = out.rfind("\n", start, end)
-                if cut == -1 or cut <= start:
-                    cut = end
-                yield out[start:cut]
-                start = cut
+def _mediator_for(bot: Bot) -> OutboundMediator:
+    key = id(bot)
+    m = _MEDIATOR_CACHE.get(key)
+    if m is None:
+        m = _build_mediator(bot)
+        _MEDIATOR_CACHE[key] = m
+    return m
 
 async def send_markdown_safe_via_telegram(
     bot: Bot,
@@ -95,34 +56,15 @@ async def send_markdown_safe_via_telegram(
     text: str,
     *,
     disable_web_page_preview: bool = True,
+    conversation_lang: Optional[str] = None,
 ) -> None:
-    for chunk in smart_chunks(text):
-        try:
-            await bot.send_message(
-                chat_id=chat_id,
-                text=chunk,
-                parse_mode='Markdown',
-                disable_web_page_preview=disable_web_page_preview,
-            )
-            continue
-        except BadRequest as e:
-            if "Can't parse entities" not in str(e):
-                raise
-        safe = sanitize_markdown_legacy(chunk)
-        try:
-            await bot.send_message(
-                chat_id=chat_id,
-                text=safe,
-                parse_mode='Markdown',
-                disable_web_page_preview=disable_web_page_preview,
-            )
-            continue
-        except BadRequest:
-            await bot.send_message(
-                chat_id=chat_id,
-                text=safe,
-                disable_web_page_preview=disable_web_page_preview,
-            )
+    mediator = _mediator_for(bot)
+    await mediator.send_text(
+        chat_id,
+        text,
+        disable_web_page_preview=disable_web_page_preview,
+        conversation_lang=conversation_lang,
+    )
 
 async def edit_markdown_safe_via_telegram(
     bot: Bot,
@@ -131,33 +73,13 @@ async def edit_markdown_safe_via_telegram(
     text: str,
     *,
     disable_web_page_preview: bool = True,
+    conversation_lang: Optional[str] = None,
 ) -> None:
-    t = text[:MAX_TG]
-    try:
-        await bot.edit_message_text(
-            chat_id=chat_id,
-            message_id=message_id,
-            text=t,
-            parse_mode='Markdown',
-            disable_web_page_preview=disable_web_page_preview,
-        )
-        return
-    except BadRequest as e:
-        if "Can't parse entities" not in str(e):
-            raise
-    safe = sanitize_markdown_legacy(t)
-    try:
-        await bot.edit_message_text(
-            chat_id=chat_id,
-            message_id=message_id,
-            text=safe,
-            parse_mode='Markdown',
-            disable_web_page_preview=disable_web_page_preview,
-        )
-    except BadRequest:
-        await bot.edit_message_text(
-            chat_id=chat_id,
-            message_id=message_id,
-            text=safe,
-            disable_web_page_preview=disable_web_page_preview,
-        )
+    mediator = _mediator_for(bot)
+    await mediator.edit_text(
+        chat_id,
+        message_id,
+        text,
+        disable_web_page_preview=disable_web_page_preview,
+        conversation_lang=conversation_lang,
+    )
