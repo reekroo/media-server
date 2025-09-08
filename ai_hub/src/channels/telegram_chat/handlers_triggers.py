@@ -1,6 +1,8 @@
 import logging
+
 from .auth import admin_only
 from ...core.dispatcher import DigestDispatcher
+from ...core.context_mediator import edit_markdown_safe_via_telegram
 
 logger = logging.getLogger(__name__)
 
@@ -11,28 +13,32 @@ async def _run_digest(update, context, digest_name: str, **kwargs):
         return
 
     msg = await update.message.reply_text(f"⏳ Starting '{digest_name}' digest generation...")
-    
+
     try:
         results = await dispatcher.run(name=digest_name, **kwargs)
-        
-        if not results or not any(res.strip() for res in results):
+
+        if not results or not any((r or "").strip() for r in results):
             final_text = f"✅ Job '{digest_name}' ran successfully but produced no output."
         else:
             final_text = "\n\n---\n\n".join(results)
 
-        await context.bot.edit_message_text(
-            text=final_text[:4096],
+        await edit_markdown_safe_via_telegram(
+            context.bot,
             chat_id=msg.chat_id,
             message_id=msg.message_id,
-            parse_mode='Markdown'
+            text=final_text,
+            disable_web_page_preview=True,
         )
+
     except Exception as e:
-        logger.exception(f"Failed to run digest '{digest_name}' via command.")
-        await context.bot.edit_message_text(
-            text=f"❌ An error occurred while running '{digest_name}':\n\n`{e}`",
+        logger.exception("Failed to run digest '%s' via command.", digest_name)
+        err_text = f"❌ An error occurred while running '{digest_name}':\n\n{e}"
+        await edit_markdown_safe_via_telegram(
+            context.bot,
             chat_id=msg.chat_id,
             message_id=msg.message_id,
-            parse_mode='Markdown'
+            text=err_text,
+            disable_web_page_preview=True,
         )
 
 @admin_only
@@ -43,7 +49,7 @@ async def cmd_run_sys(update, context):
 async def cmd_run_news(update, context):
     section = context.args[0] if context.args else None
     await _run_digest(update, context, "news", section=section)
-    
+
 @admin_only
 async def cmd_run_media(update, context):
     await _run_digest(update, context, "media")

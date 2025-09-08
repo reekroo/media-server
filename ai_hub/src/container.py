@@ -35,7 +35,8 @@ from .jobs import (
     news_job,
     news_tr_job,
     sys_job,
-    weather_job
+    weather_job,
+    quakes_job
 )
 
 @dataclass
@@ -78,14 +79,14 @@ def build_services() -> Services:
 
 def _build_orchestrator(agent: Agent) -> Orchestrator:
     topics = {
+        "dinner.suggest": DinnerRecipeTopic(),
         "weather.summary": WeatherSummary(), 
-        "quakes.assess": QuakesAssessment(),
+        "quakes.summary": QuakesAssessment(),
         "movies.recommend": MoviesRecommend(), 
         "entertainment.digest": EntertainmentDigestTopic(), 
         "news.digest": NewsDigestTopic(),
         "news.tr.digest": TurkishNewsDigestTopic(),
         "gaming.digest": GamingDigestTopic(), 
-        "dinner.suggest": DinnerRecipeTopic(),
         "logs.analyze": LogAnalysisTopic(), 
         "clarify.incident": ClarifyIncident(),
     }
@@ -96,8 +97,9 @@ def _register_jobs(dispatcher: DigestDispatcher, services: Services):
 
     job_map = {
         "daily_brief": daily_brief_job.run,
-        "weather": weather_job.run,
         "dinner": dinner_job.run,
+        "weather": weather_job.run,
+        "quakes": quakes_job.run,
         "media": media_job.run,
         "entertainment": entertainment_job.run,
         "news": news_job.run,
