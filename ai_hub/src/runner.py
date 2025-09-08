@@ -1,13 +1,16 @@
 from __future__ import annotations
+
 import asyncio
 import logging
 import zoneinfo
-from typing import Any, Iterable
-from types import SimpleNamespace
+from pathlib import Path
+from typing import Any
+import tomllib
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
+from .app import App
 from .container import build_services
 
 logging.basicConfig(
@@ -16,36 +19,57 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-def _as_messages(result: Any) -> list[str]:
-    if result is None:
-        return []
-    if isinstance(result, str):
-        return [result]
-    if isinstance(result, Iterable) and not isinstance(result, (bytes, bytearray, dict)):
+
+def _load_schedule(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        logging.warning("schedule.toml not found at %s", path)
+        return {}
+    with path.open("rb") as f:
+        data = tomllib.load(f)
+    return data or {}
+
+def _cron_from_str(expr: str, tz: zoneinfo.ZoneInfo) -> CronTrigger:
+    return CronTrigger.from_crontab(expr, timezone=tz)
+
+
+async def _run_and_notify(app: App, job_key: str) -> None:
+    dispatcher = app.services.dispatcher
+    log.info("Running job '%s' ...", job_key)
+    try:
+        chunks = await dispatcher.run(job_key)
+    except Exception:
+        log.exception("Job '%s' failed", job_key)
+        return
+
+    n = len(chunks) if chunks else 0
+    log.info("Job '%s' -> %d chunk(s).", job_key, n)
+    if not chunks:
+        return
+
+    for i, text in enumerate(chunks, 1):
         try:
-            items = list(result)
+            log.info(
+                "Sending chunk %d/%d for job '%s' (%d chars)...",
+                i, n, job_key, len(text) if text else 0
+            )
+            await app.send_notification(text, send_to="telegram")
         except Exception:
-            return [str(result)]
-        return [x if isinstance(x, str) else str(x) for x in items]
-    return [str(result)]
+            log.exception("Failed to send chunk %d/%d for job '%s'", i, n, job_key)
 
 async def main() -> None:
-    log.info("Building application services...")
     services = build_services()
-    app_ctx = SimpleNamespace(
-        services=services,
-        dispatcher=services.dispatcher,
-        agent=services.agent,
-        orchestrator=services.orchestrator,
-        settings=services.settings,
-    )
-    
-    services.dispatcher.set_app(app_ctx)
+    app = App(services=services)
+    services.dispatcher.set_app(app)
 
-    tz = zoneinfo.ZoneInfo(services.settings.TZ)
-    sched = AsyncIOScheduler(timezone=tz)
+    tz_name = services.settings.TZ or "Europe/Istanbul"
+    tz = zoneinfo.ZoneInfo(tz_name)
 
-    job_name_map: dict[str, str] = {
+    repo_root = Path(__file__).resolve().parents[1]
+    schedule_file = repo_root / "configs" / "schedule.toml"
+    logging.info("Loading schedule from %s", schedule_file)
+    data = _load_schedule(schedule_file)
+
+    mapping: dict[str, str] = {
         "daily_brief": "daily_brief",
         "dinner_ideas": "dinner",
         "media_digest": "media",
@@ -57,79 +81,60 @@ async def main() -> None:
         "log_digest": "logs",
     }
 
-    schedule_cfg = getattr(services.settings, "schedule", None)
-
-    if not schedule_cfg:
-        log.warning("No schedule configured (settings.schedule is empty). Exiting.")
-        try:
-            if getattr(services, "http_session", None):
-                await services.http_session.close()
-        finally:
-            return
-
-    raw = schedule_cfg.model_dump() if hasattr(schedule_cfg, "model_dump") else dict(schedule_cfg)
-
-    async def _run_and_notify(job_key: str, **kwargs: Any) -> None:
-        log.info("Running job '%s' ...", job_key)
-        try:
-            result = await services.dispatcher.run(job_key, app=app_ctx, **kwargs)
-        except Exception:
-            log.exception("Job '%s' failed", job_key)
-            return
-
-        messages = _as_messages(result)
-        if not messages:
-            log.info("Job '%s' produced no output", job_key)
-            return
-
-        tg = getattr(services, "telegram_client", None)
-        chat_id = getattr(services.settings, "TELEGRAM_CHAT_ID", None)
-        for msg in messages:
-            if tg and chat_id:
-                try:
-                    await tg.send_text(chat_id=chat_id, text=msg)
-                except Exception:
-                    log.exception("Failed to send Telegram notification for job '%s'", job_key)
-            else:
-                log.info("[NO-TELEGRAM] %s", msg)
-
-    log.info("Registering CRON jobs...")
-
-    for key, entry in raw.items():
-        if not isinstance(entry, dict): continue
-        if not entry.get("enabled"): continue
-        
-        cron_expr = entry.get("cron")
-
-        if not cron_expr: continue
-
-        job_key = job_name_map.get(key)
-
-        if not job_key:
-            log.warning("No dispatcher job mapped for schedule key '%s' (cron=%r) — skipping", key, cron_expr)
+    sched = AsyncIOScheduler(timezone=tz)
+    any_job = False
+    for section, job_key in mapping.items():
+        cfg = data.get(section)
+        if not isinstance(cfg, dict):
+            continue
+        if cfg.get("enabled", True) is False:
+            continue
+        expr = (cfg.get("cron") or "").strip()
+        if not expr:
+            logging.warning("Section [%s] enabled but has no 'cron' field", section)
             continue
 
         try:
-            trigger = CronTrigger.from_crontab(cron_expr, timezone=tz)
+            trigger = _cron_from_str(expr, tz)
         except Exception:
-            log.exception("Invalid CRON expression for '%s': %r — skipping", key, cron_expr)
+            logging.exception(
+                "Invalid cron expression in section [%s]: %r", section, expr
+            )
             continue
 
-        sched.add_job(_run_and_notify, trigger, name=key, kwargs={"job_key": job_key})
-        log.info("Scheduled '%s' (dispatcher job '%s') at CRON %s [%s]", key, job_key, cron_expr, tz.key)
+        sched.add_job(
+            _run_and_notify,
+            trigger,
+            args=[app, job_key],
+            id=section,
+            name=f"{section} ({job_key})",
+            coalesce=True,
+            max_instances=1,
+            misfire_grace_time=60,
+        )
+        logging.info(
+            "Scheduled '%s' (job '%s') at CRON '%s' [%s]",
+            section, job_key, expr, tz_name
+        )
+        any_job = True
 
-    log.info("Starting scheduler...")
+    if not any_job:
+        logging.warning("schedule.toml not found or empty. No jobs scheduled.")
+
     sched.start()
+    logging.info("Scheduler started. Press Ctrl+C to exit.")
 
     try:
-        while True:
-            await asyncio.sleep(3600)
+        await asyncio.Event().wait()
+    except (KeyboardInterrupt, SystemExit):
+        logging.info("Scheduler shutting down...")
     finally:
-        log.info("Shutting down scheduler...")
-        sched.shutdown(wait=False)
         try:
-            if getattr(services, "http_session", None):
-                await services.http_session.close()
+            sched.shutdown(wait=False)
+        except Exception:
+            pass
+        try:
+            await app.close_resources()
         except Exception:
             pass
 
