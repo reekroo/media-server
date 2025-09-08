@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..app import App
 
-from ..digests.news_tr.templates import render_turkish_news_digest
+from ..digests.news_by.templates import render_belarus_news_digest
 
 async def run(app: App, config_path_override: str | None = None) -> list[str]:
     svc = app.services
-    config_path = Path(config_path_override) if config_path_override else svc.settings.BASE_DIR / "configs" / "news_tr.toml"
+    config_path = Path(config_path_override) if config_path_override else svc.settings.BASE_DIR / "configs" / "news_by.toml"
     if not config_path.exists():
         return []
 
@@ -27,6 +27,6 @@ async def run(app: App, config_path_override: str | None = None) -> list[str]:
             continue
 
         items_payload = [asdict(item) for item in items]
-        summary = await svc.orchestrator.run("news.tr.digest", {"items": items_payload, "section": section})
-        messages.append(render_turkish_news_digest(section, summary))
+        summary = await svc.orchestrator.run("news.by.digest", {"items": items_payload, "section": section})
+        messages.append(render_belarus_news_digest(section, summary))
     return messages

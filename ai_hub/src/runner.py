@@ -58,14 +58,15 @@ async def main() -> None:
 
     fallback_mapping = {
         "daily_brief": "daily_brief",
-        "news_digest": "news",
-        "gaming_digest": "gaming",
         "dinner_ideas": "dinner",
         "media_digest": "media",
         "entertainment": "entertainment",
+        "news_digest": "news",
+        "turkish_news": "news_tr",
+        "belarus_news": "news_by",
+        "gaming_digest": "gaming",
         "sys_digest": "sys",
         "log_digest": "logs",
-        "turkish_news": "news_tr",
     }
 
     repo = TomlScheduleRepository(schedule_path, fallback_mapping=fallback_mapping)

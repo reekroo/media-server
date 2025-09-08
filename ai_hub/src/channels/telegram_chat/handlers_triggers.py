@@ -42,8 +42,24 @@ async def _run_digest(update, context, digest_name: str, **kwargs):
         )
 
 @admin_only
-async def cmd_run_sys(update, context):
-    await _run_digest(update, context, "sys")
+async def cmd_run_weather(update, context):
+    await _run_digest(update, context, "weather")
+    
+@admin_only
+async def cmd_run_quakes(update, context):
+    await _run_digest(update, context, "quakes")
+    
+@admin_only
+async def cmd_run_dinner(update, context):
+    await _run_digest(update, context, "dinner")
+
+@admin_only
+async def cmd_run_media(update, context):
+    await _run_digest(update, context, "media")
+
+@admin_only
+async def cmd_run_entertainment(update, context):
+    await _run_digest(update, context, "entertainment")
 
 @admin_only
 async def cmd_run_news(update, context):
@@ -51,25 +67,21 @@ async def cmd_run_news(update, context):
     await _run_digest(update, context, "news", section=section)
 
 @admin_only
-async def cmd_run_media(update, context):
-    await _run_digest(update, context, "media")
+async def cmd_run_turkish_news(update, context):
+    await _run_digest(update, context, "news_tr")
 
 @admin_only
-async def cmd_run_logs(update, context):
-    await _run_digest(update, context, "logs")
+async def cmd_run_belarus_news(update, context):
+    await _run_digest(update, context, "news_by")
 
 @admin_only
 async def cmd_run_gaming(update, context):
     await _run_digest(update, context, "gaming")
 
 @admin_only
-async def cmd_run_turkish_news(update, context):
-    await _run_digest(update, context, "news_tr")
+async def cmd_run_sys(update, context):
+    await _run_digest(update, context, "sys")
 
 @admin_only
-async def cmd_run_entertainment(update, context):
-    await _run_digest(update, context, "entertainment")
-
-@admin_only
-async def cmd_run_dinner(update, context):
-    await _run_digest(update, context, "dinner")
+async def cmd_run_logs(update, context):
+    await _run_digest(update, context, "logs")

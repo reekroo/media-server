@@ -57,6 +57,7 @@ class ScheduleConfig(BaseModel):
     entertainment: ScheduleEntry | None = None
     news_digest: ScheduleEntry | None = None
     turkish_news: ScheduleEntry | None = None
+    belarus_news: ScheduleEntry | None = None
     gaming_digest: ScheduleEntry | None = None
     sys_digest: ScheduleEntry | None = None
     log_digest: ScheduleEntry | None = None

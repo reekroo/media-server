@@ -3,16 +3,14 @@ from typing import Optional, Dict
 
 from telegram import Bot
 
-# outbound building blocks
 from .outbound.lang_resolver import TargetLanguageResolver
 from .outbound.translator.base import Translator
 from .outbound.translator.noop import NoopTranslator
-from .outbound.translator.gemini_sdk_translator import SdkTranslator  # ← используем SDK-адаптер
+from .outbound.translator.gemini_sdk_translator import SdkTranslator
 from .outbound.chunker import Chunker
 from .outbound.deliverer import TelegramDeliverer, TelegramLimits
 from .outbound.mediator import OutboundMediator
 
-# твои реальные настройки и фабрика агентов
 from .settings import Settings
 from .agents.factory import agent_factory
 
@@ -26,18 +24,16 @@ def _build_mediator(bot: Bot) -> OutboundMediator:
     settings = Settings()
     default_lang = settings.DEFAULT_LANG or "en"
 
-    # Translator через твой SDK-агент; если ключа нет — no-op
     translator: Translator
     if getattr(settings, "GEMINI_API_KEY", None):
-        agent = agent_factory(settings)          # твой агент на официальном SDK
+        agent = agent_factory(settings)
         translator = SdkTranslator(agent)
     else:
         translator = NoopTranslator()
 
-    # ВРЕМЕННО: не используем язык чата — только conversation_lang → default
     resolver = TargetLanguageResolver(
         default_lang=default_lang,
-        chat_lang_lookup=lambda _chat_id: None,  # отключено до внедрения
+        chat_lang_lookup=lambda _chat_id: None,
     )
 
     return OutboundMediator(translator, resolver, chunker, deliverer)

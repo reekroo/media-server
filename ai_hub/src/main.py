@@ -32,6 +32,7 @@ async def main() -> None:
             "entertainment",
             "news",
             "news_tr",
+            "news_by",
             "gaming",
             "logs",
             "sys",
@@ -57,6 +58,7 @@ async def main() -> None:
         elif args.cmd == "entertainment": await _run(app, messages, "entertainment")
         elif args.cmd == "news": await _run(app, messages, "news", section=args.section)
         elif args.cmd == "news_tr": await _run(app, messages, "news_tr")
+        elif args.cmd == "news_by": await _run(app, messages, "news_by")
         elif args.cmd == "gaming": await _run(app, messages, "gaming")
         elif args.cmd == "logs": await _run(app, messages, "logs")
         elif args.cmd == "sys": await _run(app, messages, "sys")

@@ -22,6 +22,7 @@ from .topics.gaming import GamingDigestTopic
 from .topics.clarify import ClarifyIncident
 from .topics.logs import LogAnalysisTopic
 from .topics.news_tr import TurkishNewsDigestTopic
+from .topics.news_by import BelarusNewsDigestTopic
 from .topics.entertainment import EntertainmentDigestTopic
 from .topics.dinner import DinnerRecipeTopic
 
@@ -34,6 +35,7 @@ from .jobs import (
     media_job,
     news_job,
     news_tr_job,
+    news_by_job,
     sys_job,
     weather_job,
     quakes_job
@@ -86,6 +88,7 @@ def _build_orchestrator(agent: Agent) -> Orchestrator:
         "entertainment.digest": EntertainmentDigestTopic(), 
         "news.digest": NewsDigestTopic(),
         "news.tr.digest": TurkishNewsDigestTopic(),
+        "news.by.digest": BelarusNewsDigestTopic(),
         "gaming.digest": GamingDigestTopic(), 
         "logs.analyze": LogAnalysisTopic(), 
         "clarify.incident": ClarifyIncident(),
@@ -104,6 +107,7 @@ def _register_jobs(dispatcher: DigestDispatcher, services: Services):
         "entertainment": entertainment_job.run,
         "news": news_job.run,
         "news_tr": news_tr_job.run,
+        "news_by": news_by_job.run,
         "gaming": gaming_job.run,
         "logs": logs_job.run,
         "sys": sys_job.run,

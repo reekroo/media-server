@@ -7,8 +7,11 @@ from .handlers_start_help import cmd_start, cmd_help
 from .handlers_chat import on_message
 from .handlers_clarify import cmd_why
 from .handlers_triggers import (
-    cmd_run_sys, cmd_run_news, cmd_run_media, cmd_run_logs,
-    cmd_run_gaming, cmd_run_turkish_news, cmd_run_entertainment, cmd_run_dinner
+    cmd_run_weather, cmd_run_quakes, cmd_run_dinner,
+    cmd_run_news, cmd_run_turkish_news, cmd_run_belarus_news,
+    cmd_run_media, cmd_run_entertainment, 
+    cmd_run_gaming,
+    cmd_run_sys, cmd_run_logs    
 )
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -52,14 +55,17 @@ def main():
     app.add_handler(CommandHandler("why", cmd_why))
     app.add_handler(CommandHandler("reset", lambda u, c: u.message.reply_text("Context reset.")))
 
-    app.add_handler(CommandHandler("run_sys", cmd_run_sys))
-    app.add_handler(CommandHandler("run_news", cmd_run_news))
-    app.add_handler(CommandHandler("run_media", cmd_run_media))
-    app.add_handler(CommandHandler("run_logs", cmd_run_logs))
-    app.add_handler(CommandHandler("run_gaming", cmd_run_gaming))
-    app.add_handler(CommandHandler("run_news_tr", cmd_run_turkish_news))
-    app.add_handler(CommandHandler("run_entertainment", cmd_run_entertainment))
+    app.add_handler(CommandHandler("run_weather", cmd_run_weather))
+    app.add_handler(CommandHandler("run_quakes", cmd_run_quakes))
     app.add_handler(CommandHandler("run_dinner", cmd_run_dinner))
+    app.add_handler(CommandHandler("run_media", cmd_run_media))
+    app.add_handler(CommandHandler("run_entertainment", cmd_run_entertainment))
+    app.add_handler(CommandHandler("run_news", cmd_run_news))
+    app.add_handler(CommandHandler("run_news_tr", cmd_run_turkish_news))
+    app.add_handler(CommandHandler("run_news_by", cmd_run_belarus_news))
+    app.add_handler(CommandHandler("run_gaming", cmd_run_gaming))
+    app.add_handler(CommandHandler("run_sys", cmd_run_sys))
+    app.add_handler(CommandHandler("run_logs", cmd_run_logs))
 
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_message))
 

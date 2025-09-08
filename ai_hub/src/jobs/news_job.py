@@ -1,11 +1,12 @@
-# news_job.py
 from __future__ import annotations
 import tomllib
 from pathlib import Path
 from dataclasses import asdict
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING: from ..app import App
+if TYPE_CHECKING: 
+    from ..app import App
+
 from ..digests.news.templates import render_news_digest
 
 async def run(app: App, config_path_override: str | None = None, section: str | None = None) -> list[str]:
