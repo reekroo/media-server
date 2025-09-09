@@ -1,0 +1,11 @@
+enabled = true
+
+[preferences]
+cuisine = "Mediterranean, Italian, simple European, Turkish, Belarus"
+
+exclude_ingredients = ["pork", "shrimp"]
+
+max_prep_time_minutes = 20
+max_cook_time_minutes = 45
+
+other = "Kid-friendly, not too spicy, healthy, can be cooked in one pan if possible"

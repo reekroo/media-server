@@ -1,0 +1,9 @@
+enabled = true
+max_items = 30
+
+[feeds]
+general = [
+  "https://www.moviefone.com/rss/movie-news",
+  "https://tvline.com/feed/",
+  "https://www.ign.com/rss/tv"
+]

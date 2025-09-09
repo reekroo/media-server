@@ -1,0 +1,39 @@
+[daily_brief]
+enabled = true
+cron = "30 7 * * *"
+
+[news_digest]
+enabled = true
+cron = "40 7 * * *"
+
+[gaming_digest]
+enabled = true
+cron = "45 7 * * *"
+
+[dinner_ideas]
+enabled = true
+cron = "45 16 * * *"
+
+[turkish_news]
+enabled = true
+cron = "0 18 * * *"
+
+[media_digest]
+enabled = true
+cron = "30 18 * * *"
+
+[entertainment]
+enabled = true
+cron = "0 19 * * *"
+
+[belarus_news]
+enabled = true
+cron = "0 20 * * *"
+
+[sys_digest]
+enabled = true
+cron = "0 9,15,21 * * *"
+
+[log_digest]
+enabled = true
+cron = "3 9,15,21 * * *"

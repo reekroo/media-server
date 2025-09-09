@@ -14,7 +14,8 @@ requires-python = ">=3.9"
 dependencies = [
     "requests==2.32.4",
     "concurrent-log-handler==0.9.28",
-    "portalocker==3.2.0"
+    "portalocker==3.2.0",
+    "schedule==1.2.1"
 ]
 
 [project.scripts]

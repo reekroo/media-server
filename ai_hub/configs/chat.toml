@@ -1,0 +1,3 @@
+max_history_turns = 6
+language = "ru"
+allow_clarify = true

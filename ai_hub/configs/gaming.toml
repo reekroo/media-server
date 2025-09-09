@@ -1,0 +1,8 @@
+enabled = true
+max_items = 20
+
+[feeds]
+gaming = [
+  "https://www.ign.com/rss.xml",
+  "https://www.pcgamer.com/rss/"
+]

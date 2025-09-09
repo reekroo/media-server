@@ -1,0 +1,8 @@
+enabled = true
+max_items = 25
+
+[feeds]
+general = [
+  "https://www.onliner.by/feed",
+  "https://euroradio.fm/en/podcast-feeds/bynews"
+]

@@ -1,0 +1,11 @@
+root = "/mnt/storage/media"
+max_depth = 6
+include_ext = [".mkv",".mp4",".avi",".mov"]
+state_path = "state/media_index.json"
+
+[recommender]
+language = "en"
+genres   = ["sci-fi","action"]
+
+[soon]
+enabled = false
