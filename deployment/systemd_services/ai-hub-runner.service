@@ -1,5 +1,5 @@
 [Unit]
-Description=AI Hub Telegram Chat Bot
+Description=AI Hub Runner (APScheduler)
 After=network-online.target
 Requires=ai-hub-mcp.service
 
@@ -8,7 +8,7 @@ Type=simple
 User=reekroo
 EnvironmentFile=/etc/default/ai-hub
 WorkingDirectory=/home/reekroo/ai_hub
-ExecStart=/home/reekroo/ai_hub/.venv_ai_hub/bin/python -m chat_bot
+ExecStart=/home/reekroo/ai_hub/.venv_ai_hub/bin/python -m runner
 
 Restart=always
 RestartSec=3

@@ -1,8 +1,16 @@
 enabled = true
 max_items = 20
+to = "telegram"
+destination = "-100123456789"
 
-[feeds]
-gaming = [
-  "https://www.ign.com/rss.xml",
-  "https://www.pcgamer.com/rss/"
+ai_topic = "gaming"
+render_template = "🎮 Gaming Digest\n\n{summary}"
+
+[feeds.main]
+urls = [
+  "https://www.feeds.feedburner.com/ign/all",
+  "https://www.pcgamer.com/rss/",
+  "https://www.kotaku.com/rss",
+  "https://www.vg247.com/feed",
+  "https://www.gamespot.com/feeds/mashup"
 ]

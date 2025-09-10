@@ -1,8 +1,16 @@
 enabled = true
 max_items = 25
+to = "telegram"
+destination = "-100123456789"
 
-[feeds]
-general = [
-  "https://www.onliner.by/feed",
-  "https://euroradio.fm/en/podcast-feeds/bynews"
+# Управляет пайплайном в MCP
+ai_topic = "news_by"
+render_template = "🇧🇾 Belarus News Digest ({section})\n\n{summary}"
+
+[feeds.main]
+urls = [
+    "https://zerkalo.io/rss/s/main.rss",
+    "https://mediazona.by/rss",
+    "https://www.onliner.by/feed",
+    "https://euroradio.fm/en/podcast-feeds/bynews"
 ]

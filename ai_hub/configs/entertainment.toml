@@ -1,9 +1,16 @@
 enabled = true
 max_items = 30
+to = "telegram"
+destination = "-100123456789"
 
-[feeds]
-general = [
+ai_topic = "entertainment"
+render_template = "🍿 Entertainment Digest\n\n{summary}"
+
+[feeds.main]
+urls = [
   "https://www.moviefone.com/rss/movie-news",
   "https://tvline.com/feed/",
-  "https://www.ign.com/rss/tv"
+  "https://www.ign.com/rss/tv",
+  "https://variety.com/feed/",
+  "https://deadline.com/feed/"
 ]

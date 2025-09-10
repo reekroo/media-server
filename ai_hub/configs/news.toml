@@ -1,11 +1,18 @@
 enabled = true
 max_items = 25
+to = "telegram"
+destination = "-100123456789"
 
-[feeds]
-general = [
+ai_topic = "news"
+render_template = "🗞️ News Digest ({section})\n\n{summary}"
+
+[feeds.general]
+urls = [
   "https://feeds.bbci.co.uk/news/rss.xml",
   "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
 ]
-tech = [
+
+[feeds.tech]
+urls = [
   "https://www.theverge.com/rss/index.xml"
 ]

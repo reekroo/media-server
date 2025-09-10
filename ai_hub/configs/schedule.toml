@@ -1,39 +1,59 @@
 [daily_brief]
 enabled = true
 cron = "30 7 * * *"
+rpc_method = "daily.build"
+params = { config_name = "daily" }
 
-[news_digest]
+[news_main]
 enabled = true
 cron = "40 7 * * *"
+rpc_method = "news.build"
+params = { config_name = "news" }
 
-[gaming_digest]
+[gaming]
 enabled = true
 cron = "45 7 * * *"
+rpc_method = "news.build"
+params = { config_name = "gaming" }
 
-[dinner_ideas]
+[dinner]
 enabled = true
 cron = "45 16 * * *"
+rpc_method = "dinner.build"
+params = { config_name = "dinner" }
 
-[turkish_news]
+[news_tr]
 enabled = true
 cron = "0 18 * * *"
+rpc_method = "news.build"
+params = { config_name = "news_tr" }
 
-[media_digest]
+[media]
 enabled = true
 cron = "30 18 * * *"
+rpc_method = "media.build"
+params = { config_name = "media" }
 
 [entertainment]
 enabled = true
 cron = "0 19 * * *"
+rpc_method = "news.build"
+params = { config_name = "entertainment" }
 
-[belarus_news]
+[news_by]
 enabled = true
 cron = "0 20 * * *"
+rpc_method = "news.build"
+params = { config_name = "news_by" }
 
 [sys_digest]
 enabled = true
 cron = "0 9,15,21 * * *"
+rpc_method = "sys.build"
+params = { config_name = "sys" }
 
 [log_digest]
 enabled = true
 cron = "3 9,15,21 * * *"
+rpc_method = "logs.build"
+params = { config_name = "logs" }

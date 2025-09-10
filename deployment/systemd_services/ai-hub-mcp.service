@@ -1,0 +1,20 @@
+[Unit]
+Description=AI Hub MCP (Master Control Program)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=reekroo
+Group=reekroo
+
+WorkingDirectory=/home/reekroo/ai_hub
+ExecStart=/home/reekroo/ai_hub/.venv_ai_hub/bin/python -m mcp
+
+EnvironmentFile=/etc/default/ai-hub
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
