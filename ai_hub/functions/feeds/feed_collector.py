@@ -28,16 +28,19 @@ class FeedCollector:
             await self._session.close()
 
     async def _fetch_and_parse_feed(self, url: str) -> List[FeedItem]:
+        
+        HEADERS = {
+            "User-Agent": (
+                "Mozilla/5.0 (X11; Linux x86_64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/124 Safari/537.36"
+            ),
+            "Accept": "application/rss+xml, application/xml;q=0.9, */*;q=0.8",
+        }
+        session = self._session or aiohttp.ClientSession()
+        
         try:
-            HEADERS = {
-                "User-Agent": (
-                    "Mozilla/5.0 (X11; Linux x86_64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/124 Safari/537.36"
-                ),
-                "Accept": "application/rss+xml, application/xml;q=0.9, */*;q=0.8",
-            }
-            async with self._session.get(url, headers=HEADERS, timeout=15) as response:
+            async with session.get(url, headers=HEADERS, timeout=15) as response:
                 response.raise_for_status()
                 text = await response.text()
                 parsed = feedparser.parse(text)
@@ -71,9 +74,18 @@ class FeedCollector:
                 log.info("Successfully fetched %s items from %s", len(items), url)
                 return items
 
-        except Exception as e:
-            log.error("Failed to fetch or parse feed %s. Error: %s", url, str(e), exc_info=True)
+        except aiohttp.client_exceptions.ClientConnectorDNSError as e:
+            log.warning(f"DNS Error: Could not resolve host for {url}. Error: {e}")
             return []
+        except aiohttp.client_exceptions.ClientResponseError as e:
+            log.warning(f"HTTP Error: Feed {url} returned status {e.status}. Message: {e.message}")
+            return []
+        except Exception as e:
+            log.error(f"Failed to fetch or parse feed {url}. General Error: {e}")
+            return []
+        finally:
+            if not self._session:
+                await session.close()
 
     async def collect(self, urls: List[str], max_items: int = 30) -> List[FeedItem]:
         if not self._session:

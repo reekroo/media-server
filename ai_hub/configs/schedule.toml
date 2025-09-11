@@ -1,59 +1,59 @@
 [daily_brief]
 enabled = true
 cron = "30 7 * * *"
-rpc_method = "daily.build"
+rpc_method = "runner.execute_and_send"
 params = { config_name = "daily" }
 
 [news_main]
 enabled = true
 cron = "40 7 * * *"
-rpc_method = "news.build"
+rpc_method = "runner.execute_and_send"
 params = { config_name = "news" }
 
 [gaming]
 enabled = true
 cron = "45 7 * * *"
-rpc_method = "news.build"
+rpc_method = "runner.execute_and_send"
 params = { config_name = "gaming" }
 
 [dinner]
 enabled = true
 cron = "45 16 * * *"
-rpc_method = "dinner.build"
+rpc_method = "runner.execute_and_send"
 params = { config_name = "dinner" }
 
 [news_tr]
 enabled = true
 cron = "0 18 * * *"
-rpc_method = "news.build"
+rpc_method = "runner.execute_and_send"
 params = { config_name = "news_tr" }
 
 [media]
 enabled = true
 cron = "30 18 * * *"
-rpc_method = "media.build"
+rpc_method = "runner.execute_and_send"
 params = { config_name = "media" }
 
 [entertainment]
 enabled = true
 cron = "0 19 * * *"
-rpc_method = "news.build"
+rpc_method = "runner.execute_and_send"
 params = { config_name = "entertainment" }
 
 [news_by]
 enabled = true
 cron = "0 20 * * *"
-rpc_method = "news.build"
+rpc_method = "runner.execute_and_send"
 params = { config_name = "news_by" }
 
 [sys_digest]
 enabled = true
 cron = "0 9,15,21 * * *"
-rpc_method = "sys.build"
+rpc_method = "runner.execute_and_send"
 params = { config_name = "sys" }
 
 [log_digest]
 enabled = true
-cron = "3 9,15,21 * * *"
-rpc_method = "logs.build"
+cron = "1 9,15,21 * * *"
+rpc_method = "runner.execute_and_send"
 params = { config_name = "logs" }

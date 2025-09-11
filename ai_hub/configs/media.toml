@@ -8,5 +8,5 @@ state_path = "state/media_index.json"
 include_ext = [".mkv",".mp4",".avi",".mov"]
 
 [recommender]
-language = "ru"
+language = "en"
 genres   = ["sci-fi","action","horrors"]

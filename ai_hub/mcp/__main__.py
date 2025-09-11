@@ -1,3 +1,5 @@
+# mcp/__main__.py
+
 import asyncio
 import json
 import logging
@@ -15,46 +17,40 @@ from mcp.registration import discover_and_register_methods
 
 log = logging.getLogger("MCP")
 
-# --- ИСПРАВЛЕНИЕ №1: Обработчик теперь принимает dispatcher как аргумент ---
+# --- ИСПРАВЛЕНИЕ №1: Обработчик теперь принимает dispatcher как явный аргумент ---
 async def handle_connection(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, dispatcher: Dispatcher) -> None:
-    """Обрабатывает одно клиентское подключение."""
     peer = writer.get_extra_info('peername')
     log.info(f"Accepted connection from {peer}")
     
     try:
         while True:
             line = await reader.readline()
-            if not line:
-                break
-
+            if not line: break
             request_str = line.decode('utf-8').strip()
+            if not request_str: continue # Игнорируем пустые строки
+            
             log.debug(f"Received from {peer}: {request_str}")
-
             response: dict[str, Any]
             try:
                 request = json.loads(request_str)
                 method = request.get("method")
                 params = request.get("params", {})
+                if not method: raise ValueError("'method' is a required field")
                 
-                if not method:
-                    raise ValueError("'method' is a required field")
-
                 # Используем dispatcher, который был передан в функцию
                 result = await dispatcher.run(name=method, **params)
                 response = {"jsonrpc": "2.0", "id": request.get("id"), "result": result}
 
             except Exception as e:
-                log.error(f"Error processing request from {peer}: {e}", exc_info=True)
-                response = {"jsonrpc": "2.0", "id": None, "error": {"code": -32603, "message": str(e)}}
+                log.error(f"Error processing request: {e}", exc_info=True)
+                response = {"jsonrpc": "2.0", "id": request.get("id"), "error": {"code": -32603, "message": str(e)}}
             
             response_bytes = (json.dumps(response, ensure_ascii=False) + '\n').encode('utf-8')
             writer.write(response_bytes)
             await writer.drain()
 
-    except ConnectionResetError:
-        log.info(f"Connection from {peer} reset.")
-    except Exception as e:
-        log.error(f"Unexpected error with client {peer}: {e}", exc_info=True)
+    except ConnectionResetError: log.info(f"Connection from {peer} reset.")
+    except Exception as e: log.error(f"Unexpected error with client {peer}: {e}", exc_info=True)
     finally:
         log.info(f"Closing connection from {peer}")
         writer.close()
@@ -65,21 +61,20 @@ async def main():
     if not os.path.exists(env_file):
         env_file = "/etc/default/ai-hub"
         print(f"Local .env not found, using system-wide config: {env_file}")
-
+    
     settings = Settings(_env_file=env_file)
     setup_logger(settings.STATE_DIR)
     
     llm_agent = agent_factory(settings)
     ai_service = DigestService(agent=llm_agent)
     channel_factory = ChannelFactory(settings=settings)
+    dispatcher = Dispatcher()
     
     app_context = AppContext(
-        settings=settings,
-        ai_service=ai_service,
-        channel_factory=channel_factory
+        settings=settings, ai_service=ai_service,
+        channel_factory=channel_factory, dispatcher=dispatcher
     )
-    
-    dispatcher = Dispatcher(app=app_context)
+    dispatcher.set_app(app_context)
     discover_and_register_methods(dispatcher)
     
     # --- ИСПРАВЛЕНИЕ №2: Создаем "обертку" для нашего обработчика ---
@@ -90,7 +85,7 @@ async def main():
     server = await asyncio.start_server(
         connection_handler, # <-- Передаем новую обертку
         host="127.0.0.1", 
-        port=8484,
+        port=8484
     )
 
     addr = server.sockets[0].getsockname()
