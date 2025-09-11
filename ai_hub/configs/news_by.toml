@@ -1,14 +1,13 @@
 enabled = true
-max_items = 25
 to = "telegram"
-destination = "-100123456789"
-
-# Управляет пайплайном в MCP
-ai_topic = "news_by"
+destination = "-1002918707721"
 render_template = "🇧🇾 Belarus News Digest ({section})\n\n{summary}"
 
-[feeds.main]
-urls = [
+max_items = 25
+ai_topic = "news_by"
+
+[feeds]
+general = [
     "https://zerkalo.io/rss/s/main.rss",
     "https://mediazona.by/rss",
     "https://www.onliner.by/feed",

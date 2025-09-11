@@ -1,7 +1,7 @@
 # mcp/logic/sys_templates.py
 
 from typing import Iterable
-from  ...functions.sys.model import DigestSummary, UnitReport
+from functions.sys.model import DigestSummary, UnitReport
 
 def _badge(level: str) -> str:
     """Возвращает emoji-значок для уровня состояния."""

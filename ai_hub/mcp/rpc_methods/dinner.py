@@ -1,7 +1,7 @@
 import tomllib
 from pathlib import Path
 
-from mcp.context import AppContext
+from ..context import AppContext
 
 async def build_digest(app: AppContext, config_name: str) -> None:
     """Генерирует и отправляет идеи для ужина на основе конфигурации."""

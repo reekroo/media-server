@@ -1,6 +1,8 @@
 enabled = true
-max_depth = 6
+to = "telegram"
+destination = "-1002918707721"
 
+max_depth = 6
 root = "/mnt/storage/media"
 state_path = "state/media_index.json"
 include_ext = [".mkv",".mp4",".avi",".mov"]
@@ -8,6 +10,3 @@ include_ext = [".mkv",".mp4",".avi",".mov"]
 [recommender]
 language = "ru"
 genres   = ["sci-fi","action","horrors"]
-
-[soon]
-enabled = false

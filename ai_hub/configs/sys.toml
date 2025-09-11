@@ -1,13 +1,16 @@
+enabled = true
+to = "telegram"
+destination = "-1002918707721"
+
 lookback = "24h"
 min_priority = "warning"
 max_restarts = 3
 state_path = "state/sys_digest.json"
 
 units = [
-  "ai-hub.service",
+  "ai-hub-runner.service",
   "ai-hub-chat.service",
-  "ai-hub-mcp.socket",
-  "ai-hub-mcp@.service",
+  "ai-hub-mcp.service",
   "location-monitor.service",
   "earthquake-monitor.service",
   "weather-monitor.service",

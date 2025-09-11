@@ -6,16 +6,15 @@ from telegram.error import TimedOut, NetworkError, BadRequest
 from telegram.request import HTTPXRequest
 
 from .base import Channel
+from .telegram_helpers.chunker import Chunker
+from .telegram_helpers.markdown import escape_markdown_v2_preserving_code
 from core.settings import Settings
-from telegram_helpers.chunker import Chunker
-from telegram_helpers.markdown import escape_markdown_v2_preserving_code
 
 log = logging.getLogger(__name__)
 
 class TelegramChannel(Channel):
     """Канал для отправки сообщений в Telegram."""
-    def __init__(self, timeout: float = 25.0):
-        settings = Settings()
+    def __init__(self, settings: Settings, timeout: float = 25.0):
         if not settings.TELEGRAM_BOT_TOKEN:
             raise ValueError("TELEGRAM_BOT_TOKEN is not set in settings")
 
@@ -33,13 +32,28 @@ class TelegramChannel(Channel):
 
         retries = 3
         delay = 1.0
+        current_destination = destination
+
         for attempt in range(retries):
             try:
                 async with self._lock:
                     for chunk in self.chunker.split(content):
-                        await self._deliver_chunk(destination, chunk, kwargs)
-                log.info(f"Successfully sent message to {destination}")
+                        # Используем current_destination, который может обновиться
+                        await self._deliver_chunk(current_destination, chunk, kwargs)
+                log.info(f"Successfully sent message to {current_destination}")
                 return
+            
+            # --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+            except ChatMigrated as e:
+                new_chat_id = e.new_chat_id
+                log.warning(
+                    f"Chat ID {current_destination} has migrated to {new_chat_id}. "
+                    f"Please update your config files! Retrying with new ID..."
+                )
+                current_destination = str(new_chat_id) # Обновляем ID и пробуем снова
+                continue # Сразу переходим к следующей попытке с новым ID
+            # --- КОНЕЦ ИЗМЕНЕНИЯ ---
+
             except (TimedOut, NetworkError) as e:
                 if attempt == retries - 1:
                     log.exception(f"Telegram send failed after {retries} retries")

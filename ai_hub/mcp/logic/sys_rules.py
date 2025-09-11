@@ -3,7 +3,7 @@
 import re
 from typing import Dict, List, Tuple
 
-from ...functions.sys.model import UnitStatus, LogEntry, Issue, UnitReport, Level, Incident
+from functions.sys.model import UnitStatus, LogEntry, Issue, UnitReport, Level, Incident
 
 def _match_patterns(entries: List[LogEntry], patterns: Dict[str, List[str]]) -> Tuple[List[Issue], List[str]]:
     """Ищет паттерны ошибок в логах и возвращает найденные проблемы и примеры."""

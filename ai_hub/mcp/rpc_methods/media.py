@@ -1,4 +1,4 @@
-from mcp.context import AppContext
+from ..context import AppContext
 from functions.media.collector import collect_new_titles
 from functions.media.titles import list_movie_titles_async
 

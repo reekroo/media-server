@@ -1,5 +1,6 @@
-from .base import Channel
 from typing import Any
+
+from .base import Channel
 
 class ConsoleChannel(Channel):
     """Канал для вывода сообщений в стандартный stdout."""

@@ -1,8 +1,9 @@
 enabled = true
+to = "telegram"
+destination = "-1002918707721"
 
 weather_json = "/run/monitors/weather/latest.json"
 quakes_json  = "/run/monitors/earthquakes/last7d.json"
 
-[brief]
 language = "ru"
 include_quakes = true

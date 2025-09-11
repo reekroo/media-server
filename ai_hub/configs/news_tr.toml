@@ -1,21 +1,18 @@
 enabled = true
-max_items = 25
 to = "telegram"
-destination = "-100123456789"
-
-# Управляет пайплайном в MCP
-ai_topic = "news_tr"
+destination = "-1002918707721"
 render_template = "🇹🇷 Turkish News Digest ({section})\n\n{summary}"
 
-[feeds.general]
-urls = [
+max_items = 25
+ai_topic = "news_tr"
+
+[feeds]
+general = [
   "https://www.trthaber.com/xml_mobile.php?cat=1",
   "https://www.aa.com.tr/tr/rss/default?cat=guncel",
   "https://feeds.bbci.co.uk/turkce/rss.xml",
   "https://www.cnnturk.com/feed/rss/all/news"
 ]
-
-[feeds.economy]
-urls = [
+economy = [
   "https://www.ntv.com.tr/ekonomi.rss"
 ]

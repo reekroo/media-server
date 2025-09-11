@@ -1,9 +1,12 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-
 from .rpc_client import call_mcp
+
+# --- ИСПРАВЛЕННЫЕ ИМПОРТЫ ---
 from functions.local_data.reader import read_json_async
 from core.settings import Settings
+# --- КОНЕЦ ИСПРАВЛЕНИЯ ---
+
 
 HELP_MESSAGE = """\
 Hi! I'm your AI Hub bot. 🚀
@@ -27,14 +30,11 @@ async def digest_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     
     config_name = context.args[0]
-    # Находим универсальный метод для дайджеста
-    # В реальном приложении здесь может быть более сложная логика
     method_map = {"news": "news.build", "gaming": "news.build", "entertainment": "news.build", "news_by": "news.build", "news_tr": "news.build"}
     rpc_method = method_map.get(config_name, f"{config_name}.build")
 
     await update.message.reply_text(f"⏳ Requesting digest '{config_name}' via MCP...")
     await call_mcp(rpc_method, config_name=config_name)
-    # Ответ придет в канал, настроенный в .toml, а не сюда
 
 async def why_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Объясняет инцидент, используя 'clarify' топик."""
@@ -61,5 +61,5 @@ async def on_message_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
     if reply := update.message.reply_to_message:
         prompt = f"Context:\n---\n{reply.text}\n---\nUser question: {prompt}"
 
-    response = await call_mcp("assist.chat", prompt=prompt) # Предполагаем наличие такого метода в mcp
+    response = await call_mcp("assist.chat", prompt=prompt)
     await update.message.reply_text(response)

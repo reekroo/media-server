@@ -1,4 +1,8 @@
 enabled = true
+to = "telegram"
+destination = "-1002918707721"
+render_template = "📊 Log Analytics Digest\n\n{summary}"
+
 lookback_hours = 24
 
 [components]

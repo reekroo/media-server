@@ -2,7 +2,7 @@ import tomllib
 from pathlib import Path
 import asyncio
 
-from mcp.context import AppContext
+from ..context import AppContext
 from functions.logs.collector import LogCollector
 
 async def build_digest(app: AppContext, config_name: str) -> None:

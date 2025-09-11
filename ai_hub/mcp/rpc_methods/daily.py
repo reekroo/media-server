@@ -1,23 +1,23 @@
+import logging
 from pathlib import Path
 
-from mcp.context import AppContext
+from ..context import AppContext
 from functions.local_data.reader import read_json_async
 
+log = logging.getLogger(__name__)
+
 BRIEF_FORMAT = """\
-🌤️ **Weather**
+🌤️ *Weather*
 {weather}
 
-🌍 **Earthquakes**
+🌍 *Earthquakes*
 {quakes}
 """
 
 async def build_brief(app: AppContext, config_name: str) -> None:
-    """Генерирует и отправляет дневной брифинг."""
-    print(f"Executing job: daily.build_brief for config '{config_name}'")
-
+    log.info(f"Executing job: daily.build_brief for config '{config_name}'")
     cfg = app.settings.daily
-    if not cfg:
-        return
+    if not cfg: return
 
     weather_payload = await read_json_async(Path(cfg.weather_json))
     quakes_payload = await read_json_async(Path(cfg.quakes_json))
@@ -31,7 +31,6 @@ async def build_brief(app: AppContext, config_name: str) -> None:
         quakes_text = await app.ai_service.digest(kind='quakes', params=quakes_payload)
 
     brief_content = BRIEF_FORMAT.format(weather=weather_text, quakes=quakes_text).strip()
-
     channel = app.channel_factory.get_channel(cfg.to)
     await channel.send(destination=cfg.destination, content=brief_content)
-    print(f"Job 'daily.build_brief' completed.")
+    log.info(f"Job 'daily.build_brief' completed.")

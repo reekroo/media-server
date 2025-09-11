@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from schedule_entry_config import ScheduleEntry 
+from .schedule_entry_config import ScheduleEntry 
 
 class ScheduleConfig(BaseModel):
     daily_brief: ScheduleEntry | None = None
