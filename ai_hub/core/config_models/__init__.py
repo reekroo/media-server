@@ -1,5 +1,3 @@
-# core/config_models/__init__.py
-
 from ._metadata import TomlMetadata
 from .daily_config import DailyConfig
 from .dinner_config import DinnerConfig
@@ -10,7 +8,6 @@ from .media_config import MediaConfig
 from .schedule_config import ScheduleConfig
 from .sys_config import SysConfig
 
-# Эта строка позволяет использовать "from .config_models import *"
 __all__ = [
     "TomlMetadata",
     "DailyConfig",

@@ -1,5 +1,6 @@
-from .base import TopicHandler
 import textwrap
+
+from .base import TopicHandler
 
 class ChatTopic(TopicHandler):
     def build_prompt(self, payload: dict) -> str:

@@ -1,11 +1,11 @@
-from .base import TopicHandler
 import textwrap
 
-class DinnerTopic(TopicHandler): # Убедись, что класс наследуется от TopicHandler
+from .base import TopicHandler
+
+class DinnerTopic(TopicHandler):
     def build_prompt(self, payload: dict) -> str:
         prefs = payload.get("preferences", {})
         
-        # Формируем текстовое описание предпочтений для промпта
         prefs_lines = []
         if cuisine := prefs.get("cuisine"):
             prefs_lines.append(f"- Cuisine: {cuisine}")
