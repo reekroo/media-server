@@ -1,7 +1,10 @@
 from pathlib import Path
-from core.settings import Settings
 
-CONVERSATION_HISTORY: dict[int, list[dict[str, str]]] = {}
+from core.settings import Settings
+from .models.chat_state import ChatState
+
+CONVERSATION_STATE: dict[int, ChatState] = {}
+CONVERSATION_HISTORY: int = 25
 
 def get_available_digests() -> list[str]:
     try:

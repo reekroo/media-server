@@ -4,6 +4,7 @@ class DailyConfig(BaseModel):
     enabled: bool = True
     to: str = "telegram"
     destination: str = ""
+    destination_language: str = ""
 
     weather_json: str ="/run/monitors/weather/latest.json"
     quakes_json: str ="/run/monitors/earthquakes/last7d.json"

@@ -4,45 +4,45 @@ from pathlib import Path
 from importlib import import_module
 from typing import Any, Dict
 
+from core.settings import Settings
 from .agents.base import Agent
 from .topics.base import TopicHandler
+from .translation.gemini_sdk_translator import SdkTranslator
 
 class DigestService:
-    """
-    Оркестратор "мозга". Автоматически находит, регистрирует и запускает
-    все доступные топики (TopicHandler).
-    """
-    def __init__(self, agent: Agent):
+    def __init__(self, agent: Agent, settings: Settings):
         self.agent = agent
+        self.settings = settings
+        self.default_lang = settings.DEFAULT_LANG
         self.topics: Dict[str, TopicHandler] = self._discover_topics()
+        self.translator = SdkTranslator(agent)
         print(f"✅ DigestService initialized. Registered topics: {', '.join(self.topics.keys())}")
 
     def _discover_topics(self) -> Dict[str, TopicHandler]:
-        """Сканирует директорию topics/ и регистрирует все обработчики."""
         topics = {}
-        # Путь к директории с топиками относительно этого файла
         topics_dir = Path(__file__).parent / "topics"
         
         for module_info in pkgutil.iter_modules([str(topics_dir)]):
             module_name = module_info.name
-            if module_name == "base":  # Пропускаем базовый класс
-                continue
+            if module_name == "base": continue
             
             module = import_module(f".topics.{module_name}", package="ai_assistent")
             for _, obj in inspect.getmembers(module, inspect.isclass):
                 if issubclass(obj, TopicHandler) and obj is not TopicHandler:
-                    # Регистрируем топик по имени файла (clarify.py -> 'clarify')
-                    topic_name = module_name
-                    topics[topic_name] = obj()
-                    print(f"  -> Discovered topic '{topic_name}' from {obj.__name__}")
+                    topics[module_name] = obj()
+                    print(f"☑️ Discovered topic '{module_name}' from {obj.__name__}")
         return topics
 
     async def digest(self, kind: str, params: Dict[str, Any]) -> str:
-        """Выполняет пайплайн для указанного топика."""
         handler = self.topics.get(kind)
         if not handler:
-            raise KeyError(f"Unknown topic kind '{kind}'. Available: {', '.join(self.topics.keys())}")
+            raise KeyError(f"🟥 Unknown topic kind '{kind}'. Available: {', '.join(self.topics.keys())}")
 
         prompt = handler.build_prompt(params)
         text = await self.agent.generate(prompt)
         return handler.postprocess(text)
+    
+    async def translate(self, text: str, target_lang: str) -> str:
+        if not text or not target_lang:
+            return text
+        return await self.translator.translate(text, target_lang)

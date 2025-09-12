@@ -8,6 +8,7 @@ class MediaConfig(BaseModel):
     enabled: bool = True
     to: str = "telegram"
     destination: str = ""
+    destination_language: str = ""
     
     max_depth: int = 6
     root: Path = Path("/mnt/storage/media")

@@ -66,7 +66,7 @@ async def main():
     setup_logger(settings.STATE_DIR)
     
     llm_agent = agent_factory(settings)
-    ai_service = DigestService(agent=llm_agent)
+    ai_service = DigestService(agent=llm_agent, settings=settings)
     channel_factory = ChannelFactory(settings=settings)
     dispatcher = Dispatcher()
     

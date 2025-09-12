@@ -5,6 +5,7 @@ class DinnerConfig(BaseModel):
     enabled: bool = True
     to: str = "telegram"
     destination: str = ""
+    destination_language: str = ""
     render_template: str = "👩‍🍳 What's for Dinner?\n\n{summary}"
 
     cuisine: str = "Mediterranean, Italian, simple European, Turkish, Belarus"

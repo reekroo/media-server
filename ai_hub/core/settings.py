@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_TOKEN: str | None = None
     TELEGRAM_ADMIN_IDS: List[str] = Field(default_factory=list)
     TZ: str = Field(default="Europe/Istanbul")
-    DEFAULT_LANG: str = "ru"
+    DEFAULT_LANG: str = "en"
 
     BASE_DIR: Path = PROJECT_ROOT
     STATE_DIR: Path = PROJECT_ROOT / "state"

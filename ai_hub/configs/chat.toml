@@ -1,4 +1,4 @@
 enabled = true
 allow_clarify = true
 max_history_turns = 20
-language = "ru"
+language = "en"

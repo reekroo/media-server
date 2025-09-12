@@ -7,10 +7,12 @@ from functions.local_data.reader import read_json_async
 log = logging.getLogger(__name__)
 
 BRIEF_FORMAT = """\
-🌤️ **Weather**
+🌤️ *Weather*
+
 {weather}
 
-🌍 **Earthquakes**
+🌍 *Earthquakes*
+
 {quakes}
 """
 

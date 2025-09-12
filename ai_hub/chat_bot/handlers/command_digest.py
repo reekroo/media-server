@@ -1,49 +1,39 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from ..rpc_client import call_mcp
-from ..state import get_available_digests
+from chat_bot.rpc_client import call_mcp
+from chat_bot.state import get_available_digests, CONVERSATION_STATE
+from core.settings import Settings
 
-# --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
-# Создаем карту, которая связывает команду /digest с правильным RPC-методом в MCP.
-METHOD_MAP = {
-    # Все "новостные" дайджесты используют один универсальный метод
-    "news": "news.build",
-    "news_by": "news.build",
-    "news_tr": "news.build",
-    "gaming": "news.build",
-    "entertainment": "news.build",
-    
-    # Остальные дайджесты имеют свои собственные, уникальные методы
-    "sys": "sys.build",
-    "media": "media.build",
-    "dinner": "dinner.build",
-    "daily": "daily.build",
-    "logs": "logs.build",
-}
-# --- КОНЕЦ ИСПРАВЛЕНИЯ ---
+UNIVERSAL_NEWS_DIGESTS = {"news", "news_by", "news_tr", "gaming", "entertainment"}
 
-async def digest_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    Запускает сборку дайджеста, используя карту для выбора правильного RPC-метода.
-    """
+def _get_rpc_method_name(config_name: str) -> str:
+    target_builder = "news" if config_name in UNIVERSAL_NEWS_DIGESTS else config_name
+    base_func_name = "build_brief" if target_builder == "daily" else "build_digest"
+    short_func_name = base_func_name.replace('_digest','').replace('_brief','')
+    return f"{target_builder}.{short_func_name}"
+
+async def digest_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not context.args:
         available = ", ".join(get_available_digests())
         await update.message.reply_text(f"Usage: /digest <name>\nAvailable: {available}")
         return
     
     config_name = context.args[0]
+    rpc_method = _get_rpc_method_name(config_name)
     
-    # Ищем нужный метод в нашей карте
-    rpc_method = METHOD_MAP.get(config_name)
-    
-    if not rpc_method:
-        await update.message.reply_text(f"Sorry, digest '{config_name}' is not a valid command.")
-        return
-
     await update.message.reply_text(f"⏳ Building '{config_name}' digest for you...")
-    
-    # Вызываем MCP с правильным именем метода
-    digest_text = await call_mcp(rpc_method, config_name=config_name)
 
+    digest_text = await call_mcp(rpc_method, config_name=config_name)
+    
+    settings = Settings()
+    chat_id = update.effective_chat.id
+    state = CONVERSATION_STATE.get(chat_id)
+    user_lang = state.lang if (state and state.lang) else settings.DEFAULT_LANG
+    
+    if user_lang and user_lang.lower() != settings.DEFAULT_LANG.lower():
+        digest_text = await call_mcp(
+            "assist.translate", text=digest_text, target_lang=user_lang
+        )
+        
     await update.message.reply_text(digest_text)

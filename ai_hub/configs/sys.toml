@@ -1,6 +1,7 @@
 enabled = true
 to = "telegram"
 destination = "-1002918707721"
+destination_language = "en"
 
 lookback = "24h"
 min_priority = "warning"

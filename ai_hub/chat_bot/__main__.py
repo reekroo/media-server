@@ -8,6 +8,7 @@ from chat_bot.handlers.command_digest import digest_command
 from chat_bot.handlers.command_reset import reset_command
 from chat_bot.handlers.command_start import start_command
 from chat_bot.handlers.command_why import why_command
+from chat_bot.handlers.command_set_lang import set_lang_command
 from chat_bot.handlers.conversation import on_message_command
 
 async def main() -> None:
@@ -27,6 +28,7 @@ async def main() -> None:
     app.add_handler(CommandHandler("digest", digest_command))
     app.add_handler(CommandHandler("why", why_command))
     app.add_handler(CommandHandler("reset", reset_command))
+    app.add_handler(CommandHandler("set_lang", set_lang_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_message_command))
 
     await app.initialize()    

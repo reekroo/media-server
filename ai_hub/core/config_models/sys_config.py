@@ -10,5 +10,6 @@ class SysConfig(BaseModel):
     max_restarts: int = 3
     to: str = "telegram"
     destination: str = ""
+    destination_language: str = ""
     units: List[str] = Field(default_factory=list)
     patterns: SysPatternsConfig = Field(default_factory=SysPatternsConfig)
