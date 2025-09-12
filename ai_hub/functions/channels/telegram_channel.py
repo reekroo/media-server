@@ -13,7 +13,6 @@ from core.settings import Settings
 log = logging.getLogger(__name__)
 
 class TelegramChannel(Channel):
-    """Канал для отправки сообщений в Telegram."""
     def __init__(self, settings: Settings, timeout: float = 25.0):
         if not settings.TELEGRAM_BOT_TOKEN:
             raise ValueError("TELEGRAM_BOT_TOKEN is not set in settings")
@@ -38,21 +37,18 @@ class TelegramChannel(Channel):
             try:
                 async with self._lock:
                     for chunk in self.chunker.split(content):
-                        # Используем current_destination, который может обновиться
                         await self._deliver_chunk(current_destination, chunk, kwargs)
                 log.info(f"Successfully sent message to {current_destination}")
                 return
             
-            # --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
             except ChatMigrated as e:
                 new_chat_id = e.new_chat_id
                 log.warning(
                     f"Chat ID {current_destination} has migrated to {new_chat_id}. "
                     f"Please update your config files! Retrying with new ID..."
                 )
-                current_destination = str(new_chat_id) # Обновляем ID и пробуем снова
-                continue # Сразу переходим к следующей попытке с новым ID
-            # --- КОНЕЦ ИЗМЕНЕНИЯ ---
+                current_destination = str(new_chat_id)
+                continue
 
             except (TimedOut, NetworkError) as e:
                 if attempt == retries - 1:
@@ -63,22 +59,53 @@ class TelegramChannel(Channel):
                 delay *= 2
 
     async def _deliver_chunk(self, chat_id: str, chunk: str, kwargs: dict) -> None:
-        """Пытается отправить один чанк, переключая режимы Markdown."""
         disable_preview = kwargs.get("disable_web_page_preview", True)
-        # try: # 1. Попытка с Markdown V1
-        #     await self.bot.send_message(chat_id, chunk, parse_mode="Markdown", disable_web_page_preview=disable_preview)
-        #     return
-        # except BadRequest as e:
-        #     if "Can't parse entities" not in str(e): raise
 
-        try: # 2. Попытка с Markdown V2
+        try:
             v2_chunk = escape_markdown_v2_preserving_code(chunk)
-            await self.bot.send_message(chat_id, v2_chunk, parse_mode="MarkdownV2", disable_web_page_preview=disable_preview)
+            await self.bot.send_message(
+                chat_id, 
+                v2_chunk, 
+                parse_mode="MarkdownV2", 
+                disable_web_page_preview=disable_preview
+            )
             return
         except BadRequest as e:
             if "Can't parse entities" not in str(e):
                 log.error(f"Unhandled BadRequest error: {e}")
                 raise
 
-        # 3. Отправка без форматирования как крайняя мера
         await self.bot.send_message(chat_id, chunk, disable_web_page_preview=disable_preview)
+
+    async def send_photo(self, destination: str, image_bytes: bytes, caption: str, **kwargs: Any) -> None:
+        log.info(f"Sending photo to {destination} with caption of {len(caption)} chars")
+
+        caption_chunker = Chunker(soft_limit=1024)
+        caption_chunks = iter(caption_chunker.split(caption))
+        first_chunk = next(caption_chunks, "")
+
+        try:
+            v2_caption_chunk = escape_markdown_v2_preserving_code(first_chunk)
+            
+            # --- ИСПРАВЛЕНИЕ ЗДЕСЬ: Убираем невалидный аргумент ---
+            await self.bot.send_photo(
+                chat_id=destination,
+                photo=image_bytes,
+                caption=v2_caption_chunk,
+                parse_mode="MarkdownV2"
+                # disable_web_page_preview=... <-- УДАЛЕНО
+            )
+            # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
+            
+            for chunk in caption_chunks:
+                await self.send(destination, chunk, **kwargs)
+
+        except BadRequest as e:
+            if "Can't parse entities" in str(e):
+                log.warning(f"Failed to send photo with formatted caption (error: {e}). Falling back.")
+                # --- ИСПРАВЛЕНИЕ ЗДЕСЬ: Убираем невалидный аргумент ---
+                await self.bot.send_photo(chat_id=destination, photo=image_bytes)
+                # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
+                await self.send(destination, caption, **kwargs)
+            else:
+                raise e

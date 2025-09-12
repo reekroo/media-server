@@ -1,11 +1,12 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
 class DinnerConfig(BaseModel):
     enabled: bool = True
     to: str = "telegram"
     destination: str = ""
-    destination_language: str = ""
+    destination_language: Optional[str] = None
+    generate_image: Optional[bool] = False
     render_template: str = "👩‍🍳 What's for Dinner?\n\n{summary}"
 
     cuisine: str = "Mediterranean, Italian, simple European, Turkish, Belarus"

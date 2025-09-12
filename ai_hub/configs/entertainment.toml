@@ -3,6 +3,7 @@ to = "telegram"
 destination = "-1002918707721"
 destination_language = "en"
 render_template = "🍿 Entertainment Digest\n\n{summary}"
+generate_image = true
 
 max_items = 30
 ai_topic = "entertainment"

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pathlib import Path
 from pydantic import BaseModel, Field
 
@@ -8,7 +8,8 @@ class MediaConfig(BaseModel):
     enabled: bool = True
     to: str = "telegram"
     destination: str = ""
-    destination_language: str = ""
+    destination_language: Optional[str] = None
+    generate_image: Optional[bool] = False
     
     max_depth: int = 6
     root: Path = Path("/mnt/storage/media")

@@ -7,6 +7,7 @@ class FeedBasedConfig(BaseModel):
     to: str = "telegram"
     destination: str = ""
     destination_language: Optional[str] = None
+    generate_image: Optional[bool] = True
     
     ai_topic: str = ""
     render_template: str = "{summary}"

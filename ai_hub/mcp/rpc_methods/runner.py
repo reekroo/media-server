@@ -24,7 +24,21 @@ async def execute_and_send(app: AppContext, config_name: str) -> None:
         # 2. Решаем, нужен ли перевод
         cfg = getattr(app.settings, config_name)
         target_lang = getattr(cfg, "destination_language", None)
+        should_generate_image = getattr(cfg, "generate_image", False)
         
+        if should_generate_image and digest_text and "no output" not in digest_text:
+            log.info(f"Requesting image generation for '{config_name}'...")
+            try:
+                image_bytes = await dispatcher.run(name="assist.generate_image", text_summary=digest_text)
+                
+                log.info(f"Image generated. Sending photo with caption to {cfg.destination}")
+                channel = app.channel_factory.get_channel(cfg.to)
+                await channel.send_photo(destination=cfg.destination, image_bytes=image_bytes, caption=digest_text)
+                return # Выходим, так как мы уже отправили фото с подписью
+            except Exception as e:
+                log.error(f"Failed to generate or send image for '{config_name}': {e}", exc_info=True)
+                # Если генерация картинки не удалась, просто отправляем текст (фоллбэк)
+    
         if target_lang and target_lang.lower() != app.settings.DEFAULT_LANG.lower():
             log.info(f"Translating digest '{config_name}' to '{target_lang}'...")
             digest_text = await dispatcher.run(

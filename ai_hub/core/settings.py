@@ -19,8 +19,13 @@ class Settings(BaseSettings):
 
     GEMINI_API_KEY: str
     GEMINI_MODEL: str = 'gemini-2.5-flash'
+    
+    GCP_PROJECT_ID: str
+    GCP_LOCATION: str = "us-central1"
+    
     TELEGRAM_BOT_TOKEN: str | None = None
     TELEGRAM_ADMIN_IDS: List[str] = Field(default_factory=list)
+    
     TZ: str = Field(default="Europe/Istanbul")
     DEFAULT_LANG: str = "en"
 
@@ -72,7 +77,7 @@ class Settings(BaseSettings):
                 setattr(self, field_name, model_class(**data))
 
             except Exception as e:
-                print(f"⚠️  Warning: Could not load or parse '{path.name}': {e}")
+                print(f"🟨  Warning: Could not load or parse '{path.name}': {e}")
         
         if self.media and isinstance(self.media.state_path, str):
              self.media.state_path = self.STATE_DIR / Path(self.media.state_path).name

@@ -5,9 +5,10 @@ from importlib import import_module
 from typing import Any, Dict
 
 from core.settings import Settings
-from .agents.base import Agent
 from .topics.base import TopicHandler
+from .agents.base import Agent
 from .translation.gemini_sdk_translator import SdkTranslator
+from .image_generator.gemini_sdk_image_generator import GeminiSdkImageGenerator
 
 class DigestService:
     def __init__(self, agent: Agent, settings: Settings):
@@ -16,6 +17,11 @@ class DigestService:
         self.default_lang = settings.DEFAULT_LANG
         self.topics: Dict[str, TopicHandler] = self._discover_topics()
         self.translator = SdkTranslator(agent)
+        self.image_generator = GeminiSdkImageGenerator(
+            agent=self.agent,
+            project_id=settings.GCP_PROJECT_ID,
+            location=settings.GCP_LOCATION
+        )
         print(f"✅ DigestService initialized. Registered topics: {', '.join(self.topics.keys())}")
 
     def _discover_topics(self) -> Dict[str, TopicHandler]:
@@ -46,3 +52,6 @@ class DigestService:
         if not text or not target_lang:
             return text
         return await self.translator.translate(text, target_lang)
+    
+    async def generate_image(self, text_summary: str) -> bytes:
+        return await self.image_generator.generate(text_summary)
