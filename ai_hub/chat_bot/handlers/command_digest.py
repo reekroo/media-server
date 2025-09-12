@@ -1,6 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
+from chat_bot.messaging import reply_text_with_markdown
 from chat_bot.rpc_client import call_mcp
 from chat_bot.state import get_available_digests, CONVERSATION_STATE
 from core.settings import Settings
@@ -22,7 +23,7 @@ async def digest_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     config_name = context.args[0]
     rpc_method = _get_rpc_method_name(config_name)
     
-    await update.message.reply_text(f"⏳ Building '{config_name}' digest for you...")
+    await reply_text_with_markdown(update, f"⏳ Building '{config_name}' digest for you...")
 
     digest_text = await call_mcp(rpc_method, config_name=config_name)
     
@@ -36,4 +37,4 @@ async def digest_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             "assist.translate", text=digest_text, target_lang=user_lang
         )
         
-    await update.message.reply_text(digest_text)
+    await reply_text_with_markdown(update, digest_text)

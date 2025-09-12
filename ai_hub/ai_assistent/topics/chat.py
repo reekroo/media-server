@@ -17,9 +17,7 @@ class ChatTopic(TopicHandler):
             You are a helpful and friendly assistant. Continue the conversation based on the history.
 
             Conversation History:
-            {history_block}
-
-            Assistant:
+                {history_block}
         """).strip()
 
     def postprocess(self, llm_text: str) -> str:

@@ -2,6 +2,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from langdetect import detect, LangDetectException
 
+from chat_bot.messaging import reply_text_with_markdown
 from chat_bot.rpc_client import call_mcp
 from chat_bot.state import CONVERSATION_STATE, CONVERSATION_HISTORY
 from chat_bot.models.chat_state import ConversationTurn, ChatState
@@ -30,4 +31,4 @@ async def on_message_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
         response = await call_mcp("assist.chat", history=[turn.model_dump() for turn in state.history])        
         state.history[-1].assistant = response
 
-    await update.message.reply_text(response)
+    await reply_text_with_markdown(update, response)

@@ -1,6 +1,8 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
+from chat_bot.messaging import reply_text_with_markdown
+
 from ..state import get_available_digests
 
 HELP_MESSAGE_HEADER = """\
@@ -23,4 +25,4 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         full_help_message = HELP_MESSAGE_HEADER + "_No digests configured yet._"
 
-    await update.message.reply_text(full_help_message, parse_mode="Markdown")
+    await reply_text_with_markdown(update, full_help_message)

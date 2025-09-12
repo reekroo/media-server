@@ -1,6 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
+from chat_bot.messaging import reply_text_with_markdown
 from chat_bot.rpc_client import call_mcp
 from functions.local_data.reader import read_json_async
 from core.settings import Settings
@@ -27,4 +28,4 @@ async def why_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         params={"incident": incident_data}
     )
     
-    await update.message.reply_text(explanation)
+    await reply_text_with_markdown(update, explanation)
