@@ -36,7 +36,7 @@ params = { config_name = "gaming" }
 
 [news_main]
 enabled = true
-cron = cron = [
+cron = [
   "45 7 * * *",
   "10 12 * * *",
   "10 18 * * *",
@@ -47,7 +47,7 @@ params = { config_name = "news" }
 
 [news_tr]
 enabled = true
-cron = cron = [
+cron = [
   "00 8 * * *",
   "0 14 * * *",
   "0 22 * * *"
@@ -57,7 +57,7 @@ params = { config_name = "news_tr" }
 
 [news_by]
 enabled = true
-cron = cron = [
+cron = [
   "30 8 * * *",
   "0 13 * * *",
   "0 20 * * *"
