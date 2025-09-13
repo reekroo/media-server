@@ -4,6 +4,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from telegram.request import HTTPXRequest
 
 from core.settings import Settings
+from core.logging import setup_logger, LOG_FILE_PATH
 from chat_bot.handlers.command_digest import digest_command
 from chat_bot.handlers.command_reset import reset_command
 from chat_bot.handlers.command_start import start_command
@@ -11,10 +12,9 @@ from chat_bot.handlers.command_why import why_command
 from chat_bot.handlers.command_set_lang import set_lang_command
 from chat_bot.handlers.conversation import on_message_command
 
-async def main() -> None:
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
-    log = logging.getLogger("ChatBot")
+log = setup_logger(__name__, LOG_FILE_PATH)
 
+async def main() -> None:
     settings = Settings()
     if not settings.TELEGRAM_BOT_TOKEN:
         log.error("TELEGRAM_BOT_TOKEN is not set. Bot cannot start.")

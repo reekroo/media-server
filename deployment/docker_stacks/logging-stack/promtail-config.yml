@@ -18,15 +18,6 @@ scrape_configs:
           host: raspberrypi
           __path__: /mnt/logs/scripts_logs/*.log
 
-  - job_name: earthquake monitor app
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: earthquake_monitor
-          host: raspberrypi
-          __path__: /mnt/logs/earthquake_monitor_logs/*.log
-
   - job_name: location service
     static_configs:
       - targets:
@@ -45,7 +36,16 @@ scrape_configs:
           host: raspberrypi
           __path__: /mnt/logs/backup_service_logs/*.log
 
-  - job_name: weather monitor
+  - job_name: earthquake monitor app
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: earthquake_monitor
+          host: raspberrypi
+          __path__: /mnt/logs/earthquake_monitor_logs/*.log
+
+  - job_name: weather monitor app
     static_configs:
       - targets:
           - localhost
@@ -53,3 +53,12 @@ scrape_configs:
           job: weather_monitor
           host: raspberrypi
           __path__: /mnt/logs/weather_monitor_logs/*.log
+
+  - job_name: ai hub
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: ai_hub
+          host: raspberrypi
+          __path__: /mnt/logs/ai_hub_logs/*.log

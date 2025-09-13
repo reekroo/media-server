@@ -1,17 +1,18 @@
-import logging
-
 from ..context import AppContext
 from ..logic import sys_rules, sys_templates
 from functions.sys.collector import get_unit_status, get_unit_logs
 from functions.sys.state import save_incident, save_digest_state
 from functions.sys.model import DigestSummary
+from core.logging import setup_logger, LOG_FILE_PATH
 
-log = logging.getLogger(__name__)
+log = setup_logger(__name__, LOG_FILE_PATH)
+
+SYS_DISABLED = "🟥 System digest is disabled or not configured."
 
 async def build_digest(app: AppContext, config_name: str) -> str:
     log.info(f"Building system digest for config '{config_name}'")
     cfg = app.settings.sys
-    if not cfg or not cfg.enabled: return "System digest is disabled or not configured."
+    if not cfg or not cfg.enabled: return SYS_DISABLED
 
     reports = []
     for unit_name in cfg.units:

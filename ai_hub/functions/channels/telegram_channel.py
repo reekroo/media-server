@@ -1,32 +1,24 @@
 import asyncio
-import logging
 from typing import Any
 from telegram import Bot
-from telegram.error import TimedOut, NetworkError, BadRequest
+from telegram.error import TimedOut, NetworkError, BadRequest, ChatMigrated, RetryAfter
 from telegram.request import HTTPXRequest
 
 from .base import Channel
 from .telegram_helpers.chunker import Chunker
-from .telegram_helpers.markdown import escape_markdown_v2_preserving_code
 from core.settings import Settings
+from core.logging import setup_logger, LOG_FILE_PATH
 
-log = logging.getLogger(__name__)
+log = setup_logger(__name__, LOG_FILE_PATH)
 
-def _trim_markdown_caption(s: str, limit: int = 1024) -> str:
-    """
-    Аккуратно обрезает подпись под фото под Markdown (не V2):
-    - режет до limit,
-    - не оставляет висячие маркеры (*, _, `) в конце (ломают парсер Telegram).
-    """
-    if not s:
-        return s
-    if len(s) <= limit:
-        return s
-    s = s[:limit]
-    # убираем незакрытые маркеры на самом хвосте
-    while s and s[-1] in ("*", "_", "`"):
-        s = s[:-1]
-    return s
+def _trim_markdown_caption(str: str, limit: int = 1024) -> str:
+    if not str: return str
+    if len(str) <= limit: return str
+    
+    str = str[:limit]
+    while str and str[-1] in ("*", "_", "`"):
+        str = str[:-1]
+    return str
 
 class TelegramChannel(Channel):
     def __init__(self, settings: Settings, timeout: float = 25.0):
@@ -114,9 +106,7 @@ class TelegramChannel(Channel):
         except BadRequest as e:
             if "Can't parse entities" in str(e):
                 log.warning(f"Failed to send photo with formatted caption (error: {e}). Falling back.")
-                # --- ИСПРАВЛЕНИЕ ЗДЕСЬ: Убираем невалидный аргумент ---
                 await self.bot.send_photo(chat_id=destination, photo=image_bytes)
-                # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
                 await self.send(destination, caption, **kwargs)
             else:
                 raise e

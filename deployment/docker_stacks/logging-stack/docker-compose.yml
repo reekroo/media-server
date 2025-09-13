@@ -27,6 +27,7 @@ services:
       - /home/reekroo/location_service/logs:/mnt/logs/location_service_logs:ro
       - /home/reekroo/earthquake_monitor/logs:/mnt/logs/earthquake_monitor_logs:ro
       - /home/reekroo/weather_monitor/logs:/mnt/logs/weather_monitor_logs:ro
+      - /home/reekroo/ai_hub/logs:/mnt/logs/ai_hub_logs:ro
       - ./promtail-config.yml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
     depends_on:

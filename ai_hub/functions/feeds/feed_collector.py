@@ -1,11 +1,12 @@
 import aiohttp
 import asyncio
 import feedparser
-import logging
 from dataclasses import dataclass
 from typing import List, Optional
 
-log = logging.getLogger(__name__)
+from core.logging import setup_logger, LOG_FILE_PATH
+
+log = setup_logger(__name__, LOG_FILE_PATH)
 
 @dataclass
 class FeedItem:

@@ -2,8 +2,9 @@ import logging
 
 from ..context import AppContext
 from functions.feeds.feed_collector import FeedCollector
+from core.logging import setup_logger, LOG_FILE_PATH
 
-log = logging.getLogger(__name__)
+log = setup_logger(__name__, LOG_FILE_PATH)
 
 async def build_digest(app: AppContext, config_name: str, section: str | None = None) -> str:
     log.info(f"Building digest for config '{config_name}'")

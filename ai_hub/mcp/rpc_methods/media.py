@@ -1,10 +1,12 @@
-import logging
-
 from ..context import AppContext
 from functions.media.collector import collect_new_titles
 from functions.media.titles import list_movie_titles_async
+from core.logging import setup_logger, LOG_FILE_PATH
 
-log = logging.getLogger(__name__)
+log = setup_logger(__name__, LOG_FILE_PATH)
+
+MEDIA_DISABLED = "🟥 Media digest is disabled or not configured."
+NO_NEW = "🟪 No new media and no recommendations to send."
 
 def _render_media_digest(new_titles: list[str], recommend_text: str) -> str:
     parts = []
@@ -17,7 +19,7 @@ def _render_media_digest(new_titles: list[str], recommend_text: str) -> str:
 async def build_digest(app: AppContext, config_name: str) -> str:
     log.info(f"Building media digest for config '{config_name}'")
     cfg = app.settings.media
-    if not cfg or not cfg.enabled: return "Media digest is disabled or not configured."
+    if not cfg or not cfg.enabled: return MEDIA_DISABLED
 
     new_titles = await collect_new_titles(
         root=cfg.root, state_path=cfg.state_path,
@@ -33,6 +35,6 @@ async def build_digest(app: AppContext, config_name: str) -> str:
         )
 
     if not new_titles and not recommend_text:
-        return "✅ No new media and no recommendations to send."
+        return NO_NEW
     
     return _render_media_digest(new_titles=new_titles, recommend_text=recommend_text)

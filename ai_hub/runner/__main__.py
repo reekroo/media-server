@@ -1,31 +1,25 @@
 import asyncio
 import json
-import logging
 import tomllib
 import zoneinfo
-from pathlib import Path
 from typing import Dict, Any
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from core.settings import Settings
+from core.logging import setup_logger, LOG_FILE_PATH
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-log = logging.getLogger("Runner")
+log = setup_logger(__name__, LOG_FILE_PATH)
 
 MCP_HOST = "127.0.0.1"
 MCP_PORT = 8484
 
 async def call_mcp(method: str, params: Dict[str, Any]) -> None:
-    """Подключается к MCP и отправляет "fire-and-forget" команду."""
     log.info(f"Triggering MCP method '{method}' with params: {params}")
     try:
         reader, writer = await asyncio.open_connection(MCP_HOST, MCP_PORT)
-        
-        # --- ИСПРАВЛЕНИЕ ЗДЕСЬ: Мы больше не отправляем _context ---
-        # params['_context'] = {"invoker": "runner"} # <-- СТРОКА УДАЛЕНА
-        
+                
         request = {
             "jsonrpc": "2.0",
             "method": method,
@@ -35,6 +29,7 @@ async def call_mcp(method: str, params: Dict[str, Any]) -> None:
         
         writer.write((json.dumps(request) + '\n').encode())
         await writer.drain()
+        
         writer.close()
         await writer.wait_closed()
         

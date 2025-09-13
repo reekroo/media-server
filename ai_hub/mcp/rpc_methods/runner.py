@@ -1,8 +1,8 @@
-import logging
 from mcp.context import AppContext
 from mcp.dispatcher import Dispatcher
+from core.logging import setup_logger, LOG_FILE_PATH
 
-log = logging.getLogger(__name__)
+log = setup_logger(__name__, LOG_FILE_PATH)
 
 UNIVERSAL_NEWS_DIGESTS = {"news", "news_by", "news_tr", "gaming", "entertainment"}
 

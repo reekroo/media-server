@@ -7,13 +7,17 @@ from ..state import get_available_digests
 
 HELP_MESSAGE_HEADER = """\
 Hi! I'm your AI Hub bot. 🚀
+
 *Available commands:*
+
 • `/help` — Show this message.
 • `/reset` — Reset our conversation history.
 • `/set_lang <lang>` — Set language for this chat (e.g., en, ru). 
 • `/digest <name>` — Trigger a digest build.
 • `/why <incident_id>` — Explain a system incident.
+
 *Available digests:*
+
 """
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):

@@ -1,13 +1,10 @@
-# mcp/__main__.py
-
 import asyncio
 import json
-import logging
 import os
 from typing import Any
 
 from core.settings import Settings
-from core.logging import setup_logger
+from core.logging import setup_logger, LOG_FILE_PATH
 from ai_assistent.agents.factory import agent_factory
 from ai_assistent.service import DigestService
 from functions.channels.factory import ChannelFactory
@@ -15,9 +12,8 @@ from mcp.dispatcher import Dispatcher
 from mcp.context import AppContext
 from mcp.registration import discover_and_register_methods
 
-log = logging.getLogger("MCP")
+log = setup_logger(__name__, LOG_FILE_PATH)
 
-# --- ИСПРАВЛЕНИЕ №1: Обработчик теперь принимает dispatcher как явный аргумент ---
 async def handle_connection(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, dispatcher: Dispatcher) -> None:
     peer = writer.get_extra_info('peername')
     log.info(f"Accepted connection from {peer}")
@@ -26,8 +22,9 @@ async def handle_connection(reader: asyncio.StreamReader, writer: asyncio.Stream
         while True:
             line = await reader.readline()
             if not line: break
+
             request_str = line.decode('utf-8').strip()
-            if not request_str: continue # Игнорируем пустые строки
+            if not request_str: continue
             
             log.debug(f"Received from {peer}: {request_str}")
             response: dict[str, Any]
@@ -37,7 +34,6 @@ async def handle_connection(reader: asyncio.StreamReader, writer: asyncio.Stream
                 params = request.get("params", {})
                 if not method: raise ValueError("'method' is a required field")
                 
-                # Используем dispatcher, который был передан в функцию
                 result = await dispatcher.run(name=method, **params)
                 response = {"jsonrpc": "2.0", "id": request.get("id"), "result": result}
 
@@ -62,9 +58,7 @@ async def main():
         env_file = "/etc/default/ai-hub"
         print(f"Local .env not found, using system-wide config: {env_file}")
     
-    settings = Settings(_env_file=env_file)
-    setup_logger(settings.STATE_DIR)
-    
+    settings = Settings(_env_file=env_file)    
     llm_agent = agent_factory(settings)
     ai_service = DigestService(agent=llm_agent, settings=settings)
     channel_factory = ChannelFactory(settings=settings)
@@ -77,13 +71,10 @@ async def main():
     dispatcher.set_app(app_context)
     discover_and_register_methods(dispatcher)
     
-    # --- ИСПРАВЛЕНИЕ №2: Создаем "обертку" для нашего обработчика ---
-    # Это позволяет "запомнить" dispatcher для всех будущих вызовов
     connection_handler = lambda r, w: handle_connection(r, w, dispatcher=dispatcher)
 
-    # --- ИСПРАВЛЕНИЕ №3: Вызываем start_server с правильными аргументами ---
     server = await asyncio.start_server(
-        connection_handler, # <-- Передаем новую обертку
+        connection_handler,
         host="127.0.0.1", 
         port=8484
     )
