@@ -16,7 +16,7 @@ class QuakesAssessment(TopicHandler):
         return textwrap.dedent(f"""
             {_SYS_HINT}
             
-            IMPORTANT: Format your response using simple Markdown. Use asterisks for bold section titles (*Trend Summary*).
+            IMPORTANT: Format your response using simple Markdown. Use asterisks for bold section titles (*Title*).
             
             Data JSON follows; structure may vary but includes 'events' with ts/mag/lat/lon/depth.
 

@@ -10,11 +10,14 @@ class GamingDigestTopic(TopicHandler):
         block = format_items_for_prompt(items)
         
         return textwrap.dedent(f"""
-            You are a gaming news curator. Create 5–8 concise bullets for core updates (releases, patches, delays, trailers).
-            
-            IMPORTANT: Format your response using simple Markdown (e.g., *Starfield Update 1.5* - Patch notes...).
-            
-            - Keep it actionable (dates/platforms). Avoid hype.
+            You are a gaming news curator. Create 5–10 concise bullets for core updates (releases, patches, delays, trailers).
+          
+            IMPORTANT, OUTPUT FORMAT (STRICT):
+            - Use simple Markdown ONLY (no HTML, no code fences).
+            - Use asterisks for bold section titles (*Title*).
+            - Put ONE blank line between items.
+                               
+            Keep it actionable (dates/platforms). Avoid hype.
             
             Items:
                 {block}

@@ -11,13 +11,16 @@ class NewsDigestTopic(TopicHandler):
         block = format_items_for_prompt(items)
 
         return textwrap.dedent(f"""
-            You are an editor for a morning {section} briefing. Summarize the items below into 5–8 bullets.
+            You are an editor for a morning {section} briefing. Summarize the items below into 5–10 bullets.
             
-            IMPORTANT: Format your response using simple Markdown bullets (`- ` or `* `).
-            
-            - Focus on what changed, why it matters, and what's next.
-            - Avoid clickbait; be precise; group related items.
-            
+            IMPORTANT, OUTPUT FORMAT (STRICT):
+            - Use simple Markdown ONLY (no HTML, no code fences).
+            - Use asterisks for bold section titles (*Title*).
+            - Put ONE blank line between items.
+
+            Focus on what changed, why it matters, and what's next.
+            Avoid clickbait; be precise; group related items.
+
             Items:
                 {block}
         """).strip()

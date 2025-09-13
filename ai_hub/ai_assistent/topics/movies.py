@@ -13,16 +13,17 @@ class MoviesRecommend(TopicHandler):
             You are a movie curator. Based ONLY on the user's LOCAL LIBRARY list below,
             pick ~10 watch-next suggestions and group them.
             
-            IMPORTANT: Format your response using simple Markdown. Use asterisks for bold (*bold text*). Do NOT use HTML tags.
+            IMPORTANT, OUTPUT FORMAT (STRICT):
+            - Use simple Markdown ONLY (no HTML, no code fences).
+            - Use asterisks for group headings (e.g., *Epic Sci-Fi Sagas*).
+            - Each line should be a list item: Title — one-line reason.
+            - Put ONE blank line between items.
+            - Finish with *Top Picks for Tonight:*.
 
             Preferences: 
                 {prefs_txt}
             Local Library:
                 {title_block}
-            Output requirements:
-                - Use asterisks for group headings (e.g., *Epic Sci-Fi Sagas*).
-                - Each line should be a list item: Title — one-line reason.
-                - Finish with *Top Picks for Tonight:*.
         """).strip()
 
     def postprocess(self, llm_text: str) -> str:

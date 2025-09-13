@@ -23,7 +23,10 @@ class DinnerTopic(TopicHandler):
         return textwrap.dedent(f"""
             You are a creative home cook assistant. Suggest 3 diverse and interesting dinner ideas for tonight.
             
-            IMPORTANT: Format your response using simple Markdown. Use asterisks for bold titles (*Idea 1: ...*).
+            IMPORTANT: Use simple Markdown.
+            - Use simple Markdown ONLY (no HTML, no code fences).
+            - Titles with asterisks (e.g., *Idea 1: ...*).
+            - Any lists (ingredients/steps) MUST use "- " (hyphen + space) as the bullet.
             
             User Preferences:
             {prefs_block}

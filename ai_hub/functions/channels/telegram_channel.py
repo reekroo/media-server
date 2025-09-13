@@ -12,6 +12,22 @@ from core.settings import Settings
 
 log = logging.getLogger(__name__)
 
+def _trim_markdown_caption(s: str, limit: int = 1024) -> str:
+    """
+    Аккуратно обрезает подпись под фото под Markdown (не V2):
+    - режет до limit,
+    - не оставляет висячие маркеры (*, _, `) в конце (ломают парсер Telegram).
+    """
+    if not s:
+        return s
+    if len(s) <= limit:
+        return s
+    s = s[:limit]
+    # убираем незакрытые маркеры на самом хвосте
+    while s and s[-1] in ("*", "_", "`"):
+        s = s[:-1]
+    return s
+
 class TelegramChannel(Channel):
     def __init__(self, settings: Settings, timeout: float = 25.0):
         if not settings.TELEGRAM_BOT_TOKEN:
@@ -62,11 +78,10 @@ class TelegramChannel(Channel):
         disable_preview = kwargs.get("disable_web_page_preview", True)
 
         try:
-            v2_chunk = escape_markdown_v2_preserving_code(chunk)
             await self.bot.send_message(
                 chat_id, 
-                v2_chunk, 
-                parse_mode="MarkdownV2", 
+                chunk, 
+                parse_mode="Markdown", 
                 disable_web_page_preview=disable_preview
             )
             return
@@ -83,19 +98,15 @@ class TelegramChannel(Channel):
         caption_chunker = Chunker(soft_limit=1024)
         caption_chunks = iter(caption_chunker.split(caption))
         first_chunk = next(caption_chunks, "")
+        first_chunk = _trim_markdown_caption(first_chunk)
 
         try:
-            v2_caption_chunk = escape_markdown_v2_preserving_code(first_chunk)
-            
-            # --- ИСПРАВЛЕНИЕ ЗДЕСЬ: Убираем невалидный аргумент ---
             await self.bot.send_photo(
                 chat_id=destination,
                 photo=image_bytes,
-                caption=v2_caption_chunk,
-                parse_mode="MarkdownV2"
-                # disable_web_page_preview=... <-- УДАЛЕНО
+                caption=first_chunk,
+                parse_mode="Markdown"
             )
-            # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
             
             for chunk in caption_chunks:
                 await self.send(destination, chunk, **kwargs)

@@ -14,15 +14,17 @@ class EntertainmentDigestTopic(TopicHandler):
             You are a film and TV critic for a modern magazine.
             From the news items below, create a concise and engaging digest about what's new and upcoming.
 
-            IMPORTANT: Format your response using simple Markdown. Use asterisks for bold section titles (*Movies*).
-
+            IMPORTANT, OUTPUT FORMAT (STRICT):
+            - Use simple Markdown ONLY (no HTML, no code fences).
+            - Section titles with asterisks: *Movies*, *TV/Series*.
+            - Put ONE blank line between items.
+                               
             Focus on:
             1. Major new releases (movies and TV series).
             2. Significant trailers or announcements.
             3. Interesting casting news.
 
             Structure your output into two short sections: *Movies* and *TV/Series*.
-            Keep it brief, witty, and to the point.
 
             News Items:
                 {block}
