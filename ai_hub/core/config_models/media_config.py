@@ -8,6 +8,7 @@ class MediaConfig(BaseModel):
     enabled: bool = True
     to: str = "telegram"
     destination: str = ""
+    destination_topic: Optional[str] = None
     destination_language: Optional[str] = None
     generate_image: Optional[bool] = False
     

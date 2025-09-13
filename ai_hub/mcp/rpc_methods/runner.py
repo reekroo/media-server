@@ -52,7 +52,8 @@ async def execute_and_send(app: AppContext, config_name: str) -> None:
                     await channel.send_photo(
                         destination=cfg.destination,
                         image_bytes=image_bytes,
-                        caption=digest_text
+                        caption=digest_text,
+                        destination_topic=cfg.destination_topic
                     )
                     image_sent = True
                 except Exception as e:
@@ -60,7 +61,11 @@ async def execute_and_send(app: AppContext, config_name: str) -> None:
 
             if not image_sent:
                 channel = app.channel_factory.get_channel(cfg.to)
-                await channel.send(destination=cfg.destination, content=digest_text)
+                await channel.send(
+                    destination=cfg.destination, 
+                    content=digest_text, 
+                    destination_topic=cfg.destination_topic
+                )
 
     except Exception as e:
         log.error(f"Failed to execute runner job for '{config_name}': {e}", exc_info=True)

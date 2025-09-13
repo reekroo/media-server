@@ -2,8 +2,11 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from chat_bot.messaging import reply_text_with_markdown
+from core.logging import setup_logger, LOG_FILE_PATH
 
 from ..state import get_available_digests
+
+log = setup_logger(__name__, LOG_FILE_PATH)
 
 HELP_MESSAGE_HEADER = """\
 Hi! I'm your AI Hub bot. 🚀
@@ -21,6 +24,14 @@ Hi! I'm your AI Hub bot. 🚀
 """
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message:
+        log.info(
+            "🚨 Start command in chat_id=%s topic_id=%s text=%r",
+            update.message.chat_id,
+            getattr(update.message, "message_thread_id", None),
+            update.message.text,
+        )
+
     available_digests = get_available_digests()
     
     if available_digests:

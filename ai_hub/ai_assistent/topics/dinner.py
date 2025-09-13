@@ -35,6 +35,7 @@ class DinnerTopic(TopicHandler):
             1. A catchy name.
             2. A brief, enticing description (2-3 sentences).
             3. A simple list of main ingredients.
+            4. A step-by-step recipe.
         """).strip()
 
     def postprocess(self, llm_text: str) -> str:

@@ -1,6 +1,7 @@
 enabled = true
 to = "telegram"
 destination = "-1002918707721"
+destination_topic = "210"
 destination_language = "ru"
 render_template = "🗞️ News Digest ({section})\n\n{summary}"
 generate_image = true

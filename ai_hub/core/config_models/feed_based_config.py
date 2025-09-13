@@ -6,6 +6,7 @@ class FeedBasedConfig(BaseModel):
     max_items: int = 25
     to: str = "telegram"
     destination: str = ""
+    destination_topic: Optional[str] = None
     destination_language: Optional[str] = None
     generate_image: Optional[bool] = True
     

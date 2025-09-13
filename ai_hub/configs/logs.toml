@@ -1,6 +1,7 @@
 enabled = true
 to = "telegram"
 destination = "-1002918707721"
+destination_topic = "194"
 destination_language = "en"
 render_template = "📊 Log Analytics Digest\n\n{summary}"
 generate_image = false

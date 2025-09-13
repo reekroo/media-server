@@ -1,6 +1,7 @@
 enabled = true
 to = "telegram"
 destination = "-1002918707721"
+destination_topic = "207"
 destination_language = "en"
 render_template = "🎮 Gaming Digest\n\n{summary}"
 generate_image = true

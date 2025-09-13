@@ -68,13 +68,15 @@ class TelegramChannel(Channel):
 
     async def _deliver_chunk(self, chat_id: str, chunk: str, kwargs: dict) -> None:
         disable_preview = kwargs.get("disable_web_page_preview", True)
-
+        topic_id = kwargs.get("destination_topic") 
+        
         try:
             await self.bot.send_message(
                 chat_id, 
                 chunk, 
                 parse_mode="Markdown", 
-                disable_web_page_preview=disable_preview
+                disable_web_page_preview=disable_preview,
+                message_thread_id=topic_id
             )
             return
         except BadRequest as e:
@@ -82,11 +84,17 @@ class TelegramChannel(Channel):
                 log.error(f"Unhandled BadRequest error: {e}")
                 raise
 
-        await self.bot.send_message(chat_id, chunk, disable_web_page_preview=disable_preview)
+        await self.bot.send_message(
+            chat_id, 
+            chunk, 
+            disable_web_page_preview=disable_preview,
+            message_thread_id=topic_id
+        )
 
     async def send_photo(self, destination: str, image_bytes: bytes, caption: str, **kwargs: Any) -> None:
         log.info(f"Sending photo to {destination} with caption of {len(caption)} chars")
-
+        
+        topic_id = kwargs.get("destination_topic") 
         caption_chunker = Chunker(soft_limit=1024)
         caption_chunks = iter(caption_chunker.split(caption))
         first_chunk = next(caption_chunks, "")
@@ -97,7 +105,8 @@ class TelegramChannel(Channel):
                 chat_id=destination,
                 photo=image_bytes,
                 caption=first_chunk,
-                parse_mode="Markdown"
+                parse_mode="Markdown",
+                message_thread_id=topic_id
             )
             
             for chunk in caption_chunks:
