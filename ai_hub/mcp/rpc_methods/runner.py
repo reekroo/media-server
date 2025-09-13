@@ -18,40 +18,49 @@ async def execute_and_send(app: AppContext, config_name: str) -> None:
     rpc_method_name = _get_rpc_method_name(config_name)
 
     try:
-        # 1. Генерируем контент на дефолтном языке
-        digest_text = await dispatcher.run(name=rpc_method_name, config_name=config_name)
+        digest_results = await dispatcher.run(name=rpc_method_name, config_name=config_name)
 
-        # 2. Решаем, нужен ли перевод
+        if isinstance(digest_results, str):
+            digest_results = [digest_results]
+
         cfg = getattr(app.settings, config_name)
         target_lang = getattr(cfg, "destination_language", None)
         should_generate_image = getattr(cfg, "generate_image", False)
-        
-        if should_generate_image and digest_text and "no output" not in digest_text:
-            log.info(f"Requesting image generation for '{config_name}'...")
-            try:
-                image_bytes = await dispatcher.run(name="assist.generate_image", text_summary=digest_text)
-                
-                log.info(f"Image generated. Sending photo with caption to {cfg.destination}")
-                channel = app.channel_factory.get_channel(cfg.to)
-                await channel.send_photo(destination=cfg.destination, image_bytes=image_bytes, caption=digest_text)
-                return # Выходим, так как мы уже отправили фото с подписью
-            except Exception as e:
-                log.error(f"Failed to generate or send image for '{config_name}': {e}", exc_info=True)
-                # Если генерация картинки не удалась, просто отправляем текст (фоллбэк)
-    
-        if target_lang and target_lang.lower() != app.settings.DEFAULT_LANG.lower():
-            log.info(f"Translating digest '{config_name}' to '{target_lang}'...")
-            digest_text = await dispatcher.run(
-                name="assist.translate", text=digest_text, target_lang=target_lang
-            )
 
-        # 3. Отправляем финальный результат
-        if cfg and cfg.destination and digest_text and "no output" not in digest_text:
-            log.info(f"Sending digest '{config_name}' to {cfg.destination}")
-            channel = app.channel_factory.get_channel(cfg.to)
-            await channel.send(destination=cfg.destination, content=digest_text)
-        else:
-            log.warning(f"Did not send digest for '{config_name}': no destination or no content.")
+        for digest_text in digest_results:
+            if not digest_text or "no output" in digest_text:
+                log.warning(f"Did not send digest for '{config_name}': empty content.")
+                continue
+
+            if target_lang and target_lang.lower() != app.settings.DEFAULT_LANG.lower():
+                log.info(f"Translating digest '{config_name}' to '{target_lang}'...")
+                try:
+                    digest_text = await dispatcher.run(
+                        name="assist.translate", text=digest_text, target_lang=target_lang
+                    )
+                except Exception as e:
+                    log.error(f"Translation failed for '{config_name}': {e}", exc_info=True)
+
+            image_sent = False
+            if should_generate_image:
+                log.info(f"Requesting image generation for '{config_name}'...")
+                try:
+                    safe_prompt = await dispatcher.run(name="assist.summarize", text=digest_text, max_chars=220)
+                    image_bytes = await dispatcher.run(name="assist.generate_image", text_summary=safe_prompt)
+                    
+                    channel = app.channel_factory.get_channel(cfg.to)
+                    await channel.send_photo(
+                        destination=cfg.destination,
+                        image_bytes=image_bytes,
+                        caption=digest_text
+                    )
+                    image_sent = True
+                except Exception as e:
+                    log.error(f"Failed to generate or send image for '{config_name}': {e}", exc_info=True)
+
+            if not image_sent:
+                channel = app.channel_factory.get_channel(cfg.to)
+                await channel.send(destination=cfg.destination, content=digest_text)
 
     except Exception as e:
         log.error(f"Failed to execute runner job for '{config_name}': {e}", exc_info=True)

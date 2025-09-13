@@ -14,7 +14,7 @@ async def build_digest(app: AppContext, config_name: str, section: str | None = 
         log.warning(msg)
         return msg
 
-    full_digest_text = ""
+    messages = []
     async with FeedCollector() as collector:
         for sec_name, urls_list in cfg.feeds.items():
             if section and section != sec_name: continue
@@ -27,9 +27,9 @@ async def build_digest(app: AppContext, config_name: str, section: str | None = 
                 params={'items': [item.__dict__ for item in items], 'section': sec_name}
             )
             message = cfg.render_template.format(section=sec_name.capitalize(), summary=summary_text)
-            full_digest_text += message + "\n\n"
+            messages.append(message)
 
-    if not full_digest_text:
+    if not messages:
         return f"✅ Digest '{config_name}' successfully built with no output."
 
-    return full_digest_text.strip()
+    return messages

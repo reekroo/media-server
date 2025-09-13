@@ -14,3 +14,6 @@ async def raw_prompt(app: AppContext, prompt: str) -> str:
 
 async def generate_image(app: AppContext, text_summary: str) -> bytes:
     return await app.ai_service.generate_image(text_summary)
+
+async def summarize(app: AppContext, text: str, max_chars: int = 220) -> str:
+    return await app.ai_service.summarize(text, max_chars=max_chars)

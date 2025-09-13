@@ -25,16 +25,20 @@ async def digest_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     
     await reply_text_with_markdown(update, f"⏳ Building '{config_name}' digest for you...")
 
-    digest_text = await call_mcp(rpc_method, config_name=config_name)
+    digest_results  = await call_mcp(rpc_method, config_name=config_name)
     
+    if not isinstance(digest_results, list):
+        await reply_text_with_markdown(update, str(digest_results))
+        return
+
     settings = Settings()
     chat_id = update.effective_chat.id
     state = CONVERSATION_STATE.get(chat_id)
     user_lang = state.lang if (state and state.lang) else settings.DEFAULT_LANG
     
-    if user_lang and user_lang.lower() != settings.DEFAULT_LANG.lower():
-        digest_text = await call_mcp(
-            "assist.translate", text=digest_text, target_lang=user_lang
-        )
-        
-    await reply_text_with_markdown(update, digest_text)
+    for digest_text in digest_results:
+        if user_lang and user_lang.lower() != settings.DEFAULT_LANG.lower():
+            digest_text = await call_mcp(
+                "assist.translate", text=digest_text, target_lang=user_lang
+            )        
+        await reply_text_with_markdown(update, digest_text)

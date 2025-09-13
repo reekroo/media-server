@@ -7,6 +7,7 @@ from typing import Any, Dict
 from core.settings import Settings
 from .topics.base import TopicHandler
 from .agents.base import Agent
+from .summarizer.gemini_sdk_summarizer import SdkSummarizer
 from .translation.gemini_sdk_translator import SdkTranslator
 from .image_generator.gemini_sdk_image_generator import GeminiSdkImageGenerator
 
@@ -16,6 +17,7 @@ class DigestService:
         self.settings = settings
         self.default_lang = settings.DEFAULT_LANG
         self.topics: Dict[str, TopicHandler] = self._discover_topics()
+        self.summarizer = SdkSummarizer(agent)
         self.translator = SdkTranslator(agent)
         self.image_generator = GeminiSdkImageGenerator(
             agent=self.agent,
@@ -53,5 +55,8 @@ class DigestService:
             return text
         return await self.translator.translate(text, target_lang)
     
+    async def summarize(self, text: str, max_chars: int = 220) -> str:
+        return await self.summarizer.summarize_for_image(text, max_chars=max_chars)
+
     async def generate_image(self, text_summary: str) -> bytes:
         return await self.image_generator.generate(text_summary)
