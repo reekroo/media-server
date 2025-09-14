@@ -1,9 +1,9 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from chat_bot.messaging import reply_text_with_markdown
 from core.logging import setup_logger, LOG_FILE_PATH
 
+from ..messaging import reply_text_with_markdown
 from ..state import get_available_digests
 
 log = setup_logger(__name__, LOG_FILE_PATH)
@@ -16,7 +16,7 @@ HELP_MESSAGE_HEADER = """\
 • `/help` — Show this message.
 • `/reset` — Reset our conversation history.
 • `/set_lang <lang>` — Set language for this chat (e.g., en, ru). 
-• `/image <text>` — Genearate an image from text.
+• `/image <text>` — Generate an image from text.
 • `/digest <name>` — Trigger a digest build.
 • `/why <incident_id>` — Explain a system incident.
 
@@ -34,7 +34,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     available_digests = get_available_digests()
-    
+
     if available_digests:
         digest_commands = "\n".join(f"• `/digest {name}`" for name in available_digests)
         full_help_message = HELP_MESSAGE_HEADER + digest_commands

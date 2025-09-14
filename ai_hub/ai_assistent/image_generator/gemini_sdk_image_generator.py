@@ -1,59 +1,66 @@
-from typing import Protocol
-
-import vertexai
-from vertexai.preview.vision_models import ImageGenerationModel
+from __future__ import annotations
+from typing import Optional, Protocol
+from .utils import ensure_vertex_model, extract_image_bytes, extract_generation_reasons
 
 from ..agents.base import Agent
 
 class ImageGenerator(Protocol):
-    async def generate(self, text_summary: str) -> bytes: ...
+    async def generate_from_prompt(self, user_prompt: str) -> bytes: ...
+    async def generate_from_summary(self, text_summary: str) -> bytes: ...
 
-class GeminiSdkImageGenerator(ImageGenerator):
-    def __init__(self, agent: Agent, project_id: str, location: str):
+class GeminiSdkImageGenerator:
+    def __init__(self, agent: Agent, project_id: Optional[str], location: Optional[str]):
         self._agent = agent
-        vertexai.init(project=project_id, location=location)
-        self.model = ImageGenerationModel.from_pretrained("imagegeneration@005")
+        self._project_id = project_id
+        self._location = location
+        self._model = None
 
     async def generate_from_prompt(self, user_prompt: str) -> bytes:
-        print(f"Generating image with direct prompt: {user_prompt}")
-        return await self._generate_image_from_final_prompt(user_prompt)
+        prompt = (user_prompt or "").strip()
+        if not prompt:
+            raise ValueError("Empty image prompt")
+
+        model = self._get_model()
+        try:
+            result = model.generate_images(
+                prompt=prompt,
+                number_of_images=1,
+                aspect_ratio="1:1",
+            )
+        except Exception as e:
+            raise RuntimeError(f"Vertex image generation failed: {e}") from e
+
+        images = getattr(result, "images", None)
+        if not images:
+            reasons = extract_generation_reasons(result) or "unknown reason"
+            raise RuntimeError(f"Vertex returned no images: {reasons}")
+
+        img0 = images[0]
+        data = extract_image_bytes(img0)
+        if not data:
+            raise RuntimeError("Unsupported image object returned by Vertex SDK")
+
+        return data
 
     async def generate_from_summary(self, text_summary: str) -> bytes:
-        prompt_for_image_prompt = (
-            f"Create a concise, artistic, and visually compelling image prompt "
-            f"based on this news summary: '{text_summary[:500]}'. "
-            "The prompt should be in English, a maximum of 20 words, suitable for an AI image generator."
-        )
-        image_prompt = await self._agent.generate(prompt_for_image_prompt)
-        image_prompt = image_prompt.strip().strip('"')
+        prompt = await self._summary_to_prompt(text_summary)
+        return await self.generate_from_prompt(prompt)
 
-        print(f"Generating image for summary with generated prompt: {image_prompt}")
-        return await self._generate_image_from_final_prompt(image_prompt)
+    def _get_model(self):
+        if self._model is None:
+            self._model = ensure_vertex_model(self._project_id, self._location)
+        return self._model
 
-    async def _generate_image_from_final_prompt(self, final_prompt: str) -> bytes:
+    async def _summary_to_prompt(self, text_summary: str) -> str:
+        text = (text_summary or "").strip()
+        if not text:
+            return "abstract minimalistic illustration"
         try:
-            images = self.model.generate_images(
-                prompt=final_prompt,
-                number_of_images=1
+            return await self._agent.generate(
+                "Rewrite the following into a concise English image prompt (one sentence). "
+                "Keep it family-friendly and concrete:\n\n"
+                f"{text}\n\n"
+                "Return ONLY the prompt."
             )
-            if images and images[0]._image_bytes:
-                return images[0]._image_bytes
-            else:
-                raise ValueError("API returned no image data.")
-        except Exception as e:
-            print(f"Failed to generate image via Vertex AI: {e}. Falling back to placeholder.")
-            return await self._create_placeholder_image(f"API ERROR:\n{e}")
-    
-    async def _create_placeholder_image(self, text: str) -> bytes:
-        from PIL import Image, ImageDraw, ImageFont
-        import io
-        img = Image.new('RGB', (1024, 1024), color = (75, 25, 25))
-        d = ImageDraw.Draw(img)
-        try:
-            font = ImageFont.truetype("arial.ttf", 40)
-        except IOError:
-            font = ImageFont.load_default()
-        d.text((50,50), "IMAGE GENERATION FAILED\n\n" + text, fill=(255,255,255), font=font)
-        buffer = io.BytesIO()
-        img.save(buffer, format="PNG")
-        return buffer.getvalue()
+        except Exception:
+            return text

@@ -1,5 +1,6 @@
 from mcp.context import AppContext
-from typing import Dict, List
+from typing import Dict, List, Any
+import base64
 
 async def translate(app: AppContext, text: str, target_lang: str) -> str:
     if not text or not target_lang:
@@ -20,3 +21,11 @@ async def generate_image_from_summary(app: AppContext, text_summary: str) -> byt
 
 async def generate_image_from_prompt(app: AppContext, text_summary: str) -> bytes:
     return await app.ai_service.generate_image_from_prompt(text_summary)
+
+async def generate_image_b64_from_summary(app: AppContext, text_summary: str) -> Dict[str, Any]:
+    img_bytes = await app.ai_service.generate_image_from_summary(text_summary)
+    return {"mime": "image/png", "b64": base64.b64encode(img_bytes).decode("ascii")}
+
+async def generate_image_b64_from_prompt(app: AppContext, text_summary: str) -> Dict[str, Any]:
+    img_bytes = await app.ai_service.generate_image_from_prompt(text_summary)
+    return {"mime": "image/png", "b64": base64.b64encode(img_bytes).decode("ascii")}

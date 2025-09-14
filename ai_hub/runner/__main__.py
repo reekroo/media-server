@@ -10,34 +10,9 @@ from apscheduler.triggers.cron import CronTrigger
 from core.settings import Settings
 from core.logging import setup_logger, LOG_FILE_PATH
 
+from .rpc_client import notify_mcp, call_mcp_ex
+
 log = setup_logger(__name__, LOG_FILE_PATH)
-
-MCP_HOST = "127.0.0.1"
-MCP_PORT = 8484
-
-
-async def call_mcp(method: str, params: Dict[str, Any]) -> None:
-    log.info(f"Triggering MCP method '{method}' with params: {params}")
-    try:
-        reader, writer = await asyncio.open_connection(MCP_HOST, MCP_PORT)
-
-        request = {
-            "jsonrpc": "2.0",
-            "method": method,
-            "params": params,
-            "id": 1,
-        }
-
-        writer.write((json.dumps(request) + "\n").encode())
-        await writer.drain()
-
-        writer.close()
-        await writer.wait_closed()
-
-        log.info(f"MCP method '{method}' triggered successfully.")
-    except Exception as e:
-        log.error(f"Failed to call MCP method '{method}'. Error: {e}", exc_info=True)
-
 
 def _normalize_cron_list(value: Any) -> List[str]:
     if isinstance(value, str):
@@ -52,6 +27,13 @@ def _normalize_cron_list(value: Any) -> List[str]:
         return items
     raise ValueError(f"cron must be string or list of strings, got {type(value).__name__}")
 
+async def _job_wrapper(method: str, params: Dict[str, Any]) -> None:
+    log.info(f"Triggering MCP method '%s' with params: %s", method, params)
+    try:
+        await notify_mcp(method, **params)
+        log.info("MCP method '%s' completed (response read).", method)
+    except Exception as e:
+        log.error("Failed to call MCP method '%s'. Error: %s", method, e, exc_info=True)
 
 async def main() -> None:
     settings = Settings()
@@ -76,7 +58,7 @@ async def main() -> None:
             continue
 
         rpc_method = config.get("rpc_method")
-        params = config.get("params", {})
+        params = config.get("params", {}) or {}
 
         cron_raw = config.get("cron")
         if not cron_raw or not rpc_method:
@@ -93,7 +75,7 @@ async def main() -> None:
             try:
                 job_name = f"{job_id}#{idx}" if len(cron_list) > 1 else job_id
                 scheduler.add_job(
-                    call_mcp,
+                    _job_wrapper,
                     trigger=CronTrigger.from_crontab(cron_expr, timezone=tz),
                     id=job_name,
                     name=job_name,
@@ -123,7 +105,6 @@ async def main() -> None:
         log.info("Runner shutting down...")
     finally:
         scheduler.shutdown()
-
 
 if __name__ == "__main__":
     asyncio.run(main())

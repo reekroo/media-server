@@ -2,17 +2,8 @@ import asyncio
 import json
 from typing import Any, Optional, TypedDict
 
-from core.serialization import maybe_unjson_string
-
 MCP_HOST = "127.0.0.1"
 MCP_PORT = 8484
-
-MCP_ERR_EMPTY_RESPONSE = "empty response"
-MCP_ERR_MISSING_RESULT = "missing result"
-MCP_ERR_FATAL_CONNECT  = "could not connect to the main control program"
-
-UI_PREFIX_ERROR = "🟥 MCP Error: "
-UI_PREFIX_FATAL = "🟥 Fatal Error: "
 
 _CHUNK_SIZE = 64 * 1024            # 64 KiB
 _MAX_MESSAGE_BYTES = 32 * 1024**2  # 32 MiB
@@ -22,11 +13,6 @@ class RpcEnvelope(TypedDict, total=False):
     ok: bool
     result: Any
     error: dict
-
-def ui_error_message(error: dict) -> str:
-    prefix = UI_PREFIX_FATAL if error.get("fatal") else UI_PREFIX_ERROR
-    msg = error.get("message", "unknown error")
-    return f"{prefix}{msg}"
 
 async def _read_json_line(reader: asyncio.StreamReader) -> Optional[dict]:
     buf = bytearray()
@@ -44,10 +30,8 @@ async def _read_json_line(reader: asyncio.StreamReader) -> Optional[dict]:
             nl = buf.find(b"\n")
             buf = buf[:nl]
             break
-
     if not buf:
         return None
-
     try:
         return json.loads(buf.decode("utf-8"))
     except Exception:
@@ -62,7 +46,6 @@ async def call_mcp_ex(method: str, **params: Any) -> RpcEnvelope:
         await writer.drain()
 
         resp = await _read_json_line(reader)
-
         writer.close()
         try:
             await writer.wait_closed()
@@ -70,7 +53,7 @@ async def call_mcp_ex(method: str, **params: Any) -> RpcEnvelope:
             pass
 
         if not resp:
-            return {"ok": False, "error": {"message": MCP_ERR_EMPTY_RESPONSE, "fatal": False}}
+            return {"ok": False, "error": {"message": "empty response", "fatal": False}}
 
         if resp.get("error"):
             err = resp["error"]
@@ -83,11 +66,14 @@ async def call_mcp_ex(method: str, **params: Any) -> RpcEnvelope:
                 },
             }
 
-        result = maybe_unjson_string(resp.get("result"))
+        result = resp.get("result")
         if result is None:
-            return {"ok": False, "error": {"message": MCP_ERR_MISSING_RESULT, "fatal": False}}
+            return {"ok": False, "error": {"message": "missing result", "fatal": False}}
 
         return {"ok": True, "result": result}
 
     except Exception:
-        return {"ok": False, "error": {"message": MCP_ERR_FATAL_CONNECT, "fatal": True}}
+        return {"ok": False, "error": {"message": "could not connect to the main control program", "fatal": True}}
+
+async def notify_mcp(method: str, **params: Any) -> None:
+    env = await call_mcp_ex(method, **params)
