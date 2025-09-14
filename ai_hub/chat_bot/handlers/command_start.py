@@ -16,6 +16,7 @@ HELP_MESSAGE_HEADER = """\
 • `/help` — Show this message.
 • `/reset` — Reset our conversation history.
 • `/set_lang <lang>` — Set language for this chat (e.g., en, ru). 
+• `/image <text>` — Genearate an image from text.
 • `/digest <name>` — Trigger a digest build.
 • `/why <incident_id>` — Explain a system incident.
 

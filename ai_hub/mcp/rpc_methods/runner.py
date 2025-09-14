@@ -46,7 +46,7 @@ async def execute_and_send(app: AppContext, config_name: str) -> None:
                 log.info(f"Requesting image generation for '{config_name}'...")
                 try:
                     safe_prompt = await dispatcher.run(name="assist.summarize", text=digest_text, max_chars=220)
-                    image_bytes = await dispatcher.run(name="assist.generate_image", text_summary=safe_prompt)
+                    image_bytes = await dispatcher.run(name="assist.generate_image_from_summary", text_summary=safe_prompt)
                     
                     channel = app.channel_factory.get_channel(cfg.to)
                     await channel.send_photo(

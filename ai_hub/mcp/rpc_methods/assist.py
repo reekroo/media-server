@@ -12,8 +12,11 @@ async def chat(app: AppContext, history: List[Dict[str, str]]) -> str:
 async def raw_prompt(app: AppContext, prompt: str) -> str:
     return await app.ai_service.agent.generate(prompt)
 
-async def generate_image(app: AppContext, text_summary: str) -> bytes:
-    return await app.ai_service.generate_image(text_summary)
-
 async def summarize(app: AppContext, text: str, max_chars: int = 220) -> str:
     return await app.ai_service.summarize(text, max_chars=max_chars)
+
+async def generate_image_from_summary(app: AppContext, text_summary: str) -> bytes:
+    return await app.ai_service.generate_image_from_summary(text_summary)
+
+async def generate_image_from_prompt(app: AppContext, text_summary: str) -> bytes:
+    return await app.ai_service.generate_image_from_prompt(text_summary)

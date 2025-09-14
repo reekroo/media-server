@@ -8,7 +8,7 @@ from ..models.chat_state import ChatState
 
 SUPPORTED_LANGUAGES = {"en", "ru", "by", "ua", "pl", "tr"}
 
-MSG_USAGE =                 "🟥 Usage: /set_lang <lang_code>\nAvailable: {options}"
+MSG_USAGE =                 "🟦 Usage: /set_lang <lang_code>\nAvailable: {options}"
 MSG_LANG_NOT_SUPPORTED =    "🟨 Sorry, '{lang_code}' is not a supported language."
 MSG_LANG_SET_SUCCESS =      "🟩 Language for this chat has been set to: {lang_code}"
 

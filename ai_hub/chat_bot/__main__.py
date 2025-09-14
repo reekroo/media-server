@@ -1,4 +1,3 @@
-import logging
 import asyncio
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from telegram.request import HTTPXRequest
@@ -11,6 +10,7 @@ from chat_bot.handlers.command_start import start_command
 from chat_bot.handlers.command_why import why_command
 from chat_bot.handlers.command_set_lang import set_lang_command
 from chat_bot.handlers.conversation import on_message_command
+from chat_bot.handlers.command_image import image_command
 
 log = setup_logger(__name__, LOG_FILE_PATH)
 
@@ -29,6 +29,7 @@ async def main() -> None:
     app.add_handler(CommandHandler("why", why_command))
     app.add_handler(CommandHandler("reset", reset_command))
     app.add_handler(CommandHandler("set_lang", set_lang_command))
+    app.add_handler(CommandHandler("image", image_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_message_command))
 
     await app.initialize()    

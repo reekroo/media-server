@@ -58,5 +58,8 @@ class DigestService:
     async def summarize(self, text: str, max_chars: int = 220) -> str:
         return await self.summarizer.summarize_for_image(text, max_chars=max_chars)
 
-    async def generate_image(self, text_summary: str) -> bytes:
-        return await self.image_generator.generate(text_summary)
+    async def generate_image_from_prompt(self, user_prompt: str) -> bytes:
+        return await self.image_generator.generate_from_prompt(user_prompt)
+
+    async def generate_image_from_summary(self, text_summary: str) -> bytes:
+        return await self.image_generator.generate_from_summary(text_summary)
