@@ -4,7 +4,7 @@ from core.logging import setup_logger, LOG_FILE_PATH
 
 log = setup_logger(__name__, LOG_FILE_PATH)
 
-UNIVERSAL_NEWS_DIGESTS = {"news", "news_by", "news_tr", "gaming", "entertainment"}
+UNIVERSAL_NEWS_DIGESTS = {"news", "news_by", "news_tr", "news_eu", "news_us", "news_ru", "gaming", "entertainment"}
 
 def _get_rpc_method_name(config_name: str) -> str:
     target_builder = "news" if config_name in UNIVERSAL_NEWS_DIGESTS else config_name
