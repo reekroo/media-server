@@ -8,12 +8,12 @@ from ..messaging import reply_text_with_markdown
 from ..rpc_client import call_mcp_ex, ui_error_message
 from ..state import get_available_digests, CONVERSATION_STATE
 
-UNIVERSAL_NEWS_DIGESTS = {"news", "news_by", "news_tr", "gaming", "entertainment"}
+UNIVERSAL_NEWS_DIGESTS = {"news", "news_by", "news_tr", "news_eu", "news_us", "news_ru", "gaming", "entertainment"}
 
 MSG_USAGE =           "🟨 Usage: /digest <name>\nAvailable: {available}"
 MSG_UNKNOWN_DIGEST =  "🟥 Unknown digest: '{config_name}'.\n\nAvailable: {available}"
-MSG_BUILDING_DIGEST = "⏳ Building '{config_name}' digest for you..."
 MSG_EMPTY_DIGEST   =  "🟥 Digest builder returned empty content."
+MSG_BUILDING_DIGEST = "⏳ Building '{config_name}' digest for you..."
 
 def _get_rpc_method_name(config_name: str) -> str:
     target_builder = "news" if config_name in UNIVERSAL_NEWS_DIGESTS else config_name

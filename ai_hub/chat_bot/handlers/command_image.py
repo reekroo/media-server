@@ -8,8 +8,8 @@ from ..rpc_client import call_mcp_ex, ui_error_message
 from ..messaging import reply_text_with_markdown
 
 MSG_USAGE       = "🟦 Usage: /image <your text prompt>"
-MSG_GENERATING  = "🎨 Generating your image, please wait..."
 MSG_CLIENT_ERR  = "🟥 A client-side error occurred: `{e}`"
+MSG_GENERATING  = "🎨 Generating your image, please wait..."
 
 async def image_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not context.args:

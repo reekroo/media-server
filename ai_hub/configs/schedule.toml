@@ -15,7 +15,7 @@ params = { config_name = "dinner" }
 
 [media]
 enabled = true
-cron = "30 18 * * *"
+cron = "55 18 * * *"
 rpc_method = "runner.execute_and_send"
 params = { config_name = "media" }
 
@@ -29,7 +29,7 @@ params = { config_name = "entertainment" }
 enabled = true
 cron = [
   "40 7 * * *",
-  "40 17 * * *"
+  "30 17 * * *"
 ]
 rpc_method = "runner.execute_and_send"
 params = { config_name = "gaming" }
@@ -64,6 +64,34 @@ cron = [
 ]
 rpc_method = "runner.execute_and_send"
 params = { config_name = "news_by" }
+
+[news_eu]
+enabled = true
+cron = [
+  "15 8 * * *",
+  "15 14 * * *",
+  "15 20 * * *"
+]
+rpc_method = "runner.execute_and_send"
+params = { config_name = "news_eu" }
+
+[news_us]
+enabled = true
+cron = [
+  "0 14 * * *",
+  "30 20 * * *"
+]
+rpc_method = "runner.execute_and_send"
+params = { config_name = "news_us" }
+
+[news_ru]
+enabled = true
+cron = [
+  "10 13 * * *",
+  "25 20 * * *"
+]
+rpc_method = "runner.execute_and_send"
+params = { config_name = "news_ru" }
 
 [sys_digest]
 enabled = true

@@ -1,0 +1,19 @@
+enabled = true
+to = "telegram"
+destination = "-1002918707721"
+destination_topic = "340"
+destination_language = "ru"
+render_template = "🇪🇺 European Union News Digest ({section})\n\n{summary}"
+generate_image = true
+
+max_items = 25
+ai_topic = "news_eu"
+
+[feeds]
+general = [
+    "https://www.politico.eu/feed",
+    "https://www.consilium.europa.eu/en/rss",
+    "https://euobserver.com/rss",
+    "https://www.euronews.com/rss",
+    "https://apnews.com/hub/europe/rss"
+]
