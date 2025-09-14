@@ -9,7 +9,7 @@ from ..state import get_available_digests
 log = setup_logger(__name__, LOG_FILE_PATH)
 
 HELP_MESSAGE_HEADER = """\
-Hi! I'm your AI Hub bot. 🚀
+✨ Hi! I'm your *AI Hub bot*.
 
 *Available commands:*
 

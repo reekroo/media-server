@@ -6,9 +6,13 @@ from chat_bot.rpc_client import call_mcp
 from functions.local_data.reader import read_json_async
 from core.settings import Settings
 
+MSG_USAGE =                 "🟥 Usage: /why <incident_id>"
+MSG_INCIDENT_NOT_FOUND =    "🟨 Incident '{inc_id}' not found."
+MSG_ANALYZING =             "🧠 Analyzing incident..."
+
 async def why_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
-        await update.message.reply_text("Usage: /why <incident_id>")
+        await update.message.reply_text(MSG_USAGE)
         return
 
     inc_id = context.args[0]
@@ -18,10 +22,11 @@ async def why_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     incident_data = await read_json_async(inc_path)
     if not incident_data:
-        await update.message.reply_text(f"Incident '{inc_id}' not found.")
+        await update.message.reply_text(MSG_INCIDENT_NOT_FOUND.format(inc_id=inc_id))
         return
 
-    await update.message.reply_text("🧠 Analyzing incident...")
+    await update.message.reply_text(MSG_ANALYZING)
+    
     explanation = await call_mcp(
         "assist.digest", 
         kind="clarify", 
