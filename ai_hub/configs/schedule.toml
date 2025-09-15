@@ -7,7 +7,7 @@ params = { config_name = "daily" }
 [dinner]
 enabled = true
 cron = [
-  "15 12 * * *",
+  "30 12 * * *",
   "45 16 * * *"
 ]
 rpc_method = "runner.execute_and_send"
@@ -15,20 +15,20 @@ params = { config_name = "dinner" }
 
 [media]
 enabled = true
-cron = "55 18 * * *"
+cron = "50 17 * * *"
 rpc_method = "runner.execute_and_send"
 params = { config_name = "media" }
 
 [entertainment]
 enabled = true
-cron = "0 19 * * *"
+cron = "45 17 * * *"
 rpc_method = "runner.execute_and_send"
 params = { config_name = "entertainment" }
 
 [gaming]
 enabled = true
 cron = [
-  "40 7 * * *",
+  "45 7 * * *",
   "30 17 * * *"
 ]
 rpc_method = "runner.execute_and_send"
@@ -37,10 +37,8 @@ params = { config_name = "gaming" }
 [news_main]
 enabled = true
 cron = [
-  "45 7 * * *",
-  "10 12 * * *",
-  "10 18 * * *",
-  "30 21 * * *"
+  "40 7 * * *",
+  "0 14,22 * * *",
 ]
 rpc_method = "runner.execute_and_send"
 params = { config_name = "news" }
@@ -48,9 +46,9 @@ params = { config_name = "news" }
 [news_tr]
 enabled = true
 cron = [
-  "00 8 * * *",
-  "0 14 * * *",
-  "0 22 * * *"
+  "0 8 * * *",
+  "5 12 * * *",
+  "10 20 * * *"
 ]
 rpc_method = "runner.execute_and_send"
 params = { config_name = "news_tr" }
@@ -58,19 +56,27 @@ params = { config_name = "news_tr" }
 [news_by]
 enabled = true
 cron = [
-  "30 8 * * *",
-  "0 13 * * *",
+  "10 8,12 * * *",
   "0 20 * * *"
 ]
 rpc_method = "runner.execute_and_send"
 params = { config_name = "news_by" }
 
+[news_ru]
+enabled = true
+cron = [
+  "15 8,12 * * *",
+  "5 20 * * *"
+]
+rpc_method = "runner.execute_and_send"
+params = { config_name = "news_ru" }
+
 [news_eu]
 enabled = true
 cron = [
-  "15 8 * * *",
-  "15 14 * * *",
-  "15 20 * * *"
+  "20 8 * * *",
+  "5 13 * * *",
+  "35 21 * * *"
 ]
 rpc_method = "runner.execute_and_send"
 params = { config_name = "news_eu" }
@@ -78,20 +84,17 @@ params = { config_name = "news_eu" }
 [news_us]
 enabled = true
 cron = [
-  "0 14 * * *",
-  "30 20 * * *"
+  "0 13 * * *",
+  "30 21 * * *"
 ]
 rpc_method = "runner.execute_and_send"
 params = { config_name = "news_us" }
 
-[news_ru]
+[news_fun]
 enabled = true
-cron = [
-  "10 13 * * *",
-  "25 20 * * *"
-]
+cron = "13 18 * * *"
 rpc_method = "runner.execute_and_send"
-params = { config_name = "news_ru" }
+params = { config_name = "news_fun" }
 
 [sys_digest]
 enabled = true

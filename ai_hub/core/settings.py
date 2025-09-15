@@ -39,11 +39,12 @@ class Settings(BaseSettings):
     sys:      SysConfig      | None = Field(default=None, json_schema_extra=TomlMetadata())
     logs:     LogsConfig     | None = Field(default=None, json_schema_extra=TomlMetadata())
     news:     FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
-    news_by:  FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
     news_tr:  FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
+    news_by:  FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
     news_ru:  FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
     news_eu:  FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
     news_us:  FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
+    news_fun: FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
     gaming:   FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
     entertainment: FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
 
