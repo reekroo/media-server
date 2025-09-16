@@ -58,9 +58,10 @@ async def chat_with_tools(
     user_text: str,
     lang: Optional[str],
     history: Optional[List[Dict[str, str]]] = None,
-) -> str:
+) -> Any:
     tools = list_tools()
     agent = app.ai_service.agent
+
     hist_block = _render_history(history or [], max_pairs=6)
     history_section = f"Conversation so far:\n{hist_block}\n\n" if hist_block else ""
 
@@ -93,19 +94,28 @@ async def chat_with_tools(
 
     raw = await agent.generate(prompt)
     data = _parse_json_maybe(raw) or {}
-    decision = (data.get("decision") or "").lower()
 
+    decision = (data.get("decision") or "").lower()
     if decision == "tool":
         tool_name = data.get("tool_name")
         args = data.get("arguments") or {}
         spec = _pick_tool(tools, tool_name or "")
         if not spec:
-            result = await app.ai_service.digest(
+            result: Any = await app.ai_service.digest(
                 kind="chat",
                 params={"history": (history or []) + [{"role": "user", "content": user_text}]}
             )
         else:
             result = await spec.execute(app, args)
+
+        if isinstance(result, list):
+            result = "\n\n---\n\n".join([str(s) for s in result if s and str(s).strip()]) or "No content."
+
+        if isinstance(result, dict) and ("b64" in result or result.get("type") == "image"):
+            return result
+
+        if not isinstance(result, str):
+            result = str(result)
 
         if lang:
             result = await app.ai_service.translate(result, target_lang=lang)
@@ -117,6 +127,6 @@ async def chat_with_tools(
             kind="chat",
             params={"history": (history or []) + [{"role": "user", "content": user_text}]}
         )
-    if lang:
+    if lang and isinstance(text, str):
         text = await app.ai_service.translate(text, target_lang=lang)
     return text
