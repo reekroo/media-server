@@ -7,6 +7,7 @@ LOG_MAX_BYTES = 10 * 1024 * 1024
 LOG_BACKUP_COUNT = 5
 
 WEATHER_SERVICE_SOCKET = "/tmp/weather_service.sock"
+ON_DEMAND_WEATHER_SOCKET = "/tmp/on_demand_weather.sock"
 LOCATION_SERVICE_SOCKET = '/tmp/location_service.sock'
 INTERVAL_SECONDS = 1800
 
