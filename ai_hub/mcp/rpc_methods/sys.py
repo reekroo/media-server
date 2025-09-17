@@ -2,7 +2,7 @@ from ..context import AppContext
 from ..logic import sys_rules, sys_templates
 from functions.sys.collector import get_unit_status, get_unit_logs
 from functions.sys.state import save_incident, save_digest_state
-from functions.sys.model import DigestSummary
+from functions.sys.models import DigestSummary
 from core.logging import setup_logger, LOG_FILE_PATH
 
 log = setup_logger(__name__, LOG_FILE_PATH)

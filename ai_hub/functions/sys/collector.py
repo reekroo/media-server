@@ -2,7 +2,7 @@ from __future__ import annotations
 import asyncio
 from typing import List
 
-from .model import UnitStatus, LogEntry
+from .models import UnitStatus, LogEntry
 
 async def _run_async(cmd: list[str]) -> str:
     proc = await asyncio.create_subprocess_exec(

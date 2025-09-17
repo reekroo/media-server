@@ -7,9 +7,6 @@ from .snapshot import snapshot_async, diff, load_state_async, save_state_async
 async def collect_new_titles(
     root: Path, *, state_path: Path, include_ext: Sequence[str], max_depth: int = 6
 ) -> List[str]:
-    """
-    Собирает новые заголовки медиафайлов, сравнивая текущее состояние с предыдущим.
-    """
     previous_state = await load_state_async(state_path)
     current_state = await snapshot_async(root, exts=set(include_ext), max_depth=max_depth)
 

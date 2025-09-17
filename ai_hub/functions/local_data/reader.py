@@ -4,7 +4,6 @@ from typing import Any, Dict
 import aiofiles
 
 async def read_json_async(path: Path) -> Dict[str, Any]:
-    """Асинхронно читает и парсит JSON-файл."""
     if not path or not path.exists():
         return {}
     try:

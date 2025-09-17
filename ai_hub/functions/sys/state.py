@@ -1,8 +1,7 @@
-# functions/sys/state.py
 import aiofiles
 from pathlib import Path
 
-from .model import DigestSummary, Incident
+from .models import DigestSummary, Incident
 
 async def save_incident(incident: Incident, incidents_dir: Path) -> None:
     incidents_dir.mkdir(parents=True, exist_ok=True)
