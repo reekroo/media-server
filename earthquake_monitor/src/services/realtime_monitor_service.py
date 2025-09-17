@@ -1,4 +1,3 @@
-import time
 import logging
 from collections import deque
 from typing import List
@@ -8,7 +7,7 @@ from locations.base import ILocationProvider
 from data_sources.base import BaseApiDataSource
 from models.earthquake_event import EarthquakeEvent
 
-class EarthquakeMonitor:
+class RealtimeMonitorService:
     def __init__(self,
                  data_sources: List[BaseApiDataSource],
                  location_providers: List[ILocationProvider],
@@ -22,7 +21,7 @@ class EarthquakeMonitor:
         self._alert_levels = sorted(alert_levels_config, key=lambda x: x['min_magnitude'], reverse=True)
         self._processed_event_ids = deque(maxlen=max_processed_events)
         self._log = logger
-        self._log.info("EarthquakeMonitor initialized.")
+        self._log.info("RealtimeMonitorService initialized.")
 
     def _get_current_location(self) -> dict | None:
         for provider in self._location_providers:
@@ -32,12 +31,12 @@ class EarthquakeMonitor:
         self._log.error("Failed to get location from all available providers.")
         return None
 
-    def check_and_alert(self) -> None:
-        self._log.info("Checking for new earthquake events...")
+    def execute_check(self) -> None:
+        self._log.info("Realtime check: Checking for new earthquake events...")
 
         current_location = self._get_current_location()
         if not current_location:
-            self._log.error("Could not determine location, skipping check cycle.")
+            self._log.error("Realtime check: Could not determine location, skipping check cycle.")
             return
 
         all_events: List[EarthquakeEvent] = []
@@ -46,14 +45,14 @@ class EarthquakeMonitor:
             all_events.extend(events)
             
         if not all_events:
-            self._log.info("No events found from any source.")
+            self._log.info("Realtime check: No events found from any source.")
             return
             
         unique_events = {event.event_id: event for event in all_events}        
         new_events = [event for event in unique_events.values() if event.event_id not in self._processed_event_ids]
 
         if not new_events:
-            self._log.info("Found events, but they have already been processed.")
+            self._log.info("Realtime check: Found events, but they have already been processed.")
             return
 
         strongest_event = max(new_events, key=lambda e: e.magnitude)
@@ -78,14 +77,4 @@ class EarthquakeMonitor:
                         melody_name=level_cfg['melody_name'],
                         duration=level_cfg['duration']
                     )
-                break
-
-    def run(self, interval_seconds: int) -> None:
-        try:
-            while True:
-                self.check_and_alert()
-                time.sleep(interval_seconds)
-        except KeyboardInterrupt:
-            self._log.info("Monitor service stopped by user.")
-        finally:
-            self._log.info("Monitor service has been shut down.")
+                return

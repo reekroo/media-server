@@ -6,6 +6,7 @@ LOG_FILE_PATH = os.path.join(LOGS_DIR, 'earthquake_monitor.log')
 LOG_MAX_BYTES = 10 * 1024 * 1024
 LOG_BACKUP_COUNT = 5
 
+ON_DEMAND_EARTHQUAKE_SOCKET = "/tmp/on_demand_earthquake.sock"
 LOCATION_SERVICE_SOCKET = '/tmp/location_service.sock'
 BUZZER_SOCKET = "/tmp/buzzer.sock"
 
