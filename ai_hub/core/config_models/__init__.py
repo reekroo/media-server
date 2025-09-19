@@ -7,6 +7,7 @@ from .logs_config import LogsConfig
 from .media_config import MediaConfig
 from .schedule_config import ScheduleConfig
 from .sys_config import SysConfig
+from .docker_status_config import DockerStatusConfig
 
 __all__ = [
     "TomlMetadata",
@@ -18,4 +19,5 @@ __all__ = [
     "MediaConfig",
     "ScheduleConfig",
     "SysConfig",
+    "DockerStatusConfig",
 ]

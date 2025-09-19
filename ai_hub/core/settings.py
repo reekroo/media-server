@@ -1,14 +1,13 @@
 from __future__ import annotations
 from pathlib import Path
 import tomllib
-import zoneinfo
-from typing import Any, List, Dict, get_args
+from typing import Any, List, get_args
 
 from pydantic import Field, model_validator, field_validator, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from .config_models import (
-    DailyConfig, DinnerConfig, MediaConfig, SysConfig, LogsConfig,
+    DailyConfig, DinnerConfig, MediaConfig, SysConfig, LogsConfig, DockerStatusConfig,
     FeedBasedConfig, ScheduleConfig, TomlMetadata
 )
 
@@ -47,6 +46,7 @@ class Settings(BaseSettings):
     news_fun: FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
     gaming:   FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
     entertainment: FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
+    docker_status: DockerStatusConfig | None = Field(default=None, json_schema_extra=TomlMetadata())
 
     @field_validator("TELEGRAM_ADMIN_IDS", mode='before')
     @classmethod

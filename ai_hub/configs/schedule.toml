@@ -102,8 +102,14 @@ cron = "0 9,15,21 * * *"
 rpc_method = "runner.execute_and_send"
 params = { config_name = "sys" }
 
-[log_digest]
+[docker_digest]
 enabled = true
 cron = "1 9,15,21 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "docker_status" }
+
+[log_digest]
+enabled = true
+cron = "2 9,15,21 * * *"
 rpc_method = "runner.execute_and_send"
 params = { config_name = "logs" }
