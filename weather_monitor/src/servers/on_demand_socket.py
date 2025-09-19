@@ -3,9 +3,11 @@ import os
 import json
 import threading
 import logging
-from datetime import date
+from datetime import date, datetime
+from dataclasses import asdict
 
 from services.on_demand_weather_service import OnDemandWeatherService
+from models.weather_data import WeatherData
 
 class OnDemandSocketServer: 
     def __init__(self, socket_path: str, on_demand_service: OnDemandWeatherService, logger: logging.Logger):
@@ -28,25 +30,33 @@ class OnDemandSocketServer:
                 
                 lat = request.get("lat")
                 lon = request.get("lon")
+                
+                date_str = request.get("date")
+                requested_date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else date.today()
 
                 if lat is None or lon is None:
                     raise ValueError("'lat' or 'lon' key is missing in request")
 
                 weather_data = self._on_demand_service.get_weather_for_coords_and_date(
-                    lat=float(lat), lon=float(lon), requested_date=date.today()
+                    lat=float(lat), lon=float(lon), requested_date=requested_date
                 )
 
                 if weather_data:
-                    response = {"status": "success", "data": weather_data._asdict()}
+                    if isinstance(weather_data, WeatherData):
+                        payload = weather_data._asdict()
+                    else:
+                        payload = weather_data
+                    
+                    response = {"status": "success", "data": payload}
                 else:
                     response = {"status": "error", "message": "Failed to get weather data from all providers."}
 
                 conn.sendall(json.dumps(response).encode('utf-8'))
-                self._log.info(f"On-demand server: Sent response for coords ({lat}, {lon}).")
+                self._log.info(f"On-demand server: Sent response for coords ({lat}, {lon}) on {requested_date}.")
 
             except (json.JSONDecodeError, ValueError) as e:
                 self._log.error(f"On-demand server: Invalid request from client: {e}")
-                error_response = {"status": "error", "message": "Invalid JSON request. 'lat' and 'lon' are required."}
+                error_response = {"status": "error", "message": "Invalid JSON. Required: 'lat', 'lon'. Optional: 'date' (YYYY-MM-DD)."}
                 conn.sendall(json.dumps(error_response).encode('utf-8'))
             except Exception as e:
                 self._log.error(f"On-demand server: Error handling client: {e}", exc_info=True)
@@ -60,7 +70,7 @@ class OnDemandSocketServer:
         os.chmod(self._socket_path, 0o666)
         self._server_socket.listen(10)
         self._server_socket.settimeout(1.0)
-        self._log.info(f"On-demand socket server listening on {self._socket_path}")
+        self._log.info(f"On-demand weather socket server listening on {self._socket_path}")
 
         while not self._stop_event.is_set():
             try:
@@ -77,8 +87,7 @@ class OnDemandSocketServer:
         self._log.info("On-demand socket server loop stopped.")
 
     def start(self):
-        self._server_thread = threading.Thread(target=self._server_loop, name="OnDemandServerLoop")
-        self._server_thread.daemon = True
+        self._server_thread = threading.Thread(target=self._server_loop, name="OnDemandWeatherServerLoop", daemon=True)
         self._server_thread.start()
 
     def close(self):

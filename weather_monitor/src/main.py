@@ -10,9 +10,14 @@ def main():
     if not configs.OPENWEATHERMAP_API_KEY and not configs.WEATHERAPI_API_KEY:
         logger.critical("No weather API keys are configured. Service cannot start.")
         sys.exit(1)
+        
+    try:
+        application = Application(logger=logger)
+        application.run()
 
-    application = Application(logger=logger)
-    application.run()
+    except Exception as e:
+        logger.critical(f"A critical error forced the service to stop: {e}", exc_info=True)
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()
