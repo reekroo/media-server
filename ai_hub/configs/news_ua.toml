@@ -1,0 +1,19 @@
+enabled = true
+to = "telegram"
+# Укажите свои destination и destination_topic
+destination = "-1002918707721" 
+destination_topic = "774" 
+destination_language = "ru"
+render_template = "🇺🇦 Ukraine News Digest ({section})\n\n{summary}"
+generate_image = true
+
+max_items = 25
+ai_topic = "news_ua"
+
+[feeds]
+general = [
+    "https://www.pravda.com.ua/rss/",
+    "https://rss.rbc.ua/ukr/newsline.rss",
+    "https://www.unian.ua/rss_all.rss",
+    "https://nv.ua/rss/all.xml"
+]

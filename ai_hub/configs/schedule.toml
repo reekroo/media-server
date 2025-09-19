@@ -62,6 +62,16 @@ cron = [
 rpc_method = "runner.execute_and_send"
 params = { config_name = "news_by" }
 
+[news_ua]
+enabled = true
+cron = [
+  "25 8 * * *",
+  "20 12 * * *",
+  "30 20 * * *"
+]
+rpc_method = "runner.execute_and_send"
+params = { config_name = "news_ua" }
+
 [news_ru]
 enabled = true
 cron = [
