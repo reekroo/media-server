@@ -7,5 +7,6 @@ class Agent(ABC):
     @abstractmethod
     async def generate(self, prompt: str) -> str: ...
 
+    @abstractmethod
     async def stream(self, prompt: str) -> AsyncIterator[str]:
         yield await self.generate(prompt)

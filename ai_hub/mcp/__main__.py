@@ -1,18 +1,48 @@
 import asyncio
 import json
 import os
-from typing import Any
+from typing import Any, Dict
 
 from core.settings import Settings
 from core.logging import setup_logger, LOG_FILE_PATH
-from ai_assistent.agents.factory import agent_factory
-from ai_assistent.service import DigestService
+from ai_assistent.composition import create_digest_service
 from functions.channels.factory import ChannelFactory
 from mcp.dispatcher import Dispatcher
 from mcp.context import AppContext
 from mcp.registration import discover_and_register_methods
 
 log = setup_logger(__name__, LOG_FILE_PATH)
+
+JSONRPC_VERSION = "2.0"
+JSONRPC_INTERNAL_ERROR_CODE = -32603
+
+def _build_error_response(request_id: Any, error: Exception) -> Dict[str, Any]:
+    log.error(f"Error processing request (id: {request_id}): {error}", exc_info=True)
+    return {
+        "jsonrpc": JSONRPC_VERSION,
+        "id": request_id,
+        "error": {"code": JSONRPC_INTERNAL_ERROR_CODE, "message": str(error)}
+    }
+
+def _build_success_response(request_id: Any, result: Any) -> Dict[str, Any]:
+    return {"jsonrpc": JSONRPC_VERSION, "id": request_id, "result": result}
+
+async def process_request(request_str: str, dispatcher: Dispatcher) -> Dict[str, Any]:
+    request_id = None
+    try:
+        request = json.loads(request_str)
+        request_id = request.get("id")
+        method = request.get("method")
+        params = request.get("params", {})
+        
+        if not method:
+            raise ValueError("'method' is a required field")
+        
+        result = await dispatcher.run(name=method, **params)
+        return _build_success_response(request_id, result)
+
+    except Exception as e:
+        return _build_error_response(request_id, e)
 
 async def handle_connection(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, dispatcher: Dispatcher) -> None:
     peer = writer.get_extra_info('peername')
@@ -21,46 +51,35 @@ async def handle_connection(reader: asyncio.StreamReader, writer: asyncio.Stream
     try:
         while True:
             line = await reader.readline()
-            if not line: break
+            if not line:
+                log.info(f"Client {peer} disconnected gracefully.")
+                break
 
             request_str = line.decode('utf-8').strip()
-            if not request_str: continue
+            if not request_str:
+                continue
             
             log.debug(f"Received from {peer}: {request_str}")
-            response: dict[str, Any]
-            try:
-                request = json.loads(request_str)
-                method = request.get("method")
-                params = request.get("params", {})
-                if not method: raise ValueError("'method' is a required field")
-                
-                result = await dispatcher.run(name=method, **params)
-                response = {"jsonrpc": "2.0", "id": request.get("id"), "result": result}
-
-            except Exception as e:
-                log.error(f"Error processing request: {e}", exc_info=True)
-                response = {"jsonrpc": "2.0", "id": request.get("id"), "error": {"code": -32603, "message": str(e)}}
             
-            response_bytes = (json.dumps(response, ensure_ascii=False) + '\n').encode('utf-8')
+            response_data = await process_request(request_str, dispatcher)
+            
+            response_bytes = (json.dumps(response_data, ensure_ascii=False) + '\n').encode('utf-8')
             writer.write(response_bytes)
             await writer.drain()
 
-    except ConnectionResetError: log.info(f"Connection from {peer} reset.")
-    except Exception as e: log.error(f"Unexpected error with client {peer}: {e}", exc_info=True)
+    except ConnectionResetError:
+        log.warning(f"Connection from {peer} was reset.")
+    except Exception as e:
+        log.error(f"Unexpected connection error with client {peer}: {e}", exc_info=True)
     finally:
         log.info(f"Closing connection from {peer}")
-        writer.close()
-        await writer.wait_closed()
+        if not writer.is_closing():
+            writer.close()
+            await writer.wait_closed()
 
-async def main():
-    env_file = ".env"
-    if not os.path.exists(env_file):
-        env_file = "/etc/default/ai-hub"
-        print(f"Local .env not found, using system-wide config: {env_file}")
-    
-    settings = Settings(_env_file=env_file)    
-    llm_agent = agent_factory(settings)
-    ai_service = DigestService(agent=llm_agent, settings=settings)
+async def main():    
+    settings = Settings()
+    ai_service = create_digest_service(settings)
     channel_factory = ChannelFactory(settings=settings)
     dispatcher = Dispatcher()
     
@@ -71,12 +90,12 @@ async def main():
     dispatcher.set_app(app_context)
     discover_and_register_methods(dispatcher)
     
-    connection_handler = lambda r, w: handle_connection(r, w, dispatcher=dispatcher)
+    bound_handler = lambda r, w: handle_connection(r, w, dispatcher=dispatcher)
 
     server = await asyncio.start_server(
-        connection_handler,
-        host="127.0.0.1", 
-        port=8484
+        bound_handler,
+        host=settings.MCP_HOST,
+        port=settings.MCP_PORT
     )
 
     addr = server.sockets[0].getsockname()
@@ -89,4 +108,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("\nMCP server stopped by user.")
+        print("\n gracefully shutdown.")

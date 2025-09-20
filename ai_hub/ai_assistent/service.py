@@ -7,23 +7,29 @@ from typing import Any, Dict
 from core.settings import Settings
 from .topics.base import TopicHandler
 from .agents.base import Agent
-from .summarizer.gemini_sdk_summarizer import SdkSummarizer
-from .translation.gemini_sdk_translator import SdkTranslator
-from .image_generator.gemini_sdk_image_generator import GeminiSdkImageGenerator
+
+from .summarizer.base import Summarizer
+from .translation.base import Translator
+from .image_generator.image_generator import ImageGenerator
 
 class DigestService:
-    def __init__(self, agent: Agent, settings: Settings):
+    def __init__(
+        self,
+        agent: Agent,
+        settings: Settings,
+        summarizer: Summarizer,
+        translator: Translator,
+        image_generator: ImageGenerator,
+    ):
         self.agent = agent
         self.settings = settings
+        self.summarizer = summarizer
+        self.translator = translator
+        self.image_generator = image_generator
+        
         self.default_lang = settings.DEFAULT_LANG
         self.topics: Dict[str, TopicHandler] = self._discover_topics()
-        self.summarizer = SdkSummarizer(agent)
-        self.translator = SdkTranslator(agent)
-        self.image_generator = GeminiSdkImageGenerator(
-            agent=self.agent,
-            project_id=settings.GCP_PROJECT_ID,
-            location=settings.GCP_LOCATION
-        )
+        
         print(f"✅ DigestService initialized. Registered topics: {', '.join(self.topics.keys())}")
 
     def _discover_topics(self) -> Dict[str, TopicHandler]:

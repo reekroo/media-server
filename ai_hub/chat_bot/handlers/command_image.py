@@ -1,35 +1,44 @@
 import base64
+import logging
 from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.constants import ChatAction
 from telegram.error import TelegramError
 
-from ..rpc_client import call_mcp_ex, ui_error_message
+from ..rpc_client import ChatRpcClient, ui_error_message
 from ..messaging import reply_text_with_markdown
 
+log = logging.getLogger(__name__)
+
 MSG_USAGE       = "🟦 Usage: /image <your text prompt>"
-MSG_CLIENT_ERR  = "🟥 A client-side error occurred: `{e}`"
+MSG_CLIENT_ERR  = "🟥 An error occurred: `{e}`"
 MSG_GENERATING  = "🎨 Generating your image, please wait..."
 
 async def image_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not context.args:
-        await update.message.reply_text(MSG_USAGE); return
+    if not update.message or not context.args:
+        await update.message.reply_text(MSG_USAGE)
+        return
+        
     user_prompt = " ".join(context.args).strip()
     if not user_prompt:
-        await update.message.reply_text(MSG_USAGE); return
+        await update.message.reply_text(MSG_USAGE)
+        return
+
+    rpc_client: ChatRpcClient = context.bot_data["rpc_client"]
 
     try:
         await context.bot.send_chat_action(update.effective_chat.id, ChatAction.UPLOAD_PHOTO)
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning(f"Could not send chat action: {e}")
+
     await update.message.reply_text(MSG_GENERATING)
 
-    env = await call_mcp_ex("assist.generate_image_b64_from_prompt", text_summary=user_prompt)
-    if not env.get("ok"):
-        await reply_text_with_markdown(update, ui_error_message(env["error"]))
+    response = await rpc_client.call("assist.generate_image_b64_from_prompt", text_summary=user_prompt)
+    if not response.get("ok"):
+        await reply_text_with_markdown(update, ui_error_message(response.get("error", {})))
         return
 
-    payload = env["result"]
+    payload = response.get("result")
 
     try:
         if not isinstance(payload, dict) or "b64" not in payload:
@@ -40,7 +49,7 @@ async def image_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             raise RuntimeError("Empty image payload")
 
         chat_id = update.effective_chat.id
-        thread_id = getattr(update.message, "message_thread_id", None) if update.message else None
+        thread_id = update.message.message_thread_id
 
         if thread_id is not None:
             await context.bot.send_photo(
@@ -53,6 +62,8 @@ async def image_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             await update.message.reply_photo(photo=image_bytes, caption=user_prompt[:1024])
 
     except TelegramError as te:
-        await reply_text_with_markdown(update, MSG_CLIENT_ERR.format(e=te))
+        log.error(f"Telegram API error while sending photo: {te}", exc_info=True)
+        await reply_text_with_markdown(update, MSG_CLIENT_ERR.format(e="Telegram API error, please check logs."))
     except Exception as e:
+        log.error(f"Client-side error in image command: {e}", exc_info=True)
         await reply_text_with_markdown(update, MSG_CLIENT_ERR.format(e=e))

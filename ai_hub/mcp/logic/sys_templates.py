@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Iterable, List
 
 from functions.sys.models import DigestSummary, UnitReport
 
@@ -21,12 +21,32 @@ def _format_report(r: UnitReport) -> str:
     return f"{head}\n{body}"
 
 def render_digest(d: DigestSummary) -> str:
-    lines = [f"🖥️ *System Status Digest* (overall: {d.overall} {_badge(d.overall)})", ""]
-    
-    ordered_reports: Iterable[UnitReport] = sorted(d.reports, key=lambda x: {"FAIL": 0, "WARN": 1, "OK": 2}[x.level])
-    
-    for r in ordered_reports:
-        lines.append(_format_report(r))
-        lines.append("")
+    lines = [f"🖥️ *System Status Digest* (overall: {d.overall} {_badge(d.overall)})"]
+
+    problem_reports: List[UnitReport] = []
+    ok_reports: List[UnitReport] = []
+    for r in d.reports:
+        if r.level in ("FAIL", "WARN"):
+            problem_reports.append(r)
+        else:
+            ok_reports.append(r)
+
+    problem_reports.sort(key=lambda x: {"FAIL": 0, "WARN": 1}[x.level])
+
+    if problem_reports:
+        lines.extend(["", "--- WARNINGS ---", ""])
+        for r in problem_reports:
+            lines.append(_format_report(r))
+            lines.append("")
+
+    if ok_reports:
+        lines.extend(["", f"--- ALL GOOD ({len(ok_reports)}) ---", ""])
+        
+        ok_lines: List[str] = []
+        for r in ok_reports:
+            restarts_info = f" (restarts: {r.status.restarts})" if r.status.restarts > 0 else ""
+            ok_lines.append(f"`{r.unit}{restarts_info}`")
+            
+        lines.append(_badge("OK") + " " + ", ".join(ok_lines))
         
     return "\n".join(lines).strip()

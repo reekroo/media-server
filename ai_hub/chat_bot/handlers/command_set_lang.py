@@ -1,9 +1,8 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from ..state import CONVERSATION_STATE
 from ..messaging import reply_text_with_markdown
-from ..models.chat_state import ChatState
+from ..state import StateManager
 
 SUPPORTED_LANGUAGES = {"en", "ru", "by", "ua", "pl", "tr"}
 
@@ -13,6 +12,7 @@ MSG_LANG_SET_SUCCESS =   "🟩 Language for this chat has been set to: {lang_cod
 
 async def set_lang_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
+    state_manager: StateManager = context.bot_data["state_manager"]
 
     if not context.args:
         options = ", ".join(sorted(SUPPORTED_LANGUAGES))
@@ -24,7 +24,7 @@ async def set_lang_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await reply_text_with_markdown(update, MSG_LANG_NOT_SUPPORTED.format(lang_code=lang_code))
         return
 
-    state = CONVERSATION_STATE.setdefault(chat_id, ChatState())
+    state = state_manager.get_chat_state(chat_id)
     state.lang = lang_code
 
     await reply_text_with_markdown(update, MSG_LANG_SET_SUCCESS.format(lang_code=lang_code))

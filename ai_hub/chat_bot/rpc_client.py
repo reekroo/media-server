@@ -1,93 +1,83 @@
 import asyncio
 import json
-from typing import Any, Optional, TypedDict
+import logging
+from typing import Any, TypedDict
 
+from core.settings import Settings
 from core.serialization import maybe_unjson_string
 
-MCP_HOST = "127.0.0.1"
-MCP_PORT = 8484
-
-MCP_ERR_EMPTY_RESPONSE = "empty response"
-MCP_ERR_MISSING_RESULT = "missing result"
-MCP_ERR_FATAL_CONNECT  = "could not connect to the main control program"
-
-UI_PREFIX_ERROR = "🟥 MCP Error: "
-UI_PREFIX_FATAL = "🟥 Fatal Error: "
-
-_CHUNK_SIZE = 64 * 1024            # 64 KiB
-_MAX_MESSAGE_BYTES = 32 * 1024**2  # 32 MiB
-_READ_TIMEOUT_SEC = 60.0
+log = logging.getLogger(__name__)
 
 class RpcEnvelope(TypedDict, total=False):
     ok: bool
     result: Any
     error: dict
 
+class ChatRpcClient:
+    _READ_TIMEOUT_SEC = 60.0
+    _JSON_RPC_VERSION = "2.0"
+
+    def __init__(self, settings: Settings):
+        self._host = settings.MCP_HOST
+        self._port = settings.MCP_PORT
+        log.info(f"ChatRpcClient configured for MCP at {self._host}:{self._port}")
+
+    async def _read_json_response(self, reader: asyncio.StreamReader) -> dict[str, Any] | None:
+        try:
+            line = await asyncio.wait_for(reader.readline(), timeout=self._READ_TIMEOUT_SEC)
+            if not line:
+                return None
+            return json.loads(line)
+        except asyncio.TimeoutError:
+            log.error("Timeout while reading response from MCP.")
+            return None
+        except (json.JSONDecodeError, UnicodeDecodeError) as e:
+            log.error(f"Failed to decode JSON response from MCP: {e}")
+            return None
+
+    async def call(self, method: str, **params: Any) -> RpcEnvelope:
+        try:
+            reader, writer = await asyncio.open_connection(self._host, self._port)
+        except Exception as e:
+            log.error(f"Fatal: Could not connect to MCP. Error: {e}")
+            return {"ok": False, "error": {"message": "could not connect to MCP", "fatal": True}}
+
+        response: RpcEnvelope = {}
+        try:
+            request_id = 1
+            request = {
+                "jsonrpc": self._JSON_RPC_VERSION, "method": method,
+                "params": params, "id": request_id
+            }
+            writer.write((json.dumps(request) + "\n").encode("utf-8"))
+            await writer.drain()
+
+            raw_resp = await self._read_json_response(reader)
+
+            if not raw_resp:
+                response = {"ok": False, "error": {"message": "empty or invalid response"}}
+            elif "error" in raw_resp:
+                response = {"ok": False, "error": raw_resp["error"]}
+            elif (result := maybe_unjson_string(raw_resp.get("result"))) is not None:
+                response = {"ok": True, "result": result}
+            else:
+                response = {"ok": False, "error": {"message": "missing 'result' in response"}}
+
+        except Exception as e:
+            log.error(f"Unexpected client error during '{method}' call.", exc_info=e)
+            response = {"ok": False, "error": {"message": "unexpected client error"}}
+        
+        finally:
+            if not writer.is_closing():
+                writer.close()
+                await writer.wait_closed()
+        
+        return response
+
+UI_PREFIX_ERROR = "🟥 MCP Error: "
+UI_PREFIX_FATAL = "🟥 Fatal Error: "
+
 def ui_error_message(error: dict) -> str:
     prefix = UI_PREFIX_FATAL if error.get("fatal") else UI_PREFIX_ERROR
     msg = error.get("message", "unknown error")
     return f"{prefix}{msg}"
-
-async def _read_json_line(reader: asyncio.StreamReader) -> Optional[dict]:
-    buf = bytearray()
-    while True:
-        try:
-            chunk = await asyncio.wait_for(reader.read(_CHUNK_SIZE), timeout=_READ_TIMEOUT_SEC)
-        except asyncio.TimeoutError:
-            return None
-        if not chunk:
-            break
-        buf += chunk
-        if len(buf) > _MAX_MESSAGE_BYTES:
-            return None
-        if b"\n" in chunk:
-            nl = buf.find(b"\n")
-            buf = buf[:nl]
-            break
-
-    if not buf:
-        return None
-
-    try:
-        return json.loads(buf.decode("utf-8"))
-    except Exception:
-        return None
-
-async def call_mcp_ex(method: str, **params: Any) -> RpcEnvelope:
-    try:
-        reader, writer = await asyncio.open_connection(MCP_HOST, MCP_PORT)
-
-        request = {"jsonrpc": "2.0", "method": method, "params": params, "id": 1}
-        writer.write((json.dumps(request) + "\n").encode("utf-8"))
-        await writer.drain()
-
-        resp = await _read_json_line(reader)
-
-        writer.close()
-        try:
-            await writer.wait_closed()
-        except Exception:
-            pass
-
-        if not resp:
-            return {"ok": False, "error": {"message": MCP_ERR_EMPTY_RESPONSE, "fatal": False}}
-
-        if resp.get("error"):
-            err = resp["error"]
-            return {
-                "ok": False,
-                "error": {
-                    "message": err.get("message", "Unknown error"),
-                    "code": err.get("code"),
-                    "fatal": False,
-                },
-            }
-
-        result = maybe_unjson_string(resp.get("result"))
-        if result is None:
-            return {"ok": False, "error": {"message": MCP_ERR_MISSING_RESULT, "fatal": False}}
-
-        return {"ok": True, "result": result}
-
-    except Exception:
-        return {"ok": False, "error": {"message": MCP_ERR_FATAL_CONNECT, "fatal": True}}

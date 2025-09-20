@@ -2,6 +2,7 @@ from __future__ import annotations
 from pathlib import Path
 import tomllib
 from typing import Any, List, get_args
+import os
 
 from pydantic import Field, model_validator, field_validator, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -12,6 +13,10 @@ from .config_models import (
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+ENV_FILE_PATHS = [".env", "/etc/default/ai-hub"]
+
+if not os.path.exists(ENV_FILE_PATHS[0]) and os.path.exists(ENV_FILE_PATHS[1]):
+    print(f"Local .env not found, using system-wide config: {ENV_FILE_PATHS[1]}")
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -22,11 +27,16 @@ class Settings(BaseSettings):
     GCP_PROJECT_ID: str
     GCP_LOCATION: str = "us-central1"
     
+    VERTEX_IMAGE_MODEL: str = "imagen-4.0-fast-generate-001"
+
     TELEGRAM_BOT_TOKEN: str | None = None
     TELEGRAM_ADMIN_IDS: List[str] = Field(default_factory=list)
     
     TZ: str = Field(default="Europe/Istanbul")
     DEFAULT_LANG: str = "en"
+
+    MCP_HOST: str = "127.0.0.1"
+    MCP_PORT: int = 8484
 
     BASE_DIR: Path = PROJECT_ROOT
     STATE_DIR: Path = PROJECT_ROOT / "state"
@@ -63,7 +73,6 @@ class Settings(BaseSettings):
         config_dir = self.BASE_DIR / "configs"
 
         for field_name, field_info in self.model_fields.items():
-
             metadata = field_info.json_schema_extra
             if not isinstance(metadata, TomlMetadata):
                 continue
@@ -74,7 +83,6 @@ class Settings(BaseSettings):
             
             try:
                 data = tomllib.loads(path.read_text("utf-8"))
-
                 if metadata.key:
                     data = data.get(metadata.key, {})
                 
@@ -82,7 +90,8 @@ class Settings(BaseSettings):
                 setattr(self, field_name, model_class(**data))
 
             except Exception as e:
-                print(f"🟨  Warning: Could not load or parse '{path.name}': {e}")
+                import logging
+                logging.warning(f"Could not load or parse '{path.name}': {e}")
         
         if self.media and isinstance(self.media.state_path, str):
              self.media.state_path = self.STATE_DIR / Path(self.media.state_path).name
