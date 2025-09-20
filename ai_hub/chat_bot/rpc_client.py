@@ -16,17 +16,17 @@ class RpcEnvelope(TypedDict, total=False):
 class ChatRpcClient:
     _READ_TIMEOUT_SEC = 60.0
     _JSON_RPC_VERSION = "2.0"
+    _BUFFER_LIMIT_BYTES = 10 * 1024 * 1024 
 
     def __init__(self, settings: Settings):
         self._host = settings.MCP_HOST
         self._port = settings.MCP_PORT
-        log.info(f"ChatRpcClient configured for MCP at {self._host}:{self._port}")
+        log.info(f"RpcClient configured to connect to MCP at {self._host}:{self._port}")
 
     async def _read_json_response(self, reader: asyncio.StreamReader) -> dict[str, Any] | None:
         try:
             line = await asyncio.wait_for(reader.readline(), timeout=self._READ_TIMEOUT_SEC)
-            if not line:
-                return None
+            if not line: return None
             return json.loads(line)
         except asyncio.TimeoutError:
             log.error("Timeout while reading response from MCP.")
@@ -34,10 +34,15 @@ class ChatRpcClient:
         except (json.JSONDecodeError, UnicodeDecodeError) as e:
             log.error(f"Failed to decode JSON response from MCP: {e}")
             return None
+        except ValueError as e:
+            log.error(f"Buffer limit exceeded while reading response from MCP: {e}")
+            return None
 
     async def call(self, method: str, **params: Any) -> RpcEnvelope:
         try:
-            reader, writer = await asyncio.open_connection(self._host, self._port)
+            reader, writer = await asyncio.open_connection(
+                self._host, self._port, limit=self._BUFFER_LIMIT_BYTES
+            )
         except Exception as e:
             log.error(f"Fatal: Could not connect to MCP. Error: {e}")
             return {"ok": False, "error": {"message": "could not connect to MCP", "fatal": True}}
