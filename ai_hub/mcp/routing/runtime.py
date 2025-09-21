@@ -2,6 +2,7 @@ from __future__ import annotations
 import json
 import re
 from typing import Any, Dict, List, Optional
+from datetime import date
 
 from .discovery import list_tools
 from mcp.tools.base import ToolSpec
@@ -65,6 +66,8 @@ async def chat_with_tools(
     hist_block = _render_history(history or [], max_pairs=6)
     history_section = f"Conversation so far:\n{hist_block}\n\n" if hist_block else ""
 
+    today_date = date.today().strftime('%Y-%m-%d')
+
     system = (
         "You are an intent router and assistant. The user message may be in ANY language.\n"
         "You have access to a small set of functions (tools). "
@@ -76,6 +79,8 @@ async def chat_with_tools(
         "- Keep arguments minimal; if none are needed, use an empty object.\n"
         "- If decision='tool', do not include 'text'.\n"
         "- If decision='chat', put the final answer into 'text'.\n"
+        f"- Today's date is {today_date}. Use this to resolve any relative date references from the user."
+        "When you need information about news or weather, use the available tools."
     )
     manifest = _manifest_for_llm(tools)
     prompt = (

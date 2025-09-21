@@ -4,12 +4,7 @@ from datetime import date
 from .base import IWeatherProvider
 from utils.http_client import HttpClient
 from models.weather_data import WeatherData
-from models.api_responses import (
-    ForecastResponse, 
-    ForecastDay, 
-    HistoricalResponse, 
-    HistoricalHour
-)
+
 class WeatherApiProvider(IWeatherProvider):
     BASE_URL = 'http://api.weatherapi.com/v1'
 
@@ -29,16 +24,15 @@ class WeatherApiProvider(IWeatherProvider):
             self.log.info(f"Request to WeatherAPI for location {lat},{lon}...")
             data = self._http_client.get_json(url, params=params)
             self.log.info("WeatherAPI data received successfully.")
-            return WeatherData(
-                location_name=data['location']['name'],
-                temperature=data['current']['temp_c'],
-                feels_like=data['current']['feelslike_c'],
-                pressure=data['current']['pressure_mb'],
-                humidity=data['current']['humidity'],
-                description=data['current']['condition']['text'],
-                wind_speed=round(data['current']['wind_kph'] * 1000 / 3600, 2),
-                source=self.__class__.__name__
-            )
+            
+            current_weather = {
+                "date": date.today().strftime('%Y-%m-%d'),
+                "avg_temp_c": data['current']['temp_c'],
+                "condition": data['current']['condition']['text'],
+                "wind_speed_mps": round(data['current']['wind_kph'] * 1000 / 3600, 2),
+                "humidity": data['current']['humidity'],
+            }
+            return [current_weather]
         except Exception as e:
             self.log.error(f"Failed to get weather from WeatherAPI: {e}")
             return None
@@ -54,7 +48,23 @@ class WeatherApiProvider(IWeatherProvider):
         try:
             self.log.info(f"Requesting {days}-day forecast from WeatherAPI for {lat},{lon}...")
             data = self._http_client.get_json(url, params=params)
-            return data.get('forecast', {}).get('forecastday')
+
+            simplified_forecast = []
+            raw_forecast_days = data.get('forecast', {}).get('forecastday', [])
+
+            for day_data in raw_forecast_days:
+                day_info = day_data.get('day', {})
+                simplified_forecast.append({
+                    "date": day_data.get('date'),
+                    "max_temp_c": day_info.get('maxtemp_c'),
+                    "min_temp_c": day_info.get('mintemp_c'),
+                    "condition": day_info.get('condition', {}).get('text'),
+                    "chance_of_rain_percent": day_info.get('daily_chance_of_rain'),
+                })
+
+            self.log.info(f"Successfully processed and simplified forecast data.")
+            return simplified_forecast
+        
         except Exception as e:
             self.log.error(f"Failed to get forecast from WeatherAPI: {e}")
             return None
@@ -69,7 +79,19 @@ class WeatherApiProvider(IWeatherProvider):
         try:
             self.log.info(f"Requesting historical data from WeatherAPI for {lat},{lon} on {requested_date}...")
             data = self._http_client.get_json(url, params=params)
-            return data.get('forecast', {}).get('forecastday')
+            forecast_day = data.get('forecast', {}).get('forecastday', [{}])[0]
+            day_info = forecast_day.get('day', {})
+            
+            simplified_historical = {
+                "date": forecast_day.get('date'),
+                "max_temp_c": day_info.get('maxtemp_c'),
+                "min_temp_c": day_info.get('mintemp_c'),
+                "avg_temp_c": day_info.get('avgtemp_c'),
+                "condition": day_info.get('condition', {}).get('text'),
+                "total_precip_mm": day_info.get('totalprecip_mm'),
+            }
+            return [simplified_historical]
+            
         except Exception as e:
             self.log.error(f"Failed to get historical data from WeatherAPI: {e}")
             return None

@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     DEFAULT_TIMEZONE: str = Field(default="Europe/Istanbul")
     DEFAULT_LANGUAGE: str = "en"
 
+    ON_DEMAND_WEATHER_SOCKET: str = "/tmp/on_demand_weather.sock"
+    ON_DEMAND_GEOCODING_SOCKET: str = "/tmp/geocoding_service.sock"
+
     MCP_HOST: str = "127.0.0.1"
     MCP_PORT: int = 8484
 
