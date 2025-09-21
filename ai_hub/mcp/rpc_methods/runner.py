@@ -32,7 +32,7 @@ async def execute_and_send(app: AppContext, config_name: str) -> None:
                 log.warning(f"Did not send digest for '{config_name}': empty content.")
                 continue
 
-            if target_lang and target_lang.lower() != app.settings.DEFAULT_LANG.lower():
+            if target_lang and target_lang.lower() != app.settings.DEFAULT_LANGUAGE.lower():
                 log.info(f"Translating digest '{config_name}' to '{target_lang}'...")
                 try:
                     digest_text = await dispatcher.run(

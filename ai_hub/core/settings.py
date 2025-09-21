@@ -34,8 +34,8 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_TOKEN: str | None = None
     TELEGRAM_ADMIN_IDS: List[str] = Field(default_factory=list)
     
-    TZ: str = Field(default="Europe/Istanbul")
-    DEFAULT_LANG: str = "en"
+    DEFAULT_TIMEZONE: str = Field(default="Europe/Istanbul")
+    DEFAULT_LANGUAGE: str = "en"
 
     MCP_HOST: str = "127.0.0.1"
     MCP_PORT: int = 8484

@@ -54,7 +54,7 @@ async def on_message_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
         try:
             state.lang = detect(user_text)
         except LangDetectException:
-            state.lang = settings.DEFAULT_LANG
+            state.lang = settings.DEFAULT_LANGUAGE
         state_manager.save_chat_state(chat_id, state)
 
     if reply := update.message.reply_to_message:

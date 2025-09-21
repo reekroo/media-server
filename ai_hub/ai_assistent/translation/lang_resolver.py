@@ -3,7 +3,7 @@ from typing import Optional, Callable
 
 class TargetLanguageResolver:
     def __init__(self, default_lang: str, chat_lang_lookup: Callable[[str | int], Optional[str]]):
-        self.default_lang = (default_lang or "ru").lower()
+        self.default_lang = (default_lang or "en").lower()
         self.lookup = chat_lang_lookup
 
     def resolve(self, conversation_lang: Optional[str], chat_id: Optional[str | int]) -> str:

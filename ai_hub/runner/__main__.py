@@ -44,7 +44,7 @@ async def main() -> None:
     settings = Settings()
     rpc_client = RpcClient(settings)
     
-    tz = zoneinfo.ZoneInfo(settings.TZ)
+    tz = zoneinfo.ZoneInfo(settings.DEFAULT_TIMEZONE)
     log.info(f"Scheduler timezone set to: {tz}")
 
     schedule_path = settings.BASE_DIR / "configs" / "schedule.toml"

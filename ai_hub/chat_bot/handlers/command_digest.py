@@ -63,8 +63,8 @@ async def _send_payload_to_user(update: Update, context: ContextTypes.DEFAULT_TY
 
     chat_id = update.effective_chat.id
     state = state_manager.get_chat_state(chat_id)
-    user_lang = state.lang if state.lang else settings.DEFAULT_LANG
-    need_translate = user_lang.lower() != settings.DEFAULT_LANG.lower()
+    user_lang = state.lang if state.lang else settings.DEFAULT_LANGUAGE
+    need_translate = user_lang.lower() != settings.DEFAULT_LANGUAGE.lower()
 
     chunker = Chunker(soft_limit=3900)
 

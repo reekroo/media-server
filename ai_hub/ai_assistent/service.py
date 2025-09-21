@@ -27,7 +27,7 @@ class DigestService:
         self.translator = translator
         self.image_generator = image_generator
         
-        self.default_lang = settings.DEFAULT_LANG
+        self.default_lang = settings.DEFAULT_LANGUAGE
         self.topics: Dict[str, TopicHandler] = self._discover_topics()
         
         print(f"✅ DigestService initialized. Registered topics: {', '.join(self.topics.keys())}")
