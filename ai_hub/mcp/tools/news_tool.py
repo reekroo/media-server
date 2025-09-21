@@ -3,46 +3,14 @@ from typing import Any, Dict
 
 from .base import ToolSpec
 from mcp.rpc_methods.news import build_digest
-
-_ALLOWED_DIGESTS = [
-    "news", 
-    "news_by", 
-    "news_tr", 
-    "news_eu", 
-    "news_us", 
-    "news_ru", 
-    "news_ua",
-    "news_fun",
-    "gaming", 
-    "entertainment",
-]
-
-_ALIASES = {
-    "us": "news_us",
-    "usa": "news_us",
-    "america": "news_us",
-    "eu": "news_eu",
-    "europe": "news_eu",
-    "ru": "news_ru",
-    "russia": "news_ru",
-    "by": "news_by",
-    "belarus": "news_by",
-    "ua": "news_ua",
-    "ukraine": "news_ua",
-    "tr": "news_tr",
-    "turkey": "news_tr",
-    "turkiye": "news_tr",
-    "fun": "news_fun",
-    "humor": "news_fun",
-    "satire": "news_fun",
-}
+from core.constants.news import UNIVERSAL_NEWS_DIGESTS, DIGEST_ALIASES
 
 def _normalize_digest(value: str | None) -> str:
     raw = (value or "news").strip().lower()
-    if raw in _ALLOWED_DIGESTS:
+    if raw in UNIVERSAL_NEWS_DIGESTS:
         return raw
-    if raw in _ALIASES:
-        return _ALIASES[raw]
+    if raw in DIGEST_ALIASES:
+        return DIGEST_ALIASES[raw]
     return "news"
 
 async def _exec_news(app, args: Dict[str, Any]) -> str:
@@ -76,7 +44,7 @@ TOOL = ToolSpec(
                 "type": "string",
                 "description": (
                     "Which configured news digest to use: one of "
-                    + ", ".join(_ALLOWED_DIGESTS)
+                    + ", ".join(UNIVERSAL_NEWS_DIGESTS)
                 )
             },
             "section": {

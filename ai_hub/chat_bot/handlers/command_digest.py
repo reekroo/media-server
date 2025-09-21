@@ -3,13 +3,12 @@ from telegram.ext import ContextTypes
 from typing import List, Optional, Tuple
 
 from core.settings import Settings
+from core.constants.news import UNIVERSAL_NEWS_DIGESTS
 from functions.channels.telegram_helpers.chunker import Chunker
 
 from ..messaging import reply_text_with_markdown
 from ..rpc_client import ChatRpcClient, ui_error_message
 from ..state import get_available_digests, StateManager 
-
-UNIVERSAL_NEWS_DIGESTS = {"news", "news_by", "news_tr", "news_eu", "news_us", "news_ru", "news_ua", "news_fun", "gaming", "entertainment"}
 
 MSG_USAGE =           "🟦 Usage: /digest <name> [count]\nAvailable: {available}"
 MSG_UNKNOWN_DIGEST =  "🟥 Unknown digest: '{config_name}'.\n\nAvailable: {available}"
