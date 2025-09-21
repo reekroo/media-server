@@ -31,9 +31,13 @@ class LegacyImageGenerator:
         if not text: return "abstract minimalistic illustration"
         try:
             return await self._agent.generate(
-                "Rewrite the following into a concise English image prompt...\n\n"
-                f"{text}\n\n"
-                "Return ONLY the prompt."
+                "Rewrite the following news summary into a concise, safe-for-work, and neutral "
+                "English image prompt (one sentence). "
+                "AVOID any words related to violence, weapons, blood, death, or conflict. "
+                "Focus on abstract concepts, characters, or settings. "
+                "Keep it family-friendly and concrete:\n\n"
+                f"Original summary: {text}\n\n"
+                "Return ONLY the safe prompt."
             )
         except Exception:
             return text

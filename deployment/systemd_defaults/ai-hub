@@ -1,6 +1,8 @@
 GEMINI_API_KEY=<fill_in>
 GEMINI_MODEL="gemini-2.5-flash"
 
+USE_LEGACY_IMAGE_GENERATOR=true
+VERTEX_LEGACY_IMAGE_MODEL="imagegeneration@006"
 VERTEX_IMAGE_MODEL="imagen-4.0-fast-generate-001"
 
 GCP_PROJECT_ID=<fill_in>
@@ -12,8 +14,8 @@ TELEGRAM_BOT_TOKEN=<fill_in>
 TELEGRAM_CHAT_ID=-<fill_in>
 TELEGRAM_ADMIN_IDS=<fill_in>
 
-TZ=Europe/Istanbul
-DEFAULT_LANG=en
+DEFAULT_TIMEZONE=Europe/Istanbul
+DEFAULT_LANGUAGE=en
 
 MCP_HOST="127.0.0.1"
 MCP_PORT=8484

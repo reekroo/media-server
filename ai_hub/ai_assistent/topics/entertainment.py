@@ -1,34 +1,32 @@
-from __future__ import annotations
 import textwrap
-
 from .base import TopicHandler
-from functions.feeds.feed_collector import FeedItem
+from .utils import format_items_for_prompt
 
 class EntertainmentDigestTopic(TopicHandler):
     def build_prompt(self, payload: dict) -> str:
-        items = [FeedItem(**item) for item in payload.get("items", [])]
-        item_lines = [f"- {item.title}: {item.summary}" for item in items]
-        block = "\n".join(item_lines)
+        items = payload.get("items", [])
+        count = payload.get("count")
+
+        block = format_items_for_prompt(items)
+
+        if isinstance(count, int) and count > 0:
+            focus_instruction = f"Focus on the top {count} most important items (releases, trailers, casting news)."
+        else:
+            focus_instruction = "Focus on:\n1. Major new releases...\n2. Significant trailers...\n3. Interesting casting news."
 
         return textwrap.dedent(f"""
             You are a film and TV critic for a modern magazine.
             From the news items below, create a concise and engaging digest about what's new and upcoming.
 
             IMPORTANT, OUTPUT FORMAT (STRICT):
-            - Use simple Markdown ONLY (no HTML, no code fences).
+            - Use simple Markdown ONLY.
             - Section titles with asterisks: *Movies*, *TV/Series*.
             - Put ONE blank line between items.
                                
-            Focus on:
-            1. Major new releases (movies and TV series).
-            2. Significant trailers or announcements.
-            3. Interesting casting news.
+            {focus_instruction}
 
             Structure your output into two short sections: *Movies* and *TV/Series*.
 
             News Items:
                 {block}
         """).strip()
-
-    def postprocess(self, llm_text: str) -> str:
-        return (llm_text or "").strip()

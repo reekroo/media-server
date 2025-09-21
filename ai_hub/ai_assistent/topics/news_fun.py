@@ -1,15 +1,17 @@
-from __future__ import annotations
 import textwrap
-
 from .base import TopicHandler
-from functions.feeds.feed_collector import FeedItem
+from .utils import format_items_for_prompt, create_summary_instruction
 
 class FunNewsDigestTopic(TopicHandler):
     def build_prompt(self, payload: dict) -> str:
-        items = [FeedItem(**item) for item in payload.get("items", [])]
+        items = payload.get("items", [])
+        count = payload.get("count")
         
-        item_lines = [f"- {item.title}: {item.summary}" for item in items]
-        block = "\n".join(item_lines)
+        block = format_items_for_prompt(items)
+        summary_instruction = create_summary_instruction(
+            count,
+            default="Create 5-7 of these 'news stories'"
+        )
 
         return textwrap.dedent(f"""
             You are a stand-up comedian and satirist who writes a fake news column in the style of "The Onion".
@@ -25,11 +27,8 @@ class FunNewsDigestTopic(TopicHandler):
             - Put ONE blank line between items.
             - In each item, use asterisks for the bold "headline" of your fabricated news story.
 
-            Create 5-7 of these "news stories" based on the provided material.
+            {summary_instruction} based on the provided material.
 
             Inspiration Material (Real News):
             {block}
         """).strip()
-
-    def postprocess(self, llm_text: str) -> str:
-        return (llm_text or "").strip()

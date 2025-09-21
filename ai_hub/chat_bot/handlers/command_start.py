@@ -12,13 +12,15 @@ log = setup_logger(__name__, LOG_FILE_PATH)
 HELP_MESSAGE_HEADER = """\
 ✨ Hi! I'm your *AI Hub bot*.
 
+You can give me commands or just chat with me in plain language.
+
 *Available commands:*
 
 • `/help` — Show this message.
 • `/reset` — Reset our conversation history.
 • `/set_lang <lang>` — Set language for this chat (e.g., en, ru). 
 • `/image <text>` — Generate an image from text.
-• `/digest <name>` — Trigger a digest build.
+• `/digest <name> [count]` — Trigger a digest build (e.g., `/digest news us 3`).
 • `/why <incident_id>` — Explain a system incident.
 
 *Available digests:*

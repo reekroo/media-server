@@ -26,8 +26,7 @@ class Settings(BaseSettings):
     
     GCP_PROJECT_ID: str
     GCP_LOCATION: str = "us-central1"
-    
-    VERTEX_IMAGE_MODEL: str = "imagen-4.0-fast-generate-001"
+
     USE_LEGACY_IMAGE_GENERATOR: bool = True
     VERTEX_LEGACY_IMAGE_MODEL: str = "imagegeneration@005"
     VERTEX_IMAGE_MODEL: str ="imagen-4.0-fast-generate-001"

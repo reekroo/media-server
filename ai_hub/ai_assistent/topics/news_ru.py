@@ -1,16 +1,15 @@
-from __future__ import annotations
 import textwrap
-
 from .base import TopicHandler
-from functions.feeds.feed_collector import FeedItem
+from .utils import format_items_for_prompt, create_summary_instruction
 
 class RuNewsDigestTopic(TopicHandler):
     def build_prompt(self, payload: dict) -> str:
-        items = [FeedItem(**item) for item in payload.get("items", [])]
+        items = payload.get("items", [])
         section = payload.get("section", "news")
+        count = payload.get("count")
 
-        item_lines = [f"- {item.title}: {item.summary}" for item in items]
-        block = "\n".join(item_lines)
+        block = format_items_for_prompt(items)
+        summary_instruction = create_summary_instruction(count)
 
         return textwrap.dedent(f"""
             You are a news editor summarizing Russian news for an international audience.
@@ -18,15 +17,12 @@ class RuNewsDigestTopic(TopicHandler):
             Your final summary MUST be in English.
 
             IMPORTANT, OUTPUT FORMAT (STRICT):
-            - Use simple Markdown ONLY (no HTML, no code fences).
+            - Use simple Markdown ONLY.
             - Use asterisks for bold section titles (*Title*).
             - Put ONE blank line between items.
 
-            Create 5-10 concise bullets focusing on the most important events, what changed, and why it matters.
+            {summary_instruction}
 
             News Items (from Russian):
                 {block}
         """).strip()
-
-    def postprocess(self, llm_text: str) -> str:
-        return (llm_text or "").strip()
