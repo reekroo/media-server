@@ -35,9 +35,9 @@ async def _send_digest_as_text(app: AppContext, cfg: Any, digest_text: str) -> N
         destination_topic=cfg.destination_topic
     )
 
-async def _send_digest_with_image(app: AppContext, cfg: Any, digest_text: str) -> None:
+async def _send_digest_with_image(app: AppContext, cfg: Any, digest_text: str, config_name: str) -> None:
     try:
-        log.info(f"Requesting image generation for '{cfg.config_name}'...")
+        log.info(f"Requesting image generation for '{config_name}'...")
         safe_prompt = await app.dispatcher.run(name="assist.summarize", text=digest_text, max_chars=220)
         image_bytes = await app.dispatcher.run(name="assist.generate_image_from_summary", text_summary=safe_prompt)
         
@@ -49,7 +49,7 @@ async def _send_digest_with_image(app: AppContext, cfg: Any, digest_text: str) -
             destination_topic=cfg.destination_topic
         )
     except Exception as e:
-        log.error(f"Failed to generate or send image for '{cfg.config_name}': {e}", exc_info=True)
+        log.error(f"Failed to generate or send image for '{config_name}': {e}", exc_info=True)
         error_message = f"⚠️ _Image generation failed._\n\n{digest_text}"
         await _send_digest_as_text(app, cfg, error_message)
 
@@ -64,8 +64,7 @@ async def execute_and_send(app: AppContext, config_name: str) -> None:
             digest_results = [digest_results]
 
         cfg = getattr(app.settings, config_name)
-        cfg.config_name = config_name 
-
+        
         for digest_text in digest_results:
             if not digest_text or "no output" in digest_text:
                 log.warning(f"Did not send digest for '{config_name}': empty content.")
@@ -74,7 +73,7 @@ async def execute_and_send(app: AppContext, config_name: str) -> None:
             final_text = await _translate_digest_if_needed(app, digest_text, getattr(cfg, "destination_language", None))
             
             if getattr(cfg, "generate_image", False):
-                await _send_digest_with_image(app, cfg, final_text)
+                await _send_digest_with_image(app, cfg, final_text, config_name)
             else:
                 await _send_digest_as_text(app, cfg, final_text)
 
