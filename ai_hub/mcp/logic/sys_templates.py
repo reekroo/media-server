@@ -1,30 +1,31 @@
-from typing import Iterable, List
-
+from typing import List
 from functions.sys.models import DigestSummary, UnitReport
 
 def _badge(level: str) -> str:
     return {"OK": "✅", "WARN": "⚠️", "FAIL": "🛑"}.get(level, "❔")
 
-def _format_report(r: UnitReport) -> str:
-    head = f"{_badge(r.level)} *{r.unit}* — {r.level}"
-    details = [f"Status: `{r.status.active}`, Restarts: `{r.status.restarts}`"]
+def _format_warning(r: UnitReport) -> str:
+    icon = _badge(r.level)
+    parts = [f"{icon} *{r.unit}* — `{r.status.active}` (restarts: {r.status.restarts})"]
 
     if r.issues:
         issues_txt = ", ".join(f"`{i.category}`" for i in r.issues)
-        details.append(f"Issues detected: {issues_txt}")
+        parts.append(f"Issues: {issues_txt}")
 
     if r.samples:
-        samples = "\n".join(f"  • `{ln[:160]}`" for ln in r.samples[:3])
-        details.append("Log samples:\n" + samples)
+        samples = "\n".join(f"  • `{ln[:160]}`" for ln in r.samples[:2])
+        parts.append("Logs:\n" + samples)
 
-    body = "\n".join(details)
-    return f"{head}\n{body}"
+    return "\n".join(parts)
+
+def _format_ok(r: UnitReport) -> str:
+    restarts_info = f" (restarts: {r.status.restarts})" if r.status.restarts > 0 else ""
+    return f"• `{r.unit}{restarts_info}`"
 
 def render_digest(d: DigestSummary) -> str:
-    lines = [f"🖥️ *System Status Digest* (overall: {d.overall} {_badge(d.overall)})"]
-
     problem_reports: List[UnitReport] = []
     ok_reports: List[UnitReport] = []
+
     for r in d.reports:
         if r.level in ("FAIL", "WARN"):
             problem_reports.append(r)
@@ -33,20 +34,32 @@ def render_digest(d: DigestSummary) -> str:
 
     problem_reports.sort(key=lambda x: {"FAIL": 0, "WARN": 1}[x.level])
 
+    lines: List[str] = []
+    lines.append(
+        f"🖥️ *System Status Digest*\n"
+        f"Overall: {_badge(d.overall)} {d.overall} "
+        f"({len(problem_reports)} issues, {len(ok_reports)} healthy)"
+    )
+
     if problem_reports:
-        lines.extend(["", "--- WARNINGS ---", ""])
+        lines.append("")
+        lines.append(f"🚨 *Warnings ({len(problem_reports)}):*")
+        lines.append("")
         for r in problem_reports:
-            lines.append(_format_report(r))
+            lines.append(_format_warning(r))
             lines.append("")
 
     if ok_reports:
-        lines.extend(["", f"--- ALL GOOD ({len(ok_reports)}) ---", ""])
-        
-        ok_lines: List[str] = []
+        lines.append("")
+        lines.append(f"✅ *Healthy ({len(ok_reports)}):*")
+        lines.append("")
         for r in ok_reports:
-            restarts_info = f" (restarts: {r.status.restarts})" if r.status.restarts > 0 else ""
-            ok_lines.append(f"`{r.unit}{restarts_info}`")
-            
-        lines.append(_badge("OK") + " " + ", ".join(ok_lines))
-        
+            lines.append(_format_ok(r))
+        lines.append("")
+
+    lines.append(
+        f"📊 Summary: {len(problem_reports)} need attention, {len(ok_reports)} healthy.\n"
+        f"💡 Tip: Use `/why <service>` to get incident details."
+    )
+
     return "\n".join(lines).strip()
