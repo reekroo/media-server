@@ -1,5 +1,5 @@
 from ..context import AppContext
-from ..logic import sys_rules, sys_templates
+from ..domain import sys_rules, sys_templates
 from functions.sys.collector import get_unit_status, get_unit_logs
 from functions.sys.state import save_incident, save_digest_state
 from functions.sys.models import DigestSummary

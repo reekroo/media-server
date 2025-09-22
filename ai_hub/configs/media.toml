@@ -13,3 +13,4 @@ include_ext = [".mkv",".mp4",".avi",".mov"]
 [recommender]
 language = "en"
 genres   = ["sci-fi","action","horrors"]
+max_titles_for_recommender = 600
