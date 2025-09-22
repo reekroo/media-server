@@ -6,26 +6,58 @@ from .base import TopicHandler
 
 class DockerStatusTopic(TopicHandler):
     def build_prompt(self, payload: dict) -> str:
-        reports = payload.get("reports", [])
+        reports = payload.get("reports", []) or []
+        meta = payload.get("meta", {}) or {}
         reports_json = json.dumps(reports, indent=2, ensure_ascii=False)
+        meta_json = json.dumps(meta, ensure_ascii=False)
 
         return textwrap.dedent(f"""
-            You are an SRE (Site Reliability Engineer) assistant.
-            Analyze the following status report for Docker containers.
-            A container is considered unhealthy if its status is 'restarting', 'dead', or 'exited' with a non-zero exit code.
+            You are an SRE assistant preparing a Telegram message (Markdown only, no HTML, no code fences).
+            Input JSON contains UNHEALTHY containers only (if any). Healthy containers are omitted.
 
-            For each unhealthy container, provide a one-sentence summary of its problem.
-            Conclude with a single, overall health status: OK ✅, WARN ⚠️, or ERROR 🛑.
+            GOAL:
+            Produce a compact, scannable *Docker Status Digest* with:
+            - header,
+            - issues section (if any),
+            - final summary.
 
-            IMPORTANT, OUTPUT FORMAT (STRICT):
-            - Use simple Markdown ONLY (no HTML, no code fences).
-            - Container Name: *Status* - One-sentence summary (e.g., 'Container exited with error code 137').
-            - ...
-            *Overall: OK, WARN, or ERROR*
+            ICON RULES:
+              running -> ✅
+              unhealthy/restarting/paused -> ⚠️
+              exited/dead -> 🛑
 
-            Reports JSON: 
-                {reports_json}
+            OUTPUT FORMAT (STRICT):
+            1) First line: "🐳 *Docker Status Digest*"
+            2) Second line: "Overall: <EMOJI> <STATUS> (<ISSUES_COUNT> issues)"
+               - if reports is empty: STATUS must be "OK" with ✅ and "(0 issues)".
+            3) Blank line.
+            4) If reports not empty:
+                 "🚨 *Issues (<ISSUES_COUNT>):*"
+                 Then for EACH report print a compact block, one after another:
+                   "<ICON> *<name>* — <STATE_UPPER>"
+                   "<one-line cause/summary>"
+                   (optionally) "• `<health/status sample>`"  (<= 160 chars)
+                 Expected report fields (when present): name/container/id, state, status,
+                 restarts, exit_code, uptime, health_msg. Show what's available; avoid redundancy.
+            5) Final line (always present):
+                 "📊 Summary: <ISSUES_COUNT> need attention."
+                 If 'meta.ignored_count' > 0, append:
+                 " Ignored: <ignored_count>."
+
+            WRITING STYLE:
+            - Short, factual, neutral. Each line <= ~120 chars.
+            - Use inline code for short samples only (backticks). No code blocks.
+            - Do NOT invent containers or numbers; rely on JSON.
+
+            Reports JSON:
+              {reports_json}
+
+            Meta JSON:
+              {meta_json}
         """).strip()
 
     def postprocess(self, llm_text: str) -> str:
-        return (llm_text or "").strip()
+        text = (llm_text or "").strip()
+        if not text:
+            return "🐳 *Docker Status Digest*\nOverall: ✅ OK (0 issues)"
+        return text

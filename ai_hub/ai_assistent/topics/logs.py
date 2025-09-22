@@ -75,7 +75,6 @@ class LogAnalysisTopic(TopicHandler):
         """).strip()
 
     def postprocess(self, llm_text: str) -> str:
-        # Keep it simple: trim and ensure we don't return empty text.
         text = (llm_text or "").strip()
         if not text:
             return "📊 *Log Analysis Digest*\nOverall: ✅ OK"
