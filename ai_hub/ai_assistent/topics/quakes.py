@@ -5,9 +5,9 @@ import textwrap
 from .base import TopicHandler
 
 _SYS_HINT = (
-    "You are a seismology assistant. Earthquake prediction is not reliable—do NOT claim forecasts. "
-    "Provide an assessment from recent events: magnitude distribution, clusters, trend, "
-    "qualitative aftershock likelihood, and an attention level (low/medium/high) with rationale."
+    "You are a seismology assistant. Earthquake prediction is not reliable — do NOT claim forecasts. "
+    "Assess recent activity only: magnitude distribution, clusters, qualitative aftershock likelihood, "
+    "and an attention level with rationale."
 )
 
 class QuakesAssessment(TopicHandler):
@@ -15,19 +15,27 @@ class QuakesAssessment(TopicHandler):
         payload_json = json.dumps(payload or {}, ensure_ascii=False)
         return textwrap.dedent(f"""
             {_SYS_HINT}
-            
-            IMPORTANT: Format your response using simple Markdown. Use asterisks for bold section titles (*Title*).
-            
-            Data JSON follows; structure may vary but includes 'events' with ts/mag/lat/lon/depth.
 
+            OUTPUT STYLE (STRICT):
+            - Simple Markdown only (no HTML, no code fences).
+            - Use short paragraphs and compact bullets (<= ~120 chars per line).
+            - Use these sections with emojis and bold titles:
+
+            📈 *Trend overview*
+            - 2–4 short bullets on magnitude & frequency changes (dates if relevant).
+
+            🗺️ *Spatial clusters*
+            - 1–2 bullets naming approximate areas (coords or nearby towns) and what changed.
+
+            🌊 *Aftershock probability*
+            - One line: Low / Medium / High (brief why). Avoid numeric probabilities.
+
+            ⚠️ *Attention level*
+            - One line with badge: 🟢 Low / 🟡 Medium / 🔴 High — plus a 1-line rationale.
+
+            DATA (JSON, keys may include events with ts/mag/lat/lon/depth):
             {payload_json}
-
-            Output sections:
-            *Trend Summary* (magnitudes & frequency)
-            *Spatial Clusters* (if any)
-            *Aftershock Likelihood* (low/med/high) with caveat
-            *Attention Level* and a brief why            
         """).strip()
-    
+
     def postprocess(self, llm_text: str) -> str:
         return (llm_text or "").strip()
