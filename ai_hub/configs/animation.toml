@@ -17,3 +17,19 @@ general = [
   "https://www.cartoonbrew.com/feed",
   "https://www.awn.com/news/rss.xml"
 ]
+anime_plus = [
+  "https://myanimelist.net/rss/news.xml",
+  "https://otakuusamagazine.com/feed/",
+  "https://soranews24.com/feed/",
+  "https://animecorner.me/feed/",
+  "https://www.livechart.me/feeds/headlines",
+  "https://comicbook.com/anime/feed/"
+]
+industry_plus = [
+  "https://www.animationmagazine.net/feed/",
+  "https://www.cartoonbrew.com/feed",
+  "https://www.awn.com/news/rss.xml",
+  "https://www.indiewire.com/c/animation/feed/",
+  "https://deadline.com/tag/animation/feed/",
+  "https://blog.siggraph.org/feed/"
+]

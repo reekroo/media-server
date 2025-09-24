@@ -11,9 +11,21 @@ ai_topic = "news_eu"
 
 [feeds]
 general = [
-    "https://www.politico.eu/feed",
-    "https://www.consilium.europa.eu/en/rss",
-    "https://euobserver.com/rss",
-    "https://www.euronews.com/rss",
-    "https://apnews.com/hub/europe/rss"
+  "https://www.politico.eu/feed",
+  "https://www.consilium.europa.eu/en/rss",
+  "https://euobserver.com/rss",
+  "https://www.euronews.com/rss",
+  "https://apnews.com/hub/europe/rss",
+  "https://www.europarl.europa.eu/news/en/rss",
+  "https://www.euractiv.com/feed/"
+]
+economy = [
+  "https://www.ft.com/world/europe?format=rss",
+  "https://www.reuters.com/markets/europe/rss",
+  "https://www.eib.org/en/press/all/rss"
+]
+politics = [
+  "https://www.dw.com/en/rss",
+  "https://www.france24.com/en/europe/rss",
+  "https://www.theguardian.com/world/eu/rss"
 ]

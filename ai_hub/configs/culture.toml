@@ -13,7 +13,30 @@ ai_topic = "culture"
 general = [
   "https://www.theguardian.com/culture/rss",
   "https://rss.nytimes.com/services/xml/rss/nyt/Arts.xml",
+  "https://www.newyorker.com/feed/culture",
+  "https://www.theatlantic.com/feed/channel/culture/",
+  "https://www.vox.com/rss/culture",
+  "https://www.bbc.com/culture/feed.rss",
+  "https://www.dw.com/arts/rss"
+]
+arts_museums = [
   "https://hyperallergic.com/feed/",
   "https://www.artnews.com/feed/",
-  "https://www.newyorker.com/feed/culture"
+  "https://www.artforum.com/rss.xml",
+  "https://www.smithsonianmag.com/rss/arts-culture/",
+  "https://www.louvre.fr/rss"
+]
+music_pop = [
+  "https://pitchfork.com/feed/",
+  "https://www.rollingstone.com/music/music-news/feed/",
+  "https://www.billboard.com/feed/",
+  "https://www.stereogum.com/feed/",
+  "https://consequence.net/feed/"
+]
+theatre_stage = [
+  "https://variety.com/v/theater/feed/",
+  "https://www.theguardian.com/stage/rss",
+  "https://www.nytimes.com/svc/collections/v1/publish/www.nytimes.com/section/theater/rss.xml",
+  "https://www.timeout.com/rss/theatre",
+  "https://broadwaydirect.com/feed/"
 ]

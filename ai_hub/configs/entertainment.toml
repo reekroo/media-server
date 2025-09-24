@@ -11,9 +11,30 @@ ai_topic = "entertainment"
 
 [feeds]
 general = [
-  "https://www.moviefone.com/rss/movie-news",
-  "https://tvline.com/feed/",
-  "https://www.ign.com/rss/tv",
   "https://variety.com/feed/",
-  "https://deadline.com/feed/"
+  "https://deadline.com/feed/",
+  "https://www.hollywoodreporter.com/t/feed/",
+  "https://www.indiewire.com/c/film/feed/",
+  "https://www.theguardian.com/film/rss"
+]
+reviews = [
+  "https://editorial.rottentomatoes.com/feed/",
+  "https://www.rogerebert.com/feed",
+  "https://www.slashfilm.com/rss.xml",
+  "https://collider.com/rss/all/",
+  "https://theplaylist.net/feed/"
+]
+trailers_releases = [
+  "https://www.firstshowing.net/feed/",
+  "https://www.comingsoon.net/feed/",
+  "https://www.traileraddict.com/rss",
+  "https://movieweb.com/rss/",
+  "https://www.flickeringmyth.com/feed/"
+]
+industry_boxoffice = [
+  "https://gower.st/feed/",
+  "https://www.boxofficepro.com/feed/",
+  "https://www.screendaily.com/rss",
+  "https://www.indiewire.com/c/box-office/feed/",
+  "https://www.thenumbers.com/rss/new-movies"
 ]

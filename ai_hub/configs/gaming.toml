@@ -15,10 +15,38 @@ general = [
   "https://www.pcgamer.com/rss/",
   "https://www.kotaku.com/rss",
   "https://www.vg247.com/feed",
-  "https://www.gamespot.com/feeds/mashup"
+  "https://www.gamespot.com/feeds/mashup",
+  "https://www.polygon.com/rss/index.xml",
+  "https://www.rockpapershotgun.com/feed"
 ]
 nintendo = [
   "https://www.nintendolife.com/feeds/news",
   "https://gonintendo.com/feeds/posts",
   "https://nintendoeverything.com/feed"
+]
+playstation = [
+  "https://blog.playstation.com/feed/",
+  "https://www.pushsquare.com/feeds/news",
+  "https://www.playstationlifestyle.net/feed/"
+]
+xbox = [
+  "https://news.xbox.com/en-us/feed/",
+  "https://www.purexbox.com/feeds/news",
+  "https://www.windowscentral.com/rss/section/xbox"
+]
+industry = [
+  "https://www.gamesindustry.biz/rss/news",
+  "https://www.gamedeveloper.com/rss.xml",
+  "https://venturebeat.com/category/games/feed/",
+  "https://gamedaily.biz/rss"
+]
+esports = [
+  "https://dotesports.com/feed",
+  "https://www.dexerto.com/feed",
+  "https://www.invenglobal.com/rss"
+]
+indie = [
+  "https://www.indiedb.com/feed/news",
+  "https://itch.io/blog.rss",
+  "https://indiegameculture.com/feed/"
 ]

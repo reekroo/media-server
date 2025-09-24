@@ -11,8 +11,19 @@ ai_topic = "news_by"
 
 [feeds]
 general = [
-    "https://zerkalo.io/rss/s/main.rss",
-    "https://mediazona.by/rss",
-    "https://www.onliner.by/feed",
-    "https://euroradio.fm/en/podcast-feeds/bynews"
+  "https://zerkalo.io/rss/s/main.rss",
+  "https://mediazona.by/rss",
+  "https://www.onliner.by/feed",
+  "https://euroradio.fm/en/podcast-feeds/bynews",
+  "https://nashaniva.com/?c=rss"
+]
+economy_society = [
+  "https://banki24.by/rss",
+  "https://select.by/rss",
+  "https://dw.com/ru/rss"
+]
+world_about_by = [
+  "https://www.bbc.com/russian/index.xml",
+  "https://www.currenttime.tv/api/zkky"
+  "https://www.svaboda.org/api/epiqq"
 ]

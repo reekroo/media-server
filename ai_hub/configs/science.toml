@@ -15,5 +15,28 @@ general = [
   "https://www.sciencenews.org/feed",
   "https://phys.org/rss-feed/science-news/",
   "https://newscientist.com/feed/home/",
-  "https://www.nature.com/nature.rss"
+  "https://www.nature.com/nature.rss",
+  "https://www.scientificamerican.com/feed/",
+  "https://www.theguardian.com/science/rss"
+]
+space_astro = [
+  "https://www.nasa.gov/rss/dyn/breaking_news.rss",
+  "https://www.esa.int/rssfeed/Our_Activities/Space_News",
+  "https://skyandtelescope.org/feed/",
+  "https://www.space.com/feeds/all",
+  "https://www.jpl.nasa.gov/feeds/news"
+]
+medicine_bio = [
+  "https://www.medicalnewstoday.com/rss",
+  "https://www.nih.gov/news-releases/rss.xml",
+  "https://www.cell.com/action/showFeed?type=etoc&feed=rss&jc=cell",
+  "https://www.sciencedaily.com/rss/health_medicine.xml",
+  "https://www.nature.com/subjects/medicine.rss"
+]
+tech_ai = [
+  "https://www.technologyreview.com/feed/",
+  "https://cacm.acm.org/news.rss",
+  "https://arxiv.org/rss/cs",
+  "https://www.nature.com/subjects/artificial-intelligence.rss",
+  "https://www.theconversation.com/uk/science-technology/articles.atom"
 ]

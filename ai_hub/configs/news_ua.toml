@@ -1,6 +1,5 @@
 enabled = true
 to = "telegram"
-# Укажите свои destination и destination_topic
 destination = "-1002918707721" 
 destination_topic = "774" 
 destination_language = "ru"
@@ -12,8 +11,21 @@ ai_topic = "news_ua"
 
 [feeds]
 general = [
-    "https://www.pravda.com.ua/rss/",
-    "https://rss.rbc.ua/ukr/newsline.rss",
-    "https://www.unian.ua/rss_all.rss",
-    "https://nv.ua/rss/all.xml"
+  "https://www.pravda.com.ua/rss/",
+  "https://rss.rbc.ua/ukr/newsline.rss",
+  "https://www.unian.ua/rss_all.rss",
+  "https://nv.ua/rss/all.xml",
+  "https://hromadske.ua/rss",
+  "https://suspilne.media/rss/all",
+  "https://www.bbc.com/ukrainian/index.xml",
+  "https://lb.ua/rss"
+]
+economy_society = [
+  "https://mind.ua/rss/news",
+  "https://www.epravda.com.ua/rss/",
+  "https://forbes.ua/rss"
+]
+war_security = [
+  "https://mil.in.ua/uk/rss",
+  "https://www.radiosvoboda.org/api/zipv"
 ]
