@@ -1,0 +1,19 @@
+enabled = true
+to = "telegram"
+destination = "-1002918707721"
+destination_topic = "1090"
+destination_language = "ru"
+render_template = "💻 Technology Digest\n\n{summary}"
+generate_image = true
+
+max_items = 30
+ai_topic = "technology"
+
+[feeds]
+general = [
+  "https://www.theverge.com/rss/index.xml",
+  "http://feeds.arstechnica.com/arstechnica/index",
+  "https://techcrunch.com/feed/",
+  "https://www.wired.com/feed/rss",
+  "https://www.engadget.com/rss.xml"
+]

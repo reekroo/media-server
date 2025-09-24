@@ -17,3 +17,8 @@ general = [
   "https://www.vg247.com/feed",
   "https://www.gamespot.com/feeds/mashup"
 ]
+nintendo = [
+  "https://www.nintendolife.com/feeds/news",
+  "https://gonintendo.com/feeds/posts",
+  "https://nintendoeverything.com/feed"
+]

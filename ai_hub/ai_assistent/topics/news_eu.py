@@ -1,28 +1,38 @@
 import textwrap
+import re
+
 from .base import TopicHandler
 from .utils import format_items_for_prompt, create_summary_instruction
 
 class EuropeanNewsDigestTopic(TopicHandler):
     def build_prompt(self, payload: dict) -> str:
-        items = payload.get("items", [])
-        section = payload.get("section", "news")
-        count = payload.get("count")
+        items   = (payload.get("items") or [])[:30]
+        section = payload.get("section") or "Europe"
+        count   = payload.get("count")
 
         block = format_items_for_prompt(items)
-        summary_instruction = create_summary_instruction(count)
+        qty = create_summary_instruction(count)
 
         return textwrap.dedent(f"""
-            You are a news editor summarizing European Union news for an international audience.
-            Analyze the following news items from European sources on the topic of '{section}'.
-            Your final summary MUST be in English.
+            You are an editor for a {section} briefing. Respond in English. {qty}
+            Focus on what changed, why it matters, and what's next. Avoid clickbait.
 
-            IMPORTANT, OUTPUT FORMAT (STRICT):
-            - Use simple Markdown ONLY.
-            - Use asterisks for bold section titles (*Title*).
-            - Put ONE blank line between items.
+            OUTPUT FORMAT (STRICT):
+            - Simple Markdown ONLY (no links, no code, no tables).
+            - Each item is exactly 2 lines:
+              1) *Title*  (≤ 70 chars)
+              2) One-sentence summary (≤ 260 chars). Add date/region if relevant.
+            - Put ONE blank line between items. No bullets, no numbering.
+            - Group related facts into a single item when sensible.
 
-            {summary_instruction}
-
-            News Items (from Europe):
+            Source items:
                 {block}
         """).strip()
+
+    def postprocess(self, llm_text: str) -> str:
+        text = (llm_text or "").strip()
+        if not text:
+            return text
+        text = re.sub(r"\n{3,}", "\n\n", text).strip()
+        text = "\n".join(ln.rstrip() for ln in text.splitlines())
+        return text

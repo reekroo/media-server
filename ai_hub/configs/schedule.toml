@@ -15,9 +15,15 @@ params = { config_name = "dinner" }
 
 [media]
 enabled = true
-cron = "50 17 * * *"
+cron = "55 17 * * *"
 rpc_method = "runner.execute_and_send"
 params = { config_name = "media" }
+
+[animation]
+enabled = true
+cron = "50 17 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "animation" }
 
 [entertainment]
 enabled = true
@@ -33,6 +39,24 @@ cron = [
 ]
 rpc_method = "runner.execute_and_send"
 params = { config_name = "gaming" }
+
+[culture]
+enabled = true
+cron = "20 19 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "culture" }
+
+[technology]
+enabled = true
+cron = "10 19 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "technology" }
+
+[science]
+enabled = true
+cron = "00 19 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "science" }
 
 [news_main]
 enabled = true

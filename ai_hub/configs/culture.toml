@@ -1,0 +1,19 @@
+enabled = true
+to = "telegram"
+destination = "-1002918707721"
+destination_topic = "1090"
+destination_language = "ru"
+render_template = "🎭 Culture Digest\n\n{summary}"
+generate_image = true
+
+max_items = 25
+ai_topic = "culture"
+
+[feeds]
+general = [
+  "https://www.theguardian.com/culture/rss",
+  "https://rss.nytimes.com/services/xml/rss/nyt/Arts.xml",
+  "https://hyperallergic.com/feed/",
+  "https://www.artnews.com/feed/",
+  "https://www.newyorker.com/feed/culture"
+]

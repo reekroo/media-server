@@ -8,7 +8,11 @@ UNIVERSAL_NEWS_DIGESTS = {
     "news_ua",
     "news_fun",
     "gaming", 
+    "animation",
     "entertainment"
+    "culture"
+    "science"
+    "technology"
 }
 
 DIGEST_ALIASES = {

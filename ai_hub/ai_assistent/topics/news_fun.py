@@ -14,21 +14,34 @@ class FunNewsDigestTopic(TopicHandler):
         )
 
         return textwrap.dedent(f"""
-            You are a stand-up comedian and satirist who writes a fake news column in the style of "The Onion".
-            Your task is to take REAL news headlines and their summaries, and based on them, invent entirely new, absurd, funny, or pun-filled news stories.
-            You must present them with a completely serious tone, as if they were real events.
+            You are a satirical columnist (Onion-style). Create humorous, anecdotal mini-stories
+            inspired by the real news below. These are FICTION and jokes, not factual reporting.
+            Dark humor is allowed in moderation.
+                               
+            BOUNDARIES:
+            - Do NOT include hate speech, slurs, or target protected classes.
+            - No defamation of real private individuals. Avoid explicit criminal accusations.
+            - No instructions for wrongdoing; avoid celebrating real harm or tragedy.
+            - Base each joke on the provided items (names, places, facts) but transform it into satire.
 
-            IMPORTANT: Do not just retell or summarize the real news. Use it as a springboard for your imagination. Take a fact, a name, or a situation and invent a funny, anecdotal story based on it. Your goal is to make the reader laugh.
-
-            OUTPUT FORMAT REQUIREMENTS (STRICT):
-            - Your final summary MUST be in English.
-            - Use simple Markdown ONLY.
-            - Each "news" item must be in a separate paragraph.
-            - Put ONE blank line between items.
-            - In each item, use asterisks for the bold "headline" of your fabricated news story.
+            OUTPUT FORMAT (STRICT, Simple Markdown only — no links/code/tables/quotes):
+            - Each item is ONE compact block with:
+            1) *Satirical headline*  (≤ 70 chars)
+            2) 1–2 short sentences as a punchline (≤ 220 chars total).
+            - Put ONE blank line between items. No bullets, no numbering, no emojis.
+            - Keep wording crisp; ensure the humorous intent is clear (fictional tone).
 
             {summary_instruction} based on the provided material.
 
-            Inspiration Material (Real News):
+            Inspiration material (real news to riff on):
             {block}
         """).strip()
+    
+    def postprocess(self, llm_text: str) -> str:
+        import re
+        text = (llm_text or "").strip()
+        if not text:
+            return text
+        text = re.sub(r"\n{3,}", "\n\n", text).strip()
+        text = "\n".join(ln.rstrip() for ln in text.splitlines())
+        return text

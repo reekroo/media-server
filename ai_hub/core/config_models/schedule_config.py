@@ -6,6 +6,7 @@ class ScheduleConfig(BaseModel):
     daily_brief: ScheduleEntry | None = None
     dinner_ideas: ScheduleEntry | None = None
     media_digest: ScheduleEntry | None = None
+    animation: ScheduleEntry | None = None
     entertainment: ScheduleEntry | None = None
     gaming_digest: ScheduleEntry | None = None
     news_digest: ScheduleEntry | None = None
@@ -17,3 +18,6 @@ class ScheduleConfig(BaseModel):
     sys_digest: ScheduleEntry | None = None
     docker_digest: ScheduleEntry | None = None
     log_digest: ScheduleEntry | None = None
+    culture_digest: ScheduleEntry | None = None
+    science_digest: ScheduleEntry | None = None
+    technology_digest: ScheduleEntry | None = None
