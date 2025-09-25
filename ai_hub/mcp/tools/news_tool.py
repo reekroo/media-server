@@ -33,7 +33,7 @@ async def _exec_news(app, args: Dict[str, Any]) -> str:
     if not results_list:
         return "No news items to show."
 
-    final_text = "\n\n---\n\n".join(results_list)
+    final_text = "\n\n".join(results_list)
     return final_text
 
 TOOL = ToolSpec(
