@@ -1,6 +1,7 @@
 import re
 from telegram import Update, MessageEntity
 from telegram.ext import ContextTypes
+from telegram.helpers import escape_markdown
 from typing import List, Optional, Tuple
 
 from core.settings import Settings
@@ -111,10 +112,11 @@ async def digest_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if not config_name or config_name not in available_digests:
         await update.message.reply_text(MSG_UNKNOWN_DIGEST.format(config_name=config_name, available=", ".join(sorted(available_digests))))
         return
-
+    
     display_name = f"{config_name} {section or ''}".strip()
-    await reply_text_with_markdown(update, MSG_BUILDING_DIGEST.format(config_name=display_name))
-
+    safe_display_name = escape_markdown(display_name, version=2)
+    await reply_text_with_markdown(update, MSG_BUILDING_DIGEST.format(config_name=safe_display_name))
+    
     payload, error = await _fetch_digest_payload(rpc_client, config_name, section, count)
 
     if error:
