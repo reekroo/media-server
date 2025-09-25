@@ -122,8 +122,9 @@ async def chat_with_tools(
         if not isinstance(result, str):
             result = str(result)
 
-        if lang:
+        if lang and spec and spec.name != "text_translator":
             result = await app.ai_service.translate(result, target_lang=lang)
+            
         return result
 
     text = data.get("text")

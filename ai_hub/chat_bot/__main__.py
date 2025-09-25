@@ -14,6 +14,7 @@ from chat_bot.handlers.command_why import why_command
 from chat_bot.handlers.command_set_lang import set_lang_command
 from chat_bot.handlers.conversation import on_message_command
 from chat_bot.handlers.command_image import image_command 
+from chat_bot.handlers.command_translate import translate_command 
 
 log = setup_logger(__name__, LOG_FILE_PATH)
 
@@ -43,6 +44,7 @@ async def main() -> None:
     app.add_handler(CommandHandler("reset", reset_command))
     app.add_handler(CommandHandler("set_lang", set_lang_command))
     app.add_handler(CommandHandler("image", image_command))
+    app.add_handler(CommandHandler("translate", translate_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_message_command))
 
     try:
