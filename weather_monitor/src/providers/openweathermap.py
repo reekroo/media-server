@@ -1,45 +1,81 @@
 import logging
+import time
+from datetime import date, datetime
+
 from .base import IWeatherProvider
-from models.weather_data import WeatherData
 from utils.http_client import HttpClient
+from models.weather_data import WeatherData
 
 class OpenWeatherMapProvider(IWeatherProvider):
+    BASE_URL = 'https://api.openweathermap.org/data/2.5/weather'
+    ONECALL_URL = 'https://api.openweathermap.org/data/3.0/onecall'
+
     def __init__(self, api_key: str, http_client: HttpClient, logger: logging.Logger):
         self._api_key = api_key
         self._http_client = http_client
-        self._log = logger
-        self._base_url = "https://api.openweathermap.org/data/2.5/weather"
+        self.log = logger
 
-    def get_current_weather(self, lat: float, lon: float) -> WeatherData | None:
-        if not self._api_key:
-            self._log.warning("OpenWeatherMap API key is not set.")
+    def get_current_weather(self, lat: float, lon: float) -> list | None:
+
+        params = {'lat': lat, 'lon': lon, 'appid': self._api_key, 'units': 'metric', 'lang': 'ru'}
+        try:
+            self.log.info(f"Request to OpenWeatherMap for location {lat},{lon}...")
+            data = self._http_client.get_json(self.BASE_URL, params=params)
+            self.log.info("OpenWeatherMap data received successfully.")
+
+            current_weather = {
+                "date": date.today().strftime('%Y-%m-%d'),
+                "avg_temp_c": data['main']['temp'],
+                "condition": data['weather'][0]['description'],
+                "wind_speed_mps": data['wind']['speed'],
+                "humidity": data['main']['humidity'],
+            }
+            return [current_weather]
+        
+        except Exception as e:
+            self.log.error(f"Failed to get weather from OpenWeatherMap: {e}")
             return None
 
-        self._log.info(f"Request to OpenWeatherMap for location {lat},{lon}...")
+    def get_forecast(self, lat: float, lon: float) -> list | None:
         params = {
-            'lat': lat, 'lon': lon, 'appid': self._api_key,
-            'units': 'metric', 'lang': 'ru'
+            'lat': lat, 'lon': lon, 'appid': self._api_key, 'units': 'metric',
+            'lang': 'ru', 'exclude': 'current,minutely,hourly,alerts'
         }
         try:
-            data = self._http_client.get(self._base_url, params=params)
-            self._log.info("OpenWeatherMap data received successfully.")
-            return self._map_to_weather_data(data)
+            self.log.info(f"Requesting 8-day forecast from OpenWeatherMap for {lat},{lon}...")
+            data = self._http_client.get_json(self.ONECALL_URL, params=params)
+
+            simplified_forecast = []
+            for day_data in data.get('daily', []):
+                simplified_forecast.append({
+                    "date": date.fromtimestamp(day_data.get('dt')).strftime('%Y-%m-%d'),
+                    "max_temp_c": day_data.get('temp', {}).get('max'),
+                    "min_temp_c": day_data.get('temp', {}).get('min'),
+                    "condition": day_data.get('weather', [{}])[0].get('description'),
+                    "chance_of_rain_percent": int(day_data.get('pop', 0) * 100),
+                })
+            return simplified_forecast
+        
         except Exception as e:
-            self._log.error(f"Error fetching data from OpenWeatherMap: {e}")
+            self.log.error(f"Failed to get forecast from OpenWeatherMap: {e}")
             return None
 
-    def _map_to_weather_data(self, data: dict) -> WeatherData:
-        main_data = data.get('main', {})
-        weather_data = data.get('weather', [{}])[0]
-        wind_data = data.get('wind', {})
+    def get_historical(self, lat: float, lon: float, requested_date: date) -> list | None:
+        timestamp = int(time.mktime(requested_date.timetuple()))
+        params = {'lat': lat, 'lon': lon, 'dt': timestamp, 'appid': self._api_key, 'units': 'metric', 'lang': 'ru'}
+        try:
+            self.log.info(f"Requesting historical data from OpenWeatherMap for {lat},{lon} on {requested_date}...")
+            data = self._http_client.get_json(f"{self.ONECALL_URL}/timemachine", params=params)
 
-        return WeatherData(
-            location_name=data.get('name'),
-            temperature=main_data.get('temp'),
-            feels_like=main_data.get('feels_like'),
-            pressure=main_data.get('pressure'),
-            humidity=main_data.get('humidity'),
-            description=weather_data.get('description', '').capitalize(),
-            wind_speed=wind_data.get('speed'),
-            source='OpenWeatherMap'
-        )
+            day_data = data.get('data', [{}])[0]
+            simplified_historical = {
+                "date": requested_date.strftime('%Y-%m-%d'),
+                "avg_temp_c": day_data.get('temp'),
+                "condition": day_data.get('weather', [{}])[0].get('description'),
+                "total_precip_mm": day_data.get('rain', {}).get('1h', 0)
+            }
+            return [simplified_historical]
+        
+        except Exception as e:
+            self.log.error(f"Failed to get historical data from OpenWeatherMap: {e}")
+            return None

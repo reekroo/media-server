@@ -1,0 +1,37 @@
+import socket
+import json
+import sys
+
+SOCKET_PATH = "/tmp/on_demand_earthquake.sock"
+
+def main():
+    request_payload = {
+        "lat": 35.6895,
+        "lon": 139.6917,
+        "days": 3
+    }
+
+    try:
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client_socket:
+            print(f"Connecting to {SOCKET_PATH}...")
+            client_socket.connect(SOCKET_PATH)
+            
+            print(f"Sending request: {request_payload}")
+            client_socket.sendall(json.dumps(request_payload).encode('utf-8'))
+
+            response_data = client_socket.recv(16384).decode('utf-8')
+            
+            print("\n--- RESPONSE ---")
+            response_json = json.loads(response_data)
+            print(json.dumps(response_json, indent=2, ensure_ascii=False))
+            print("----------------")
+            if response_json['status'] == 'success':
+                print(f"Successfully received {len(response_json['data'])} events.")
+
+    except FileNotFoundError:
+        print(f"Error: Socket file not found at {SOCKET_PATH}. Is the main application running?", file=sys.stderr)
+    except Exception as e:
+        print(f"An error occurred: {e}", file=sys.stderr)
+
+if __name__ == "__main__":
+    main()

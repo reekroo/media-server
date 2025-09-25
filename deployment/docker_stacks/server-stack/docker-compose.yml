@@ -126,12 +126,13 @@ services:
     volumes:
       - ${STORAGE_PATH}/configs/jellyfin:/config
       - ${STORAGE_PATH}/caches/jellyfin-cache:/cache
-      - ${STORAGE_PATH}/media/movies:/media/movies
-      - ${STORAGE_PATH}/media/tvshowes:/media/tvshowes
-      - ${STORAGE_PATH}/media/cartoons:/media/cartoons
-      - ${STORAGE_PATH}/media/adultanimation:/media/adultanimation
+      - ${STORAGE_PATH}/media/adult_animation:/media/adult_animation
+      - ${STORAGE_PATH}/media/animated_movies:/media/animated_movies
       - ${STORAGE_PATH}/media/anime:/media/anime
-      - ${STORAGE_PATH}/downloads:/media/new-items
+      - ${STORAGE_PATH}/media/cartoons:/media/cartoons
+      - ${STORAGE_PATH}/media/movies:/media/movies
+      - ${STORAGE_PATH}/media/tv_shows:/media/tv_shows
+      - ${STORAGE_PATH}/downloads:/media/new_items
     ports:
       - 8096:8096
     devices:

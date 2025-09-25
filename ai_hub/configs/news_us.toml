@@ -1,0 +1,34 @@
+enabled = true
+to = "telegram"
+destination = "-1002918707721"
+destination_topic = "345"
+destination_language = "en"
+render_template = "🇺🇸 United States News Digest ({section})\n\n{summary}"
+generate_image = true
+
+fetch_limit = 25
+section_limit = 3
+ai_topic = "news_us"
+
+[feeds]
+general = [
+  "https://apnews.com/hub/us-news/rss",
+  "https://feeds.reuters.com/Reuters/domesticNews",
+  "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+  "https://feeds.npr.org/1001/rss.xml",
+  "https://feeds.a.dj.com/rss/RSSWorldNews.xml",
+  "https://www.usatoday.com/rss/news/",
+  "https://www.latimes.com/world-nation/rss2.0.xml"
+]
+politics = [
+  "https://www.politico.com/rss/politics-news.xml",
+  "https://thehill.com/feed/",
+  "https://www.axios.com/feeds/feed.rss",
+  "https://www.washingtonpost.com/politics/rss"
+]
+economy = [
+  "https://www.reuters.com/markets/us/rss",
+  "https://www.wsj.com/xml/rss/3_7014.xml",
+  "https://www.cnbc.com/id/10000664/device/rss/rss.html",
+  "https://www.bloomberg.com/feeds/podcasts/etf-report.xml"
+]

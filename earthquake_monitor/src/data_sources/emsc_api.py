@@ -1,6 +1,5 @@
 import json
-import calendar 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Dict
 
 from .base import BaseApiDataSource
@@ -9,7 +8,7 @@ from models.earthquake_event import EarthquakeEvent
 class EmscApiDataSource(BaseApiDataSource):
     API_URL = "https://www.seismicportal.eu/fdsnws/event/1/query"
 
-    def _build_request_params(self, latitude: float, longitude: float) -> (str, Dict, Dict):
+    def _build_request_params(self, latitude: float, longitude: float, start_time_iso: str) -> (str, Dict, Dict):
         radius_km = self._config.get('SEARCH_RADIUS_KM', 250)
         radius_deg = radius_km / 111.0
         
@@ -20,11 +19,14 @@ class EmscApiDataSource(BaseApiDataSource):
             "maxradius": f"{radius_deg:.2f}",
             "minmagnitude": self._config.get('MIN_API_MAGNITUDE'),
             "orderby": "time",
-            "start": self._get_start_time_iso(),
+            "starttime": start_time_iso, 
         }
         return self.API_URL, params, {}
-
+    
     def _parse_response(self, response_text: str) -> list[EarthquakeEvent]:
+        if not response_text or not response_text.strip().startswith('{'):
+            self._log.warning(f"[{self.name}] Received empty or non-JSON response, skipping. Content: '{response_text[:200]}'")
+            return []
         try:
             data = json.loads(response_text)
             events = []
@@ -60,5 +62,5 @@ class EmscApiDataSource(BaseApiDataSource):
                     continue
             return events
         except (json.JSONDecodeError, KeyError, IndexError) as e:
-            self._log.error(f"[{self.name}] Error parsing JSON response: {e}")
+            self._log.error(f"[{self.name}] Error parsing JSON response: {e}. Response text: '{response_text[:500]}'")
             return []

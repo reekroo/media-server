@@ -1,0 +1,31 @@
+enabled = true
+to = "telegram"
+destination = "-1002918707721"
+destination_topic = "214"
+destination_language = "ru"
+render_template = "🇹🇷 Turkish News Digest ({section})\n\n{summary}"
+generate_image = true
+
+fetch_limit = 25
+section_limit = 3
+ai_topic = "news_tr"
+
+[feeds]
+general = [
+  "https://www.trthaber.com/xml_mobile.php?cat=1",
+  "https://www.aa.com.tr/tr/rss/default?cat=guncel",
+  "https://feeds.bbci.co.uk/turkce/rss.xml",
+  "https://www.cnnturk.com/feed/rss/all/news",
+  "https://www.hurriyet.com.tr/rss/anasayfa",
+  "https://www.sabah.com.tr/rss/anasayfa.xml"
+]
+economy = [
+  "https://www.ntv.com.tr/ekonomi.rss",
+  "https://www.bloomberght.com/rss",
+  "https://www.dunya.com/feed"
+]
+politics_world = [
+  "https://www.aljazeera.com/xml/rss/all.xml",
+  "https://www.reuters.com/world/middle-east/rss",
+  "https://www.dw.com/tr/rss"
+]

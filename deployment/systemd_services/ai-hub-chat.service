@@ -1,0 +1,17 @@
+[Unit]
+Description=AI Hub Telegram Chat Bot
+After=network-online.target
+Requires=ai-hub-mcp.service
+
+[Service]
+Type=simple
+User=reekroo
+EnvironmentFile=/etc/default/ai-hub
+WorkingDirectory=/home/reekroo/ai_hub
+ExecStart=/home/reekroo/ai_hub/.venv_ai_hub/bin/python -m chat_bot
+
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

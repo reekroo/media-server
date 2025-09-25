@@ -1,0 +1,41 @@
+enabled = true
+to = "telegram"
+destination = "-1002918707721"
+destination_topic = "210"
+destination_language = "ru"
+render_template = "🗞️ News Digest ({section})\n\n{summary}"
+generate_image = true
+
+fetch_limit = 25
+section_limit = 3
+ai_topic = "news"
+
+[feeds]
+general = [
+  "https://feeds.bbci.co.uk/news/rss.xml",
+  "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+  "https://www.theguardian.com/world/rss",
+  "https://www.aljazeera.com/xml/rss/all.xml",
+  "https://www.dw.com/en/top-stories/s-9097?maca=en-rss-en-all-1573-xml"
+]
+politics = [
+  "https://www.reuters.com/politics/rss",
+  "https://apnews.com/hub/politics/rss",
+  "https://www.politico.com/rss/politics-news.xml",
+  "https://www.france24.com/en/rss",
+  "https://www.euronews.com/rss?level=theme&name=world"
+]
+economy = [
+  "https://www.economist.com/international/rss.xml",
+  "https://www.economist.com/business/rss.xml",
+  "https://www.ft.com/?format=rss",
+  "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+  "https://www.bloomberg.com/feed/podcast/etf-report.xml"
+]
+tech = [
+  "https://www.theverge.com/rss/index.xml",
+  "http://feeds.arstechnica.com/arstechnica/index",
+  "https://www.wired.com/feed/rss",
+  "https://techcrunch.com/feed/",
+  "https://www.engadget.com/rss.xml"
+]

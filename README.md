@@ -288,7 +288,7 @@ pip install -e .
 deactivate
 ```
 
-* metrics_exporter
+* metrics exporter
 
 ```Bash
 cd ~/metrics_exporter
@@ -298,11 +298,19 @@ pip install -e .
 deactivate
 ```
 
+* ai hub
+
+```Bash
+cd ~/ai_hub
+python3 -m venv .venv_ai_hub
+source .venv_ai_hub/bin/activate
+pip install -e .
+deactivate
+```
+
 ## Starting System Services
 
 Once all scripts are copied and virtual environments are set up, you can enable the systemd services.
-
-### Services
 
 1. Reload the systemd manager configuration:
 
@@ -310,32 +318,65 @@ Once all scripts are copied and virtual environments are set up, you can enable 
 sudo systemctl daemon-reload
 ```
 
-2. Enable and start the services immediately:
+2. Enable and start the base services immediately:
 
 ```Bash
 sudo systemctl enable --now sound-controller.service
 sudo systemctl enable --now oled-status.service
 sudo systemctl enable --now button-manager.service
 sudo systemctl enable --now ups-service.service
+```
+
+3. Enable and start the monotor services immediately:
+
+```Bash
+sudo systemctl enable --now backup.service
 sudo systemctl enable --now location-monitor.service
 sudo systemctl enable --now earthquake-monitor.service
 sudo systemctl enable --now weather-monitor.service
 sudo systemctl enable --now metrics-exporter.service
-sudo systemctl enable --now backup.service
+```
+4. Enable and start the AI Hub services immediately:
+
+```Bash
+sudo systemctl enable --now ai-hub.service
+sudo systemctl enable --now ai-hub-chat.service
+sudo systemctl enable --now ai-hub-mcp.socket
+sudo systemctl enable --now ai-hub-mcp.service
 ```
 
-3. Check the status of the running services:
+5. Enable additional peripheral services for power management and networking.
+
+```Bash
+sudo systemctl enable sound-boot.service
+sudo systemctl enable sound-shutdown.service
+sudo systemctl enable nvme-powermode-manager.service
+sudo systemctl enable wifi-lan-manager.service
+sudo systemctl enable bluetooth-manager.service
+```
+
+⚠️ The `nvme-powermode-manager.service` requires `nvme-cli` to be installed.
+`sudo apt update`
+`sudo apt install nvme-cli`
+
+6. Check the status of the running services:
 
 ```Bash
 sudo systemctl status sound-controller.service
 sudo systemctl status oled-status.service
 sudo systemctl status button-manager.service
 sudo systemctl status ups-service.service
+
+sudo systemctl status backup.service
 sudo systemctl status location-monitor.service
 sudo systemctl status earthquake-monitor.service
 sudo systemctl status weather-monitor.service
 sudo systemctl status metrics-exporter.service
-sudo systemctl status backup.service
+
+sudo systemctl status ai-hub.service
+sudo systemctl status ai-hub-chat.service
+sudo systemctl status ai-hub-mcp.socket
+sudo systemctl status ai-hub-mcp.service
 ```
 
 ℹ️ To view real-time logs for a specific service, use:
@@ -349,22 +390,6 @@ sudo systemctl status backup.service
 
 ℹ️ To stop a service, use:
 `sudo systemctl stop <service_name>`
-
-### Peripherals
-
-Enable additional services for power management and networking.
-
-```Bash
-sudo systemctl enable sound-boot.service
-sudo systemctl enable sound-shutdown.service
-sudo systemctl enable nvme-powermode-manager.service
-sudo systemctl enable wifi-lan-manager.service
-sudo systemctl enable bluetooth-manager.service
-```
-
-⚠️ The `nvme-powermode-manager.service` requires `nvme-cli` to be installed.
-`sudo apt update`
-`sudo apt install nvme-cli`
 
 ### Running Unit Tests
 
@@ -428,6 +453,10 @@ make up
 - [earthquake monitor](https://github.com/reekroo/media-server/tree/main/earthquake_monitor)
 - [weather monitor](https://github.com/reekroo/media-server/tree/main/weather_monitor)
 - [metrics exporter](https://github.com/reekroo/media-server/tree/main/metrics_exporter)
+
+## AI Hub Services
+
+- [ai hub](https://github.com/reekroo/media-server/tree/main/ai_hub)
 
 ## Peripheral scripts  & Services
 

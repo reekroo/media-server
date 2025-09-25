@@ -1,0 +1,155 @@
+[daily_brief]
+enabled = true
+cron = "30 7 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "daily" }
+
+[dinner]
+enabled = true
+cron = [
+  "30 12 * * *",
+  "45 16 * * *"
+]
+rpc_method = "runner.execute_and_send"
+params = { config_name = "dinner" }
+
+[media]
+enabled = true
+cron = "55 17 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "media" }
+
+[animation]
+enabled = true
+cron = "50 17 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "animation" }
+
+[entertainment]
+enabled = true
+cron = "45 17 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "entertainment" }
+
+[gaming]
+enabled = true
+cron = [
+  "45 7 * * *",
+  "30 17 * * *"
+]
+rpc_method = "runner.execute_and_send"
+params = { config_name = "gaming" }
+
+[culture]
+enabled = true
+cron = "20 19 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "culture" }
+
+[technology]
+enabled = true
+cron = "10 19 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "technology" }
+
+[science]
+enabled = true
+cron = "00 19 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "science" }
+
+[news_main]
+enabled = true
+cron = [
+  "40 7 * * *",
+  "0 14,22 * * *",
+]
+rpc_method = "runner.execute_and_send"
+params = { config_name = "news" }
+
+[news_tr]
+enabled = true
+cron = [
+  "0 8 * * *",
+  "5 12 * * *",
+  "10 20 * * *"
+]
+rpc_method = "runner.execute_and_send"
+params = { config_name = "news_tr" }
+
+[news_by]
+enabled = true
+cron = [
+  "10 8,12 * * *",
+  "0 20 * * *"
+]
+rpc_method = "runner.execute_and_send"
+params = { config_name = "news_by" }
+
+[news_pl]
+enabled = true
+cron = "20 20 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "news_pl" }
+
+[news_ua]
+enabled = true
+cron = [
+  "25 8 * * *",
+  "20 12 * * *",
+  "30 20 * * *"
+]
+rpc_method = "runner.execute_and_send"
+params = { config_name = "news_ua" }
+
+[news_ru]
+enabled = true
+cron = [
+  "15 8,12 * * *",
+  "5 20 * * *"
+]
+rpc_method = "runner.execute_and_send"
+params = { config_name = "news_ru" }
+
+[news_eu]
+enabled = true
+cron = [
+  "20 8 * * *",
+  "5 13 * * *",
+  "35 21 * * *"
+]
+rpc_method = "runner.execute_and_send"
+params = { config_name = "news_eu" }
+
+[news_us]
+enabled = true
+cron = [
+  "0 13 * * *",
+  "30 21 * * *"
+]
+rpc_method = "runner.execute_and_send"
+params = { config_name = "news_us" }
+
+[news_fun]
+enabled = true
+cron = "13 18 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "news_fun" }
+
+[sys_digest]
+enabled = true
+cron = "0 9,15,21 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "sys" }
+
+[docker_digest]
+enabled = true
+cron = "1 9,15,21 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "docker_status" }
+
+[log_digest]
+enabled = true
+cron = "2 9,15,21 * * *"
+rpc_method = "runner.execute_and_send"
+params = { config_name = "logs" }

@@ -1,0 +1,50 @@
+enabled = true
+to = "telegram"
+destination = "-1002918707721"
+destination_topic = "1090"
+destination_language = "ru"
+render_template = "💻 Technology Digest ({section})\n\n{summary}"
+generate_image = true
+
+fetch_limit = 30
+section_limit = 3
+ai_topic = "technology"
+
+[feeds]
+general = [
+  "https://www.theverge.com/rss/index.xml",
+  "http://feeds.arstechnica.com/arstechnica/index",
+  "https://techcrunch.com/feed/",
+  "https://www.wired.com/feed/rss",
+  "https://www.engadget.com/rss.xml",
+  "https://venturebeat.com/feed/",
+  "https://www.cnet.com/rss/news/"
+]
+ai_research = [
+  "https://openai.com/blog/rss.xml",
+  "https://ai.googleblog.com/atom.xml",
+  "https://www.microsoft.com/en-us/research/feed/",
+  "https://www.technologyreview.com/feed/",
+  "https://arxiv.org/rss/cs.AI"
+]
+cybersec = [
+  "https://krebsonsecurity.com/feed/",
+  "https://threatpost.com/feed/",
+  "https://www.darkreading.com/rss.xml",
+  "https://www.schneier.com/feed/atom/",
+  "https://www.bleepingcomputer.com/feed/"
+]
+gadgets = [
+  "https://www.gsmarena.com/rss-news-reviews.php3",
+  "https://www.macrumors.com/feed/",
+  "https://www.androidcentral.com/rss",
+  "https://www.notebookcheck.net/RSS-Feed.81556.0.html",
+  "https://9to5mac.com/feed/"
+]
+future = [
+  "https://spectrum.ieee.org/feed",
+  "https://futurism.com/feed",
+  "https://singularityhub.com/feed/",
+  "https://www.nextbigfuture.com/feed",
+  "https://www.sciencedaily.com/rss/computers_math/technology.xml"
+]
