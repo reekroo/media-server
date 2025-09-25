@@ -5,7 +5,7 @@ from .utils import format_items_for_prompt, create_summary_instruction
 
 class TechnologyDigestTopic(TopicHandler):
     def build_prompt(self, payload: dict) -> str:
-        items = payload.get("items", [])[:30]
+        items = (payload.get("items") or [])
         count = payload.get("count")
         block = format_items_for_prompt(items)
 

@@ -3,10 +3,11 @@ to = "telegram"
 destination = "-1002918707721"
 destination_topic = "204"
 destination_language = "en"
-render_template = "🍿 Entertainment Digest\n\n{summary}"
+render_template = "🍿 Entertainment Digest ({section})\n\n{summary}"
 generate_image = true
 
-max_items = 30
+fetch_limit = 25
+section_limit = 3
 ai_topic = "entertainment"
 
 [feeds]

@@ -1,4 +1,5 @@
-from typing import Any
+import asyncio
+from typing import Any, List, Optional
 
 from mcp.context import AppContext
 from mcp.dispatcher import Dispatcher
@@ -7,25 +8,13 @@ from core.constants.news import UNIVERSAL_NEWS_DIGESTS
 
 log = setup_logger(__name__, LOG_FILE_PATH)
 
+TELEGRAM_CAPTION_LIMIT = 1024
+
 def _get_rpc_method_name(config_name: str) -> str:
     target_builder = "news" if config_name in UNIVERSAL_NEWS_DIGESTS else config_name
     base_func_name = "build_brief" if target_builder == "daily" else "build_digest"
     short_func_name = base_func_name.replace('_digest','').replace('_brief','')
     return f"{target_builder}.{short_func_name}"
-
-async def _translate_digest_if_needed(app: AppContext, digest_text: str, target_lang: str | None) -> str:
-    if not target_lang or target_lang.lower() == app.settings.DEFAULT_LANGUAGE.lower():
-        return digest_text
-
-    log.info(f"Translating digest to '{target_lang}'...")
-    try:
-        translated_text = await app.dispatcher.run(
-            name="assist.translate", text=digest_text, target_lang=target_lang
-        )
-        return translated_text
-    except Exception as e:
-        log.error(f"Translation failed: {e}", exc_info=True)
-        return digest_text
 
 async def _send_digest_as_text(app: AppContext, cfg: Any, digest_text: str) -> None:
     channel = app.channel_factory.get_channel(cfg.to)
@@ -35,47 +24,83 @@ async def _send_digest_as_text(app: AppContext, cfg: Any, digest_text: str) -> N
         destination_topic=cfg.destination_topic
     )
 
-async def _send_digest_with_image(app: AppContext, cfg: Any, digest_text: str, config_name: str) -> None:
+async def _send_digest_with_image(app: AppContext, cfg: Any, digest_text: str, image_bytes: bytes, config_name: str) -> None:
+    channel = app.channel_factory.get_channel(cfg.to)
     try:
-        log.info(f"Requesting image generation for '{config_name}'...")
-        safe_prompt = await app.dispatcher.run(name="assist.summarize", text=digest_text, max_chars=220)
-        image_bytes = await app.dispatcher.run(name="assist.generate_image_from_summary", text_summary=safe_prompt)
-        
-        channel = app.channel_factory.get_channel(cfg.to)
-        await channel.send_photo(
-            destination=cfg.destination,
-            image_bytes=image_bytes,
-            caption=digest_text,
-            destination_topic=cfg.destination_topic
-        )
+        if len(digest_text) <= TELEGRAM_CAPTION_LIMIT:
+            log.info(f"Sending photo with caption for '{config_name}'")
+            await channel.send_photo(
+                destination=cfg.destination, image_bytes=image_bytes,
+                caption=digest_text, destination_topic=cfg.destination_topic
+            )
+        else:
+            log.info(f"Caption for '{config_name}' is too long. Sending as separate messages.")
+            photo_message = await channel.send_photo(
+                destination=cfg.destination, image_bytes=image_bytes,
+                caption="", destination_topic=cfg.destination_topic
+            )
+            await channel.send(
+                destination=cfg.destination, content=digest_text,
+                destination_topic=cfg.destination_topic, reply_to_message_id=photo_message.message_id
+            )
     except Exception as e:
-        log.error(f"Failed to generate or send image for '{config_name}': {e}", exc_info=True)
-        error_message = f"⚠️ _Image generation failed._\n\n{digest_text}"
+        log.error(f"Failed to send photo for '{config_name}': {e}", exc_info=True)
+        error_message = f"⚠️ _Image was generated, but failed to send._\n\n{digest_text}"
         await _send_digest_as_text(app, cfg, error_message)
+
+async def _get_translated_text_task(app: AppContext, text: str, cfg: Any) -> str:
+    target_lang = getattr(cfg, "destination_language", None)
+    if not target_lang or target_lang.lower() == app.settings.DEFAULT_LANGUAGE.lower():
+        return text
+    
+    log.info(f"Translating digest to '{target_lang}'...")
+    try:
+        return await app.dispatcher.run("assist.translate", text=text, target_lang=target_lang)
+    except Exception as e:
+        log.error(f"Translation task failed: {e}", exc_info=True)
+        return text
+
+async def _get_image_bytes_task(app: AppContext, text: str, cfg: Any) -> Optional[bytes]:
+    if not getattr(cfg, "generate_image", False):
+        return None
+        
+    log.info("Requesting image generation...")
+    try:
+        safe_prompt = await app.dispatcher.run(name="assist.summarize", text=text, max_chars=220)
+        return await app.dispatcher.run(name="assist.generate_image_from_summary", text_summary=safe_prompt)
+    except Exception as e:
+        log.error(f"Image generation task failed: {e}", exc_info=True)
+        return None
 
 async def execute_and_send(app: AppContext, config_name: str) -> None:
     log.info(f"Runner job started for '{config_name}'")
-    
     try:
-        rpc_method_name = _get_rpc_method_name(config_name)
-        digest_results = await app.dispatcher.run(name=rpc_method_name, config_name=config_name)
-
-        if isinstance(digest_results, str):
-            digest_results = [digest_results]
-
         cfg = getattr(app.settings, config_name)
+        rpc_method_name = _get_rpc_method_name(config_name)
         
-        for digest_text in digest_results:
-            if not digest_text or "no output" in digest_text:
-                log.warning(f"Did not send digest for '{config_name}': empty content.")
-                continue
+        digest_results: List[str] = await app.dispatcher.run(name=rpc_method_name, config_name=config_name)
 
-            final_text = await _translate_digest_if_needed(app, digest_text, getattr(cfg, "destination_language", None))
-            
-            if getattr(cfg, "generate_image", False):
-                await _send_digest_with_image(app, cfg, final_text, config_name)
+        if not isinstance(digest_results, list):
+            digest_results = [digest_results] if isinstance(digest_results, str) and digest_results else []
+        
+        if not digest_results:
+            log.info(f"No messages returned from digest builder for '{config_name}'.")
+            return
+
+        for original_text in digest_results:
+            tasks = [
+                _get_translated_text_task(app, original_text, cfg),
+                _get_image_bytes_task(app, original_text, cfg)
+            ]
+
+            final_text, image_bytes = await asyncio.gather(*tasks)
+
+            if image_bytes:
+                await _send_digest_with_image(app, cfg, final_text, image_bytes, config_name)
             else:
                 await _send_digest_as_text(app, cfg, final_text)
+
+            await asyncio.sleep(2)
 
     except Exception as e:
         log.error(f"Failed to execute runner job for '{config_name}': {e}", exc_info=True)

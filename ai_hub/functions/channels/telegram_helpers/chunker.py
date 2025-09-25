@@ -1,43 +1,48 @@
-from typing import Iterable
+from typing import Iterable, Tuple
 
 class Chunker:
-    def __init__(self, soft_limit: int = 3900):
+    def __init__(self, soft_limit: int = 4000):
+        if soft_limit <= 0:
+            raise ValueError("soft_limit must be positive")
         self.soft_limit = soft_limit
 
+    def _find_best_split_pos(self, text: str, start_offset: int) -> int:
+
+        end_offset = start_offset + self.soft_limit
+        
+        para_split_pos = text.rfind('\n\n', start_offset, end_offset)
+        if para_split_pos > start_offset:
+            return para_split_pos
+
+        line_split_pos = text.rfind('\n', start_offset, end_offset)
+        if line_split_pos > start_offset:
+            return line_split_pos
+        
+        return end_offset
+
     def split(self, text: str) -> Iterable[str]:
-        if not text or len(text) <= self.soft_limit:
-            yield text
+        if not text:
+            return
+        for chunk, offset in self.split_with_offsets(text):
+            yield chunk
+
+    def split_with_offsets(self, text: str) -> Iterable[Tuple[str, int]]:
+        if not text:
             return
 
-        paragraphs = text.split('\n\n')
-        current_chunk = ""
+        text_len = len(text)
+        current_offset = 0
+        
+        while current_offset < text_len:
+            if text_len - current_offset <= self.soft_limit:
+                yield text[current_offset:], current_offset
+                break
 
-        for para in paragraphs:
-            if len(para) > self.soft_limit:
-                if current_chunk:
-                    yield current_chunk.strip()
-                    current_chunk = ""
+            split_pos = self._find_best_split_pos(text, current_offset)
+            
+            chunk = text[current_offset:split_pos]
+            yield chunk, current_offset
 
-                lines = para.split('\n')
-                current_para_chunk = ""
-                for line in lines:
-                    if len(current_para_chunk) + len(line) + 1 > self.soft_limit:
-                        yield current_para_chunk.strip()
-                        current_para_chunk = line
-                    else:
-                        current_para_chunk += '\n' + line
-                if current_para_chunk:
-                    yield current_para_chunk.strip()
-                continue
-
-            if len(current_chunk) + len(para) + 2 > self.soft_limit:
-                yield current_chunk.strip()
-                current_chunk = para
-            else:
-                if current_chunk:
-                    current_chunk += '\n\n' + para
-                else:
-                    current_chunk = para
-
-        if current_chunk:
-            yield current_chunk.strip()
+            current_offset = split_pos
+            while current_offset < text_len and text[current_offset].isspace():
+                current_offset += 1

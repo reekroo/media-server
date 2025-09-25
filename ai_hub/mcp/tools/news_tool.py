@@ -1,8 +1,8 @@
 from __future__ import annotations
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from .base import ToolSpec
-from mcp.rpc_methods.news import build_digest
+from mcp.rpc_methods.news.rpc import build_digest
 from core.constants.news import UNIVERSAL_NEWS_DIGESTS, DIGEST_ALIASES
 
 def _normalize_digest(value: str | None) -> str:
@@ -28,8 +28,13 @@ async def _exec_news(app, args: Dict[str, Any]) -> str:
     else:
         count = None
 
-    result_text = await build_digest(app, config_name=digest, section=section, count=count)
-    return result_text or "No news items to show."
+    results_list: List[str] = await build_digest(app, config_name=digest, section=section, count=count)
+
+    if not results_list:
+        return "No news items to show."
+
+    final_text = "\n\n---\n\n".join(results_list)
+    return final_text
 
 TOOL = ToolSpec(
     name="news_fetch",

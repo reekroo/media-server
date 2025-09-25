@@ -6,11 +6,7 @@ from .utils import format_items_for_prompt, create_summary_instruction
 
 class UkraineNewsDigestTopic(TopicHandler):
     def build_prompt(self, payload: dict) -> str:
-        """
-        Ukraine-focused news digest.
-        Output = compact, Telegram-friendly 2-line cards in English.
-        """
-        items   = (payload.get("items") or [])[:30]
+        items   = (payload.get("items") or [])
         section = payload.get("section") or "Ukraine"
         count   = payload.get("count")
 

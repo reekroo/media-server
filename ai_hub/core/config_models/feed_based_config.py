@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field
 
 class FeedBasedConfig(BaseModel):
@@ -9,7 +9,12 @@ class FeedBasedConfig(BaseModel):
     destination_language: Optional[str] = None
     generate_image: Optional[bool] = True
     
-    max_items: int = 25
+    fetch_limit: int = 25
+    section_limit: int = 3
+
     ai_topic: str = ""
     render_template: str = "{summary}"
-    feeds: Dict[str, List[str]] = Field(default_factory=dict)
+
+    # 1) "section": [url1, url2, ...]
+    # 2) "section": { "urls": [...], "limit": 5 }
+    feeds: Dict[str, Union[List[str], Dict[str, Any]]] = Field(default_factory=dict)

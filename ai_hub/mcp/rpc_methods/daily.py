@@ -1,4 +1,6 @@
+import asyncio
 from pathlib import Path
+from typing import Any, List
 
 from ..context import AppContext
 from functions.local_data.reader import read_json_async
@@ -15,34 +17,50 @@ def _section(title: str, body: str | None) -> str:
         return ""
     return f"{title}\n\n{body}"
 
+async def _get_weather_section(app: AppContext, cfg: Any) -> str:
+    try:
+        payload = await read_json_async(Path(cfg.weather_json))
+        if not payload:
+            return ""
+        
+        weather_text = await app.ai_service.digest(kind="weather", params=payload)
+        return _section("🌤️ *Weather*", weather_text)
+    except Exception as e:
+        log.error(f"Failed to process weather section: {e}", exc_info=True)
+        return ""
+
+async def _get_quakes_section(app: AppContext, cfg: Any) -> str:
+    if not getattr(cfg, "include_quakes", False):
+        return ""
+    
+    try:
+        payload = await read_json_async(Path(cfg.quakes_json))
+        if not payload:
+            return ""
+            
+        quakes_text = await app.ai_service.digest(kind="quakes", params=payload)
+        return _section("🌍 *Earthquakes*", quakes_text)
+    except Exception as e:
+        log.error(f"Failed to process quakes section: {e}", exc_info=True)
+        return ""
+
 async def build_brief(app: AppContext, config_name: str) -> str:
     log.info(f"Building daily brief for config '{config_name}'")
     cfg = app.settings.daily
     if not cfg:
         return DAILY_CONFIG_NOT_FOUND
 
-    weather_payload = await read_json_async(Path(cfg.weather_json))
-    quakes_payload = await read_json_async(Path(cfg.quakes_json))
+    tasks = [
+        _get_weather_section(app, cfg),
+        _get_quakes_section(app, cfg),
+    ]
 
-    weather_text = ""
-    if weather_payload:
-        weather_text = await app.ai_service.digest(kind="weather", params=weather_payload)
+    log.info("Fetching weather and quakes data in parallel...")
+    results: List[str] = await asyncio.gather(*tasks)
 
-    quakes_text = ""
-    if getattr(cfg, "include_quakes", False) and quakes_payload:
-        quakes_text = await app.ai_service.digest(kind="quakes", params=quakes_payload)
+    final_parts = [part for part in results if part]
 
-    parts = []
-
-    weather = _section("🌤️ *Weather*", weather_text)
-    if weather:
-        parts.append(weather)
-
-    quakes = _section("🌍 *Earthquakes*", quakes_text)
-    if quakes:
-        parts.append(quakes)
-
-    if not parts:
+    if not final_parts:
         return DATA_UNAVAILABLE
 
-    return "\n\n".join(parts).strip()
+    return "\n\n".join(final_parts).strip()

@@ -35,7 +35,7 @@ def _group_digests(names: list[str]) -> dict[str, list[str]]:
 
         if base.startswith("news"):
             groups["🗞️ *News digests:*"].append(n)
-        elif base in {"gaming", "entertainment", "media"}:
+        elif base in {"gaming", "entertainment", "media", "animation"}:
             groups["🎮 *Entertainment:*"].append(n)
         elif base in {"docker_status", "logs", "sys"}:
             groups["🛠️ *System:*"].append(n)

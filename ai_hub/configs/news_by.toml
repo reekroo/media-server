@@ -6,7 +6,8 @@ destination_language = "ru"
 render_template = "🇧🇾 Belarus News Digest ({section})\n\n{summary}"
 generate_image = true
 
-max_items = 25
+fetch_limit = 25
+section_limit = 3
 ai_topic = "news_by"
 
 [feeds]
@@ -24,6 +25,6 @@ economy_society = [
 ]
 world_about_by = [
   "https://www.bbc.com/russian/index.xml",
-  "https://www.currenttime.tv/api/zkky"
+  "https://www.currenttime.tv/api/zkky",
   "https://www.svaboda.org/api/epiqq"
 ]

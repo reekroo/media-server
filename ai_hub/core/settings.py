@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     dinner:   DinnerConfig   | None = Field(default=None, json_schema_extra=TomlMetadata())
     news:     FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
     news_tr:  FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
+    news_pl:  FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
     news_by:  FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
     news_ua:  FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())
     news_ru:  FeedBasedConfig| None = Field(default=None, json_schema_extra=TomlMetadata())

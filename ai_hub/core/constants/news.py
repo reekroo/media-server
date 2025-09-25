@@ -1,18 +1,19 @@
 UNIVERSAL_NEWS_DIGESTS = {
     "news", 
+    "news_pl", 
     "news_by", 
+    "news_ua",
+    "news_ru",
     "news_tr", 
     "news_eu", 
-    "news_us", 
-    "news_ru", 
-    "news_ua",
+    "news_us",  
     "news_fun",
     "gaming", 
     "animation",
-    "entertainment"
-    "culture"
-    "science"
-    "technology"
+    "entertainment",
+    "culture",
+    "science",
+    "technology",
 }
 
 DIGEST_ALIASES = {
@@ -21,6 +22,8 @@ DIGEST_ALIASES = {
     "america": "news_us",
     "eu": "news_eu",
     "europe": "news_eu",
+    "pl": "news_pl",
+    "poland": "news_pl",
     "ru": "news_ru",
     "russia": "news_ru",
     "by": "news_by",

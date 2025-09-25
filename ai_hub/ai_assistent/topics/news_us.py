@@ -6,7 +6,7 @@ from .utils import format_items_for_prompt, create_summary_instruction
 
 class UsNewsDigestTopic(TopicHandler):
     def build_prompt(self, payload: dict) -> str:
-        items   = (payload.get("items") or [])[:30]
+        items   = (payload.get("items") or [])
         section = payload.get("section") or "United States"
         count   = payload.get("count")
 

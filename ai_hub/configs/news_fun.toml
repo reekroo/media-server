@@ -6,7 +6,8 @@ destination_language = "ru"
 render_template = "🤡 Funny fake news ({section})\n\n{summary}"
 generate_image = true
 
-max_items = 75
+fetch_limit = 25
+section_limit = 3
 ai_topic = "news_fun"
 
 [feeds]

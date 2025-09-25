@@ -114,7 +114,7 @@ async def chat_with_tools(
             result = await spec.execute(app, args)
 
         if isinstance(result, list):
-            result = "\n\n---\n\n".join([str(s) for s in result if s and str(s).strip()]) or "No content."
+            result = "\n\n".join([str(s) for s in result if s and str(s).strip()]) or "No content."
 
         if isinstance(result, dict) and ("b64" in result or result.get("type") == "image"):
             return result
