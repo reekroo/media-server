@@ -29,7 +29,13 @@ This file is the key that allows your application to request access to the Googl
 * For "Application type," select "Desktop app" and give it a name (e.g., "Backup Service").
 * After creation, click "DOWNLOAD JSON". Rename the downloaded file to `credentials.json` and place it in the root folder of your project.
 
-2. Step 2: Obtaining `GOOGLE_DRIVE_FOLDER_ID`. 
+2. Step 2: Add a test user
+
+* Go to the [Google Cloud Console](https://console.cloud.google.com/) 
+* In the navigation menu (☰), open "APIs & Services" -> "OAuth consent screen"
+* Click "+ Add users" in the "Audience" section
+
+3. Step 3: Obtaining `GOOGLE_DRIVE_FOLDER_ID`. 
 
 This is the ID of the folder on your Google Drive where the archives will be uploaded.
 

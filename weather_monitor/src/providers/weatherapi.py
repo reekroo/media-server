@@ -18,21 +18,29 @@ class WeatherApiProvider(IWeatherProvider):
         params = {
             'key': self._api_key,
             'q': f"{lat},{lon}",
-            'lang': 'ru'
+            'lang': 'en'
         }
+
         try:
             self.log.info(f"Request to WeatherAPI for location {lat},{lon}...")
             data = self._http_client.get_json(url, params=params)
             self.log.info("WeatherAPI data received successfully.")
             
-            current_weather = {
-                "date": date.today().strftime('%Y-%m-%d'),
-                "avg_temp_c": data['current']['temp_c'],
-                "condition": data['current']['condition']['text'],
-                "wind_speed_mps": round(data['current']['wind_kph'] * 1000 / 3600, 2),
-                "humidity": data['current']['humidity'],
-            }
-            return [current_weather]
+            current_data = data.get('current', {})
+            location_data = data.get('location', {})
+
+            current_weather = WeatherData(
+                location_name=location_data.get('name', 'Unknown'),
+                temperature=current_data.get('temp_c'),
+                feels_like=current_data.get('feelslike_c'),
+                pressure=current_data.get('pressure_mb'),
+                humidity=current_data.get('humidity'),
+                description=current_data.get('condition', {}).get('text'),
+                wind_speed=round(current_data.get('wind_kph', 0) * 1000 / 3600, 2),
+                source='WeatherAPI'
+            )
+            return current_weather
+        
         except Exception as e:
             self.log.error(f"Failed to get weather from WeatherAPI: {e}")
             return None
