@@ -15,22 +15,31 @@ class OpenWeatherMapProvider(IWeatherProvider):
         self._http_client = http_client
         self.log = logger
 
-    def get_current_weather(self, lat: float, lon: float) -> list | None:
+    def get_current_weather(self, lat: float, lon: float)  -> WeatherData | None:
+        params = {
+            'lat': lat, 
+            'lon': lon, 
+            'appid': self._api_key, 
+            'units': 'metric', 
+            'lang': 'en'
+        }
 
-        params = {'lat': lat, 'lon': lon, 'appid': self._api_key, 'units': 'metric', 'lang': 'ru'}
         try:
             self.log.info(f"Request to OpenWeatherMap for location {lat},{lon}...")
             data = self._http_client.get_json(self.BASE_URL, params=params)
             self.log.info("OpenWeatherMap data received successfully.")
 
-            current_weather = {
-                "date": date.today().strftime('%Y-%m-%d'),
-                "avg_temp_c": data['main']['temp'],
-                "condition": data['weather'][0]['description'],
-                "wind_speed_mps": data['wind']['speed'],
-                "humidity": data['main']['humidity'],
-            }
-            return [current_weather]
+            current_weather = WeatherData(
+                location_name=data.get('name', 'Unknown'),
+                temperature=data.get('main', {}).get('temp'),
+                feels_like=data.get('main', {}).get('feels_like'),
+                pressure=data.get('main', {}).get('pressure'),
+                humidity=data.get('main', {}).get('humidity'),
+                description=data.get('weather', [{}])[0].get('description'),
+                wind_speed=data.get('wind', {}).get('speed'),
+                source='OpenWeatherMap'
+            )
+            return current_weather
         
         except Exception as e:
             self.log.error(f"Failed to get weather from OpenWeatherMap: {e}")
