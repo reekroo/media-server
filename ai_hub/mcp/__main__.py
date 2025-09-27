@@ -95,7 +95,8 @@ async def main():
     server = await asyncio.start_server(
         bound_handler,
         host=settings.MCP_HOST,
-        port=settings.MCP_PORT
+        port=settings.MCP_PORT,
+        limit=settings.MCP_REQUEST_LIMIT_BYTES
     )
 
     addr = server.sockets[0].getsockname()

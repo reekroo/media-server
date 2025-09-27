@@ -1,14 +1,9 @@
 from typing import Optional
-from pydantic import BaseModel
 
 from .logs_components import ComponentsConfig
+from .message_target_config import MessageTargetConfig
 
-class LogsConfig(BaseModel):
-    enabled: bool = True
-    to: str = "telegram"
-    destination: str = ""
-    destination_topic: Optional[str] = None
-    destination_language: Optional[str] = None
+class LogsConfig(MessageTargetConfig):    
     generate_image: Optional[bool] = False
     render_template: str = "📊 Log Analytics Digest\n\n{summary}"
     

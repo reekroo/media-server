@@ -29,7 +29,7 @@ urls = [
 fetch_limit = 25
 section_limit = 3
 render_template = "🇪🇺 EU Economy\n\n{summary}"
-generate_image = true
+generate_image = false
 
 [feeds.politics]
 urls = [
@@ -40,4 +40,4 @@ urls = [
 fetch_limit = 25
 section_limit = 3
 render_template = "🇪🇺 EU Politics\n\n{summary}"
-generate_image = true
+generate_image = false

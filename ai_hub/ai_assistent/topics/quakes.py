@@ -1,8 +1,9 @@
-from __future__ import annotations
 import json
 import textwrap
 
 from .base import TopicHandler
+from .formatters.base import Formatter
+from .formatters.simple_text_formatter import SimpleTextFormatter
 
 _SYS_HINT = (
     "You are a seismology assistant. Earthquake prediction is not reliable — do NOT claim forecasts. "
@@ -11,6 +12,10 @@ _SYS_HINT = (
 )
 
 class QuakesAssessment(TopicHandler):
+    @property
+    def formatter(self) -> Formatter:
+        return SimpleTextFormatter()
+
     def build_prompt(self, payload: dict) -> str:
         payload_json = json.dumps(payload or {}, ensure_ascii=False)
         return textwrap.dedent(f"""
@@ -36,6 +41,3 @@ class QuakesAssessment(TopicHandler):
             DATA (JSON, keys may include events with ts/mag/lat/lon/depth):
             {payload_json}
         """).strip()
-
-    def postprocess(self, llm_text: str) -> str:
-        return (llm_text or "").strip()

@@ -31,7 +31,7 @@ urls = [
 fetch_limit = 30
 section_limit = 3
 render_template = "🤖 AI Research\n\n{summary}"
-generate_image = true
+generate_image = false
 
 [feeds.cybersec]
 urls = [
@@ -44,7 +44,7 @@ urls = [
 fetch_limit = 30
 section_limit = 3
 render_template = "🛡️ Cybersecurity\n\n{summary}"
-generate_image = true
+generate_image = false
 
 [feeds.gadgets]
 urls = [
@@ -57,7 +57,7 @@ urls = [
 fetch_limit = 30
 section_limit = 3
 render_template = "📱 Gadgets\n\n{summary}"
-generate_image = true
+generate_image = false
 
 [feeds.future]
 urls = [
@@ -70,4 +70,4 @@ urls = [
 fetch_limit = 30
 section_limit = 3
 render_template = "🚀 Future Tech\n\n{summary}"
-generate_image = true
+generate_image = false

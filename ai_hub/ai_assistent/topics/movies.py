@@ -1,8 +1,14 @@
-from __future__ import annotations
 import textwrap
+
 from .base import TopicHandler
+from .formatters.base import Formatter
+from .formatters.simple_text_formatter import SimpleTextFormatter
 
 class MoviesRecommend(TopicHandler):
+    @property
+    def formatter(self) -> Formatter:
+        return SimpleTextFormatter()
+
     def build_prompt(self, payload: dict) -> str:
         titles = list(payload.get("titles") or [])
         prefs = dict(payload.get("prefs") or {})
@@ -30,6 +36,3 @@ class MoviesRecommend(TopicHandler):
             To conclude, add a final line starting with *Today's top:* and feature the one movie from the library you consider the most essential watch. 
             Do not repeat titles already listed in the groups above.
         """).strip()
-
-    def postprocess(self, llm_text: str) -> str:
-        return (llm_text or "").strip()

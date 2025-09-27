@@ -29,7 +29,7 @@ urls = [
 fetch_limit = 20
 section_limit = 4
 render_template = "🍄 Nintendo News\n\n{summary}"
-generate_image = false
+generate_image = true
 
 [feeds.playstation]
 urls = [

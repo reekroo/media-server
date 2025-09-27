@@ -29,7 +29,7 @@ urls = [
 fetch_limit = 25
 section_limit = 3
 render_template = "🎬 Movie & TV Reviews\n\n{summary}"
-generate_image = true
+generate_image = false
 
 [feeds.trailers_releases]
 urls = [
@@ -42,7 +42,7 @@ urls = [
 fetch_limit = 25
 section_limit = 3
 render_template = "🍿 Trailers & New Releases\n\n{summary}"
-generate_image = true
+generate_image = false
 
 [feeds.industry_boxoffice]
 urls = [
@@ -55,4 +55,4 @@ urls = [
 fetch_limit = 25
 section_limit = 3
 render_template = "💰 Industry & Box Office\n\n{summary}"
-generate_image = true
+generate_image = false

@@ -1,8 +1,14 @@
 import textwrap
 
 from .base import TopicHandler
+from .formatters.base import Formatter
+from .formatters.simple_text_formatter import SimpleTextFormatter
 
 class ChatTopic(TopicHandler):
+    @property
+    def formatter(self) -> Formatter:
+        return SimpleTextFormatter()
+
     def build_prompt(self, payload: dict) -> str:
         history = payload.get("history", [])
         
@@ -19,6 +25,3 @@ class ChatTopic(TopicHandler):
             Conversation History:
                 {history_block}
         """).strip()
-
-    def postprocess(self, llm_text: str) -> str:
-        return (llm_text or "").strip()

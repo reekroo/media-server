@@ -27,7 +27,7 @@ urls = [
 fetch_limit = 25
 section_limit = 3
 render_template = "🇧🇾 Economy & Society\n\n{summary}"
-generate_image = true
+generate_image = false
 
 [feeds.world_about_by]
 urls = [
@@ -38,4 +38,4 @@ urls = [
 fetch_limit = 25
 section_limit = 3
 render_template = "🇧🇾 World about Belarus\n\n{summary}"
-generate_image = true
+generate_image = false

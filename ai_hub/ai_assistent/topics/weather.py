@@ -1,7 +1,8 @@
-from __future__ import annotations
 import json
 
 from .base import TopicHandler
+from .formatters.base import Formatter
+from .formatters.simple_text_formatter import SimpleTextFormatter
 
 _SYS_HINT = (
     "You are a concise meteorology assistant. Summarize today's weather for a tech user. "
@@ -9,6 +10,10 @@ _SYS_HINT = (
 )
 
 class WeatherSummary(TopicHandler):
+    @property
+    def formatter(self) -> Formatter:
+        return SimpleTextFormatter()
+
     def build_prompt(self, payload: dict) -> str:
         payload_json = json.dumps(payload or {}, ensure_ascii=False)
         return (
@@ -22,6 +27,3 @@ class WeatherSummary(TopicHandler):
             "precip_mm_last_hour, alerts[]):\n"
             f"{payload_json}\n"
         )
-
-    def postprocess(self, llm_text: str) -> str:
-        return (llm_text or "").strip()

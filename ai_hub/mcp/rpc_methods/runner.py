@@ -19,7 +19,7 @@ def _get_rpc_method_name(config_name: str) -> str:
 async def _send_digest_as_text(app: AppContext, cfg: Any, digest_text: str) -> None:
     channel = app.channel_factory.get_channel(cfg.to)
     await channel.send(
-        destination=cfg.destination, 
+        destination=cfg.destination_group, 
         content=digest_text, 
         destination_topic=cfg.destination_topic
     )
@@ -30,17 +30,17 @@ async def _send_digest_with_image(app: AppContext, cfg: Any, digest_text: str, i
         if len(digest_text) <= TELEGRAM_CAPTION_LIMIT:
             log.info(f"Sending photo with caption for '{config_name}'")
             await channel.send_photo(
-                destination=cfg.destination, image_bytes=image_bytes,
+                destination=cfg.destination_group, image_bytes=image_bytes,
                 caption=digest_text, destination_topic=cfg.destination_topic
             )
         else:
             log.info(f"Caption for '{config_name}' is too long. Sending as separate messages.")
             photo_message = await channel.send_photo(
-                destination=cfg.destination, image_bytes=image_bytes,
+                destination=cfg.destination_group, image_bytes=image_bytes,
                 caption="", destination_topic=cfg.destination_topic
             )
             await channel.send(
-                destination=cfg.destination, content=digest_text,
+                destination=cfg.destination_group, content=digest_text,
                 destination_topic=cfg.destination_topic, reply_to_message_id=photo_message.message_id
             )
     except Exception as e:

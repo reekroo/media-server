@@ -1,11 +1,15 @@
-from __future__ import annotations
 import textwrap
-import re
 
 from .base import TopicHandler
+from .formatters.base import Formatter
+from .formatters.markdown_news_formatter import MarkdownNewsFormatter
 from .utils import format_items_for_prompt, create_summary_instruction
 
 class NewsDigestTopic(TopicHandler):
+    @property
+    def formatter(self) -> Formatter:
+        return MarkdownNewsFormatter()
+
     def build_prompt(self, payload: dict) -> str:
         items   = (payload.get("items") or [])
         section = payload.get("section") or "news"
@@ -29,12 +33,3 @@ class NewsDigestTopic(TopicHandler):
             Source items:
                 {block}
         """).strip()
-
-    def postprocess(self, llm_text: str) -> str:
-        text = (llm_text or "").strip()
-        if not text:
-            return text
-
-        text = re.sub(r"\n{3,}", "\n\n", text).strip()
-        text = "\n".join(ln.rstrip() for ln in text.splitlines())
-        return text

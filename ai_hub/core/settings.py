@@ -43,6 +43,7 @@ class Settings(BaseSettings):
 
     MCP_HOST: str = "127.0.0.1"
     MCP_PORT: int = 8484
+    MCP_REQUEST_LIMIT_BYTES: int = 1024 * 1024
 
     BASE_DIR: Path = PROJECT_ROOT
     STATE_DIR: Path = PROJECT_ROOT / "state"

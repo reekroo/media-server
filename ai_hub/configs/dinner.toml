@@ -1,6 +1,6 @@
 enabled = true
 to = "telegram"
-destination = "-1002918707721"
+destination_group = "-1002918707721"
 destination_topic = "201"
 destination_language = "ru"
 render_template = "👩‍🍳 What's for Dinner?\n\n{summary}"

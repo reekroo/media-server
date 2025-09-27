@@ -1,8 +1,15 @@
 import textwrap
+
 from .base import TopicHandler
+from .formatters.base import Formatter
+from .formatters.markdown_news_formatter import MarkdownNewsFormatter
 from .utils import format_items_for_prompt, create_summary_instruction
 
-class FunNewsDigestTopic(TopicHandler):
+class NewsFunDigestTopic(TopicHandler):
+    @property
+    def formatter(self) -> Formatter:
+        return MarkdownNewsFormatter()
+
     def build_prompt(self, payload: dict) -> str:
         items = payload.get("items", [])
         count = payload.get("count")
@@ -36,12 +43,3 @@ class FunNewsDigestTopic(TopicHandler):
             Inspiration material (real news to riff on):
             {block}
         """).strip()
-    
-    def postprocess(self, llm_text: str) -> str:
-        import re
-        text = (llm_text or "").strip()
-        if not text:
-            return text
-        text = re.sub(r"\n{3,}", "\n\n", text).strip()
-        text = "\n".join(ln.rstrip() for ln in text.splitlines())
-        return text

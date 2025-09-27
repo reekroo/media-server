@@ -1,18 +1,20 @@
-from __future__ import annotations
 import textwrap
 import json
 
 from .base import TopicHandler
+from .formatters.base import Formatter
+from .formatters.simple_text_formatter import SimpleTextFormatter
 
 class LogAnalysisTopic(TopicHandler):
+    @property
+    def formatter(self) -> Formatter:
+        return SimpleTextFormatter()
+
+    @property
+    def empty_response_text(self) -> str:
+        return "📊 *Log Analysis Digest*\nOverall: ✅ OK"
+
     def build_prompt(self, payload: dict) -> str:
-        """
-        Produces a strict, Telegram-safe Markdown outline for the logs digest:
-        - Header with overall status
-        - 🚨 Issues: one compact block per problematic component
-        - ✅ Healthy: bullet list of ok components
-        - 📊 Summary line at the end
-        """
         reports = payload.get("reports", []) or []
         ok_components = payload.get("ok_components", []) or []
         meta = payload.get("meta", {}) or {}
@@ -73,9 +75,3 @@ class LogAnalysisTopic(TopicHandler):
             - Meta (counts, lookback hours):
               {json.dumps(meta, ensure_ascii=False)}
         """).strip()
-
-    def postprocess(self, llm_text: str) -> str:
-        text = (llm_text or "").strip()
-        if not text:
-            return "📊 *Log Analysis Digest*\nOverall: ✅ OK"
-        return text

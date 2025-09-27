@@ -1,7 +1,8 @@
-from __future__ import annotations
 import json
 
 from .base import TopicHandler
+from .formatters.base import Formatter
+from .formatters.simple_text_formatter import SimpleTextFormatter
 
 _HINT = (
     "You are a reliability assistant. Explain the incident to a technical user in plain language. "
@@ -10,6 +11,10 @@ _HINT = (
 )
 
 class ClarifyIncident(TopicHandler):
+    @property
+    def formatter(self) -> Formatter:
+        return SimpleTextFormatter()
+
     def build_prompt(self, payload: dict) -> str:
         inc = payload.get("incident", {})
         last_digest = payload.get("last_digest")
@@ -25,6 +30,3 @@ class ClarifyIncident(TopicHandler):
             prompt += f"\nLast digest JSON:\n{json.dumps(last_digest, ensure_ascii=False)}\n"
         
         return prompt
-    
-    def postprocess(self, llm_text: str) -> str:
-        return (llm_text or "").strip()
