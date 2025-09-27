@@ -1,20 +1,15 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, Optional
 from pydantic import BaseModel, Field
+
+from .feed_section_config import FeedSectionSettings
 
 class FeedBasedConfig(BaseModel):
     enabled: bool = True
     to: str = "telegram"
-    destination: str = ""
+    destination_group: str = ""
     destination_topic: Optional[str] = None
     destination_language: Optional[str] = None
-    generate_image: Optional[bool] = True
     
-    fetch_limit: int = 25
-    section_limit: int = 3
-
     ai_topic: str = ""
-    render_template: str = "{summary}"
-
-    # 1) "section": [url1, url2, ...]
-    # 2) "section": { "urls": [...], "limit": 5 }
-    feeds: Dict[str, Union[List[str], Dict[str, Any]]] = Field(default_factory=dict)
+    
+    feeds: Dict[str, FeedSectionSettings] = Field(default_factory=dict)

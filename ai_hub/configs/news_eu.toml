@@ -1,17 +1,12 @@
 enabled = true
 to = "telegram"
-destination = "-1002918707721"
+destination_group = "-1002918707721"
 destination_topic = "340"
 destination_language = "ru"
-render_template = "🇪🇺 European Union News Digest ({section})\n\n{summary}"
-generate_image = true
-
-fetch_limit = 25
-section_limit = 3
 ai_topic = "news_eu"
 
-[feeds]
-general = [
+[feeds.general]
+urls = [
   "https://www.politico.eu/feed",
   "https://www.consilium.europa.eu/en/rss",
   "https://euobserver.com/rss",
@@ -20,13 +15,29 @@ general = [
   "https://www.europarl.europa.eu/news/en/rss",
   "https://www.euractiv.com/feed/"
 ]
-economy = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🇪🇺 European Union News Digest ({section})\n\n{summary}"
+generate_image = true
+
+[feeds.economy]
+urls = [
   "https://www.ft.com/world/europe?format=rss",
   "https://www.reuters.com/markets/europe/rss",
   "https://www.eib.org/en/press/all/rss"
 ]
-politics = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🇪🇺 European Union News Digest ({section})\n\n{summary}"
+generate_image = true
+
+[feeds.politics]
+urls = [
   "https://www.dw.com/en/rss",
   "https://www.france24.com/en/europe/rss",
   "https://www.theguardian.com/world/eu/rss"
 ]
+fetch_limit = 25
+section_limit = 3
+render_template = "🇪🇺 European Union News Digest ({section})\n\n{summary}"
+generate_image = true

@@ -1,17 +1,12 @@
 enabled = true
 to = "telegram"
-destination = "-1002918707721"
+destination_group = "-1002918707721"
 destination_topic = "396"
 destination_language = "ru"
-render_template = "🤡 Funny fake news ({section})\n\n{summary}"
-generate_image = true
-
-fetch_limit = 25
-section_limit = 3
 ai_topic = "news_fun"
 
-[feeds]
-general = [
+[feeds.general]
+urls = [
     "https://www.theonion.com/rss",
     "https://thehardtimes.net/feed/",
     "https://feeds.reuters.com/reuters/oddeEnoughNews",
@@ -27,3 +22,7 @@ general = [
     "https://www.aa.com.tr/en/rss/default-RSS",
     "https://www.dailysabah.com/rss"
 ]
+fetch_limit = 25
+section_limit = 3
+render_template = "🤡 Funny fake news ({section})\n\n{summary}"
+generate_image = true

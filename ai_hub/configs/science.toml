@@ -1,17 +1,12 @@
 enabled = true
 to = "telegram"
-destination = "-1002918707721"
+destination_group = "-1002918707721"
 destination_topic = "1090"
 destination_language = "ru"
-render_template = "🔬 Science Digest ({section})\n\n{summary}"
-generate_image = true
-
-fetch_limit = 25
-section_limit = 3
 ai_topic = "science"
 
-[feeds]
-general = [
+[feeds.general]
+urls = [
   "http://rss.sciencedaily.com/all.xml",
   "https://www.sciencenews.org/feed",
   "https://phys.org/rss-feed/science-news/",
@@ -20,24 +15,46 @@ general = [
   "https://www.scientificamerican.com/feed/",
   "https://www.theguardian.com/science/rss"
 ]
-space_astro = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🔬 Science Digest ({section})\n\n{summary}"
+generate_image = true
+
+[feeds.space_astro]
+urls = [
   "https://www.nasa.gov/rss/dyn/breaking_news.rss",
   "https://www.esa.int/rssfeed/Our_Activities/Space_News",
   "https://skyandtelescope.org/feed/",
   "https://www.space.com/feeds/all",
   "https://www.jpl.nasa.gov/feeds/news"
 ]
-medicine_bio = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🔬 Science Digest ({section})\n\n{summary}"
+generate_image = true
+
+[feeds.medicine_bio]
+urls = [
   "https://www.medicalnewstoday.com/rss",
   "https://www.nih.gov/news-releases/rss.xml",
   "https://www.cell.com/action/showFeed?type=etoc&feed=rss&jc=cell",
   "https://www.sciencedaily.com/rss/health_medicine.xml",
   "https://www.nature.com/subjects/medicine.rss"
 ]
-tech_ai = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🔬 Science Digest ({section})\n\n{summary}"
+generate_image = true
+
+[feeds.tech_ai]
+urls = [
   "https://www.technologyreview.com/feed/",
   "https://cacm.acm.org/news.rss",
   "https://arxiv.org/rss/cs",
   "https://www.nature.com/subjects/artificial-intelligence.rss",
   "https://www.theconversation.com/uk/science-technology/articles.atom"
 ]
+fetch_limit = 25
+section_limit = 3
+render_template = "🔬 Science Digest ({section})\n\n{summary}"
+generate_image = true

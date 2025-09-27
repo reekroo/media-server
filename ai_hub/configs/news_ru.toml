@@ -1,17 +1,12 @@
 enabled = true
 to = "telegram"
-destination = "-1002918707721"
+destination_group = "-1002918707721"
 destination_topic = "350"
 destination_language = "ru"
-render_template = "🇷🇺 Russia News Digest ({section})\n\n{summary}"
-generate_image = true
-
-fetch_limit = 25
-section_limit = 3
 ai_topic = "news_ru"
 
-[feeds]
-general = [
+[feeds.general]
+urls = [
   "https://www.interfax.ru/rss.asp",
   "https://meduza.io/rss/news",
   "https://tass.ru/rss/v2.xml",
@@ -20,13 +15,29 @@ general = [
   "https://www.rbc.ru/rss/news.rss",
   "https://www.kommersant.ru/RSS/news.xml"
 ]
-intl_ru = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🇷🇺 Russia News Digest ({section})\n\n{summary}"
+generate_image = true
+
+[feeds.intl_ru]
+urls = [
   "https://www.bbc.com/russian/index.xml",
   "https://www.dw.com/ru/rss",
   "https://www.currenttime.tv/api/z$%24rss"
 ]
-economy = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🇷🇺 Russia News Digest ({section})\n\n{summary}"
+generate_image = true
+
+[feeds.economy]
+urls = [
   "https://www.rbc.ru/rss/economics.rss",
   "https://www.kommersant.ru/RSS/money.xml",
   "https://quote.rbc.ru/rss/all_news.xml"
 ]
+fetch_limit = 25
+section_limit = 3
+render_template = "🇷🇺 Russia News Digest ({section})\n\n{summary}"
+generate_image = true

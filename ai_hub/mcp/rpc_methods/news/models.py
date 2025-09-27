@@ -7,3 +7,5 @@ class SectionParams:
     urls: List[str]
     fetch_limit: int
     section_limit: int
+    render_template: str
+    generate_image: bool
