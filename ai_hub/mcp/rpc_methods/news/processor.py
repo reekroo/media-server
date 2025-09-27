@@ -1,39 +1,13 @@
-from typing import Any, List
+from typing import List
 
 from .models import SectionParams
 from ...context import AppContext
 from functions.feeds.feed_collector import FeedCollector, FeedItem
 
-def create_section_params(
-    sec_name: str, 
-    section_config: Any, 
-    global_cfg: Any, 
-    count_override: int | None
-) -> SectionParams:
-    urls = []
-    fetch_limit = global_cfg.fetch_limit
-    section_limit = count_override if count_override is not None else global_cfg.section_limit
-
-    if isinstance(section_config, list):
-        urls = section_config
-    elif isinstance(section_config, dict):
-        urls = section_config.get("urls", [])
-        fetch_limit = section_config.get("fetch_limit", global_cfg.fetch_limit)
-        if count_override is None:
-            section_limit = section_config.get("section_limit", global_cfg.section_limit)
-            
-    return SectionParams(
-        name=sec_name,
-        urls=urls,
-        fetch_limit=fetch_limit,
-        section_limit=section_limit
-    )
-
-
 class NewsSectionProcessor:
-    def __init__(self, app: AppContext, global_cfg: Any, params: SectionParams):
+    def __init__(self, app: AppContext, ai_topic: str, params: SectionParams):
         self.app = app
-        self.cfg = global_cfg
+        self.ai_topic = ai_topic
         self.params = params
 
     async def process(self) -> str | None:
@@ -62,7 +36,10 @@ class NewsSectionProcessor:
             'section': self.params.name,
             'count': self.params.section_limit
         }
-        return await self.app.ai_service.digest(kind=self.cfg.ai_topic, params=ai_params)
+        return await self.app.ai_service.digest(kind=self.ai_topic, params=ai_params)
 
     def _render_template(self, summary: str) -> str:
-        return self.cfg.render_template.format(section=self.params.name.capitalize(), summary=summary)
+        return self.params.render_template.format(
+            section=self.params.name.capitalize(), 
+            summary=summary
+        )

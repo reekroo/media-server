@@ -2,7 +2,8 @@ import asyncio
 from typing import List
 
 from ...context import AppContext
-from .processor import NewsSectionProcessor, create_section_params
+from .processor import NewsSectionProcessor
+from .models import SectionParams
 from core.logging import setup_logger, LOG_FILE_PATH
 
 log = setup_logger(__name__, LOG_FILE_PATH)
@@ -17,12 +18,20 @@ async def build_digest(app: AppContext, config_name: str, section: str | None = 
         return [msg]
 
     tasks = []
-    for sec_name, section_config in cfg.feeds.items():
+    for sec_name, section_settings in cfg.feeds.items():
         if section and section != sec_name:
             continue
+
+        params = SectionParams(
+            name=sec_name,
+            urls=section_settings.urls,
+            fetch_limit=section_settings.fetch_limit,
+            section_limit=count if count is not None else section_settings.section_limit,
+            render_template=section_settings.render_template,
+            generate_image=section_settings.generate_image
+        )
         
-        params = create_section_params(sec_name, section_config, cfg, count)
-        processor = NewsSectionProcessor(app, cfg, params)
+        processor = NewsSectionProcessor(app, cfg.ai_topic, params)
         tasks.append(processor.process())
 
     log.info(f"Processing {len(tasks)} sections in parallel for '{config_name}'...")

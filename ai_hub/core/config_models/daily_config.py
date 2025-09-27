@@ -1,11 +1,7 @@
 from typing import Optional
-from pydantic import BaseModel
+from .message_target_config import MessageTargetConfig
 
-class DailyConfig(BaseModel):
-    enabled: bool = True
-    to: str = "telegram"
-    destination: str = ""
-    destination_topic: Optional[str] = None
+class DailyConfig(MessageTargetConfig):
     destination_language: Optional[str] = None
     generate_image: Optional[bool] = False
 

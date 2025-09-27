@@ -1,10 +1,19 @@
-from __future__ import annotations
 import textwrap
 import json
 
 from .base import TopicHandler
+from .formatters.base import Formatter
+from .formatters.simple_text_formatter import SimpleTextFormatter
 
 class DockerStatusTopic(TopicHandler):
+    @property
+    def formatter(self) -> Formatter:
+        return SimpleTextFormatter()
+
+    @property
+    def empty_response_text(self) -> str:
+        return "🐳 *Docker Status Digest*\nOverall: ✅ OK (0 issues)"
+
     def build_prompt(self, payload: dict) -> str:
         reports = payload.get("reports", []) or []
         meta = payload.get("meta", {}) or {}
@@ -55,9 +64,3 @@ class DockerStatusTopic(TopicHandler):
             Meta JSON:
               {meta_json}
         """).strip()
-
-    def postprocess(self, llm_text: str) -> str:
-        text = (llm_text or "").strip()
-        if not text:
-            return "🐳 *Docker Status Digest*\nOverall: ✅ OK (0 issues)"
-        return text

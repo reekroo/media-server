@@ -1,6 +1,7 @@
 from __future__ import annotations
-from functions.feeds.feed_collector import FeedItem
 from typing import List, Dict, Any, Optional
+
+from functions.feeds.feed_collector import FeedItem
 
 def format_items_for_prompt(items: List[Dict[str, Any]]) -> str:
     if not items:

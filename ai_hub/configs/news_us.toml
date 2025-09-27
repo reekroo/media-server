@@ -1,17 +1,12 @@
 enabled = true
 to = "telegram"
-destination = "-1002918707721"
+destination_group = "-1002918707721"
 destination_topic = "345"
 destination_language = "en"
-render_template = "🇺🇸 United States News Digest ({section})\n\n{summary}"
-generate_image = true
-
-fetch_limit = 25
-section_limit = 3
 ai_topic = "news_us"
 
-[feeds]
-general = [
+[feeds.general]
+urls = [
   "https://apnews.com/hub/us-news/rss",
   "https://feeds.reuters.com/Reuters/domesticNews",
   "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
@@ -20,15 +15,31 @@ general = [
   "https://www.usatoday.com/rss/news/",
   "https://www.latimes.com/world-nation/rss2.0.xml"
 ]
-politics = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🇺🇸 U.S. News\n\n{summary}"
+generate_image = true
+
+[feeds.politics]
+urls = [
   "https://www.politico.com/rss/politics-news.xml",
   "https://thehill.com/feed/",
   "https://www.axios.com/feeds/feed.rss",
   "https://www.washingtonpost.com/politics/rss"
 ]
-economy = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🇺🇸 U.S. Politics\n\n{summary}"
+generate_image = false
+
+[feeds.economy]
+urls = [
   "https://www.reuters.com/markets/us/rss",
   "https://www.wsj.com/xml/rss/3_7014.xml",
   "https://www.cnbc.com/id/10000664/device/rss/rss.html",
   "https://www.bloomberg.com/feeds/podcasts/etf-report.xml"
 ]
+fetch_limit = 25
+section_limit = 3
+render_template = "🇺🇸 U.S. Economy\n\n{summary}"
+generate_image = false

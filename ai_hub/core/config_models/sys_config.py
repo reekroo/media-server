@@ -1,14 +1,10 @@
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from .sys_patterns_config import SysPatternsConfig
+from .message_target_config import MessageTargetConfig
 
-class SysConfig(BaseModel):
-    enabled: bool = True
-    to: str = "telegram"
-    destination: str = ""
-    destination_topic: Optional[str] = None
-    destination_language: Optional[str] = None
+class SysConfig(MessageTargetConfig):    
     generate_image: Optional[bool] = False
     
     lookback: str = "24h"

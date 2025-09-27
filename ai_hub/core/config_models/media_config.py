@@ -1,15 +1,11 @@
 from typing import List, Optional
 from pathlib import Path
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from .media_recommender_config import MediaRecommenderConfig
+from .message_target_config import MessageTargetConfig
 
-class MediaConfig(BaseModel):
-    enabled: bool = True
-    to: str = "telegram"
-    destination: str = ""
-    destination_topic: Optional[str] = None
-    destination_language: Optional[str] = None
+class MediaConfig(MessageTargetConfig):
     generate_image: Optional[bool] = False
     
     max_depth: int = 6

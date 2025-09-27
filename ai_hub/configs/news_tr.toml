@@ -1,17 +1,12 @@
 enabled = true
 to = "telegram"
-destination = "-1002918707721"
+destination_group = "-1002918707721"
 destination_topic = "214"
 destination_language = "ru"
-render_template = "🇹🇷 Turkish News Digest ({section})\n\n{summary}"
-generate_image = true
-
-fetch_limit = 25
-section_limit = 3
 ai_topic = "news_tr"
 
-[feeds]
-general = [
+[feeds.general]
+urls = [
   "https://www.trthaber.com/xml_mobile.php?cat=1",
   "https://www.aa.com.tr/tr/rss/default?cat=guncel",
   "https://feeds.bbci.co.uk/turkce/rss.xml",
@@ -19,13 +14,29 @@ general = [
   "https://www.hurriyet.com.tr/rss/anasayfa",
   "https://www.sabah.com.tr/rss/anasayfa.xml"
 ]
-economy = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🇹🇷 Turkish News\n\n{summary}"
+generate_image = true
+
+[feeds.economy]
+urls = [
   "https://www.ntv.com.tr/ekonomi.rss",
   "https://www.bloomberght.com/rss",
   "https://www.dunya.com/feed"
 ]
-politics_world = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🇹🇷 Economy\n\n{summary}"
+generate_image = false
+
+[feeds.politics_world]
+urls = [
   "https://www.aljazeera.com/xml/rss/all.xml",
   "https://www.reuters.com/world/middle-east/rss",
   "https://www.dw.com/tr/rss"
 ]
+fetch_limit = 25
+section_limit = 3
+render_template = "🇹🇷 Politics & World\n\n{summary}"
+generate_image = false

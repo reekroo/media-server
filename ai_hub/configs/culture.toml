@@ -1,17 +1,12 @@
 enabled = true
 to = "telegram"
-destination = "-1002918707721"
+destination_group = "-1002918707721"
 destination_topic = "1090"
 destination_language = "ru"
-render_template = "🎭 Culture Digest ({section})\n\n{summary}"
-generate_image = true
-
-fetch_limit = 25
-section_limit = 3
 ai_topic = "culture"
 
-[feeds]
-general = [
+[feeds.general]
+urls = [
   "https://www.theguardian.com/culture/rss",
   "https://rss.nytimes.com/services/xml/rss/nyt/Arts.xml",
   "https://www.newyorker.com/feed/culture",
@@ -20,24 +15,46 @@ general = [
   "https://www.bbc.com/culture/feed.rss",
   "https://www.dw.com/arts/rss"
 ]
-arts_museums = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🎭 Culture News\n\n{summary}"
+generate_image = true
+
+[feeds.arts_museums]
+urls = [
   "https://hyperallergic.com/feed/",
   "https://www.artnews.com/feed/",
   "https://www.artforum.com/rss.xml",
   "https://www.smithsonianmag.com/rss/arts-culture/",
   "https://www.louvre.fr/rss"
 ]
-music_pop = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🖼️ Arts & Museums\n\n{summary}"
+generate_image = true
+
+[feeds.music_pop]
+urls = [
   "https://pitchfork.com/feed/",
   "https://www.rollingstone.com/music/music-news/feed/",
   "https://www.billboard.com/feed/",
   "https://www.stereogum.com/feed/",
   "https://consequence.net/feed/"
 ]
-theatre_stage = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🎵 Music News\n\n{summary}"
+generate_image = true
+
+[feeds.theatre_stage]
+urls = [
   "https://variety.com/v/theater/feed/",
   "https://www.theguardian.com/stage/rss",
   "https://www.nytimes.com/svc/collections/v1/publish/www.nytimes.com/section/theater/rss.xml",
   "https://www.timeout.com/rss/theatre",
   "https://broadwaydirect.com/feed/"
 ]
+fetch_limit = 25
+section_limit = 3
+render_template = "🏛️ Theatre & Stage\n\n{summary}"
+generate_image = true

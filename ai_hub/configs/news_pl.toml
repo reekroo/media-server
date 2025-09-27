@@ -1,33 +1,44 @@
 enabled = true
 to = "telegram"
-destination = "-1002918707721"
+destination_group = "-1002918707721"
 destination_topic = "1209"
 destination_language = "ru"
-render_template = "🇵🇱 Poland News Digest ({section})\n\n{summary}"
-generate_image = true
-
-fetch_limit = 25
-section_limit = 3
 ai_topic = "news_pl"
 
-[feeds]
-general = [
+[feeds.general]
+urls = [
   "https://www.tvn24.pl/najnowsze.xml",
   "https://pap-mediaroom.pl/rss",
   "https://www.rmf24.pl/rss",
   "https://rp.pl/rss_main",
   "https://www.polskieradio.pl/399/8214"
 ]
-economy = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🇵🇱 Poland News\n\n{summary}"
+generate_image = true
+
+[feeds.economy]
+urls = [
   "https://www.bankier.pl/rss",
   "https://www.money.pl/rss/",
   "https://www.pb.pl/rss",
   "https://businessinsider.com.pl/.feed",
   "https://rp.pl/rss/541-biznes"
 ]
-politics_world = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🇵🇱 Economy\n\n{summary}"
+generate_image = false
+
+[feeds.politics_world]
+urls = [
   "https://www.tvp.info/informacje?xslt=tvp-info/news/rss.xslt",
   "https://wyborcza.pl/pub/rss/gazetawyborcza_kraj.xml",
   "https://notesfrompoland.com/feed/",
   "https://www.dw.com/pl/rss"
 ]
+fetch_limit = 25
+section_limit = 3
+render_template = "🇵🇱 Politics & World\n\n{summary}"
+generate_image = false

@@ -1,15 +1,13 @@
-from __future__ import annotations
-import re
 import textwrap
 from typing import Any, Dict, List
 
 from .base import TopicHandler
+from .formatters.base import Formatter
+from .formatters.markdown_dinner_formatter import DinnerFormatter
 
 MIN_COUNT = 1
 MAX_COUNT = 5
 DEFAULT_COUNT = 3
-
-HEADER_RE = re.compile(r'^🍽️ \*Idea\s+(\d+):\s.*?\*$', re.MULTILINE)
 
 PROMPT_TMPL = """\
 You are a home–cooking assistant.
@@ -36,7 +34,7 @@ _One enticing line, ≤ 100 chars._
 1. Concise action.
 2. Concise action.
 3. Concise action.
-📊 *Nutrition*  ~X kcal  Protein Y g  Fat Z g  Carbs W g
+📊 *Nutrition* ~X kcal  Protein Y g  Fat Z g  Carbs W g
 (Include Nutrition only if reasonably inferable; otherwise omit the line.)
 
 GUIDELINES:
@@ -70,27 +68,16 @@ def _prefs_block(prefs: Dict[str, Any]) -> str:
         lines.append(f"- Notes: {prefs['other']}")
     return "\n".join(lines) if lines else "- (none)"
 
-def _normalize_markdown(text: str) -> str:
-    text = re.sub(r"\n{3,}", "\n\n", text.strip())
-    text = re.sub(r"^[•●]\s*", "- ", text, flags=re.MULTILINE)
-    text = re.sub(r"^\s*(\d+)\)\s", r"\1. ", text, flags=re.MULTILINE)
-    text = "\n".join(ln.rstrip() for ln in text.splitlines())
-    def fix_marks(ln: str) -> str:
-        if ln.count("*") % 2: ln = ln.replace("*", "")
-        if ln.count("_") % 2: ln = ln.replace("_", "")
-        return ln
-    return "\n".join(fix_marks(ln) for ln in text.splitlines()).strip()
-
-def _slice_exact_n_ideas(text: str, n: int) -> str:
-    matches = list(HEADER_RE.finditer(text))
-    if not matches:
-        return text
-    if len(matches) > n:
-        cut_at = matches[n].start()
-        text = text[:cut_at].rstrip()
-    return text
 
 class DinnerTopic(TopicHandler):
+    @property
+    def formatter(self) -> Formatter:
+        return DinnerFormatter()
+
+    @property
+    def empty_response_text(self) -> str:
+        return ""
+
     def build_prompt(self, payload: dict) -> str:
         prefs = payload.get("preferences", {}) or {}
         n = _clamp_count(payload.get("count"))
@@ -98,12 +85,3 @@ class DinnerTopic(TopicHandler):
             n=n,
             prefs_block=_prefs_block(prefs),
         )).strip()
-
-    def postprocess(self, llm_text: str) -> str:
-        if not llm_text:
-            return ""
-        cleaned = _normalize_markdown(llm_text)
-        numbers = [int(m.group(1)) for m in HEADER_RE.finditer(cleaned)]
-        desired_n = max(numbers) if numbers else DEFAULT_COUNT
-        desired_n = max(MIN_COUNT, min(MAX_COUNT, desired_n))
-        return _slice_exact_n_ideas(cleaned, desired_n)

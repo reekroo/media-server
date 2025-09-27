@@ -1,30 +1,41 @@
 enabled = true
 to = "telegram"
-destination = "-1002918707721"
+destination_group = "-1002918707721"
 destination_topic = "217"
 destination_language = "ru"
-render_template = "🇧🇾 Belarus News Digest ({section})\n\n{summary}"
-generate_image = true
-
-fetch_limit = 25
-section_limit = 3
 ai_topic = "news_by"
 
-[feeds]
-general = [
+[feeds.general]
+urls = [
   "https://zerkalo.io/rss/s/main.rss",
   "https://mediazona.by/rss",
   "https://www.onliner.by/feed",
   "https://euroradio.fm/en/podcast-feeds/bynews",
   "https://nashaniva.com/?c=rss"
 ]
-economy_society = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🇧🇾 Belarus News\n\n{summary}"
+generate_image = true
+
+[feeds.economy_society]
+urls = [
   "https://banki24.by/rss",
   "https://select.by/rss",
   "https://dw.com/ru/rss"
 ]
-world_about_by = [
+fetch_limit = 25
+section_limit = 3
+render_template = "🇧🇾 Economy & Society\n\n{summary}"
+generate_image = false
+
+[feeds.world_about_by]
+urls = [
   "https://www.bbc.com/russian/index.xml",
   "https://www.currenttime.tv/api/zkky",
   "https://www.svaboda.org/api/epiqq"
 ]
+fetch_limit = 25
+section_limit = 3
+render_template = "🇧🇾 World about Belarus\n\n{summary}"
+generate_image = false

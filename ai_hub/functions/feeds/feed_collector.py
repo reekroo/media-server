@@ -1,6 +1,7 @@
 import aiohttp
 import asyncio
 import feedparser
+import math
 from typing import List, Optional
 
 from core.logging import setup_logger, LOG_FILE_PATH
@@ -9,7 +10,6 @@ from . import feed_utils
 from .feed_models import FeedItem
 
 log = setup_logger(__name__, LOG_FILE_PATH)
-
 
 class FeedCollector:
     def __init__(self, session: Optional[aiohttp.ClientSession] = None, *, conn_limit: int = 20):
@@ -75,15 +75,22 @@ class FeedCollector:
         urls: List[str],
         fetch_limit: int = 30,
         *,
-        per_feed_fetch_limit: int = 50,
         dedupe: bool = True,
         sort_by_date: bool = True,
     ) -> List[FeedItem]:
         if not urls: return []
 
+        num_urls = len(urls)
+        target_fetch_count = math.ceil((fetch_limit * 1.5) / num_urls)
+        per_feed_limit = max(10, min(target_fetch_count, 50))
+        log.info(
+            "Calculated per-feed limit: %s (target_limit=%s, urls=%s)",
+            per_feed_limit, fetch_limit, num_urls
+        )
+        
         log.info("Creating %s fetch tasks...", len(urls))
         tasks = [
-            asyncio.create_task(self._fetch_one(url, per_feed_fetch_limit), name=f"fetch-{url[:50]}")
+            asyncio.create_task(self._fetch_one(url, per_feed_limit), name=f"fetch-{url[:50]}")
             for url in urls
         ]
         

@@ -1,17 +1,12 @@
 enabled = true
 to = "telegram"
-destination = "-1002918707721"
+destination_group = "-1002918707721"
 destination_topic = "207"
 destination_language = "en"
-render_template = "🎮 Gaming Digest ({section})\n\n{summary}"
-generate_image = true
-
-fetch_limit = 20
-section_limit = 3
 ai_topic = "gaming"
 
-[feeds]
-general = [
+[feeds.general]
+urls = [
   "https://www.ign.com/rss.xml",
   "https://www.pcgamer.com/rss/",
   "https://www.kotaku.com/rss",
@@ -20,34 +15,74 @@ general = [
   "https://www.polygon.com/rss/index.xml",
   "https://www.rockpapershotgun.com/feed"
 ]
-nintendo = [
+fetch_limit = 20
+section_limit = 3
+render_template = "🎮 General Gaming News\n\n{summary}"
+generate_image = true
+
+[feeds.nintendo]
+urls = [
   "https://www.nintendolife.com/feeds/news",
   "https://gonintendo.com/feeds/posts",
   "https://nintendoeverything.com/feed"
 ]
-playstation = [
+fetch_limit = 20
+section_limit = 4
+render_template = "🍄 Nintendo News\n\n{summary}"
+generate_image = true
+
+[feeds.playstation]
+urls = [
   "https://blog.playstation.com/feed/",
   "https://www.pushsquare.com/feeds/news",
   "https://www.playstationlifestyle.net/feed/"
 ]
-xbox = [
+fetch_limit = 20
+section_limit = 3
+render_template = "👾 Playstation News\n\n{summary}"
+generate_image = false
+
+[feeds.xbox]
+urls = [
   "https://news.xbox.com/en-us/feed/",
   "https://www.purexbox.com/feeds/news",
   "https://www.windowscentral.com/rss/section/xbox"
 ]
-industry = [
+fetch_limit = 20
+section_limit = 3
+render_template = "👾 Xbox News\n\n{summary}"
+generate_image = false
+
+[feeds.industry]
+urls = [
   "https://www.gamesindustry.biz/rss/news",
   "https://www.gamedeveloper.com/rss.xml",
   "https://venturebeat.com/category/games/feed/",
   "https://gamedaily.biz/rss"
 ]
-esports = [
+fetch_limit = 30
+section_limit = 4
+render_template = "💼 Game Industry News\n\n{summary}"
+generate_image = false
+
+[feeds.esports]
+urls = [
   "https://dotesports.com/feed",
   "https://www.dexerto.com/feed",
   "https://www.invenglobal.com/rss"
 ]
-indie = [
+fetch_limit = 25
+section_limit = 4
+render_template = "🏆 Esports News\n\n{summary}"
+generate_image = false
+
+[feeds.indie]
+urls = [
   "https://www.indiedb.com/feed/news",
   "https://itch.io/blog.rss",
   "https://indiegameculture.com/feed/"
 ]
+fetch_limit = 15
+section_limit = 3
+render_template = "🕹️ Indie Game News\n\n{summary}"
+generate_image = false

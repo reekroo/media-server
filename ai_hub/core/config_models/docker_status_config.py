@@ -1,12 +1,9 @@
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import Field
 
-class DockerStatusConfig(BaseModel):
-    enabled: bool = True
-    to: str = "telegram"
-    destination: str = ""
-    destination_topic: Optional[str] = None
-    destination_language: Optional[str] = None
+from .message_target_config import MessageTargetConfig
+
+class DockerStatusConfig(MessageTargetConfig):    
     generate_image: Optional[bool] = False
     render_template: str = "🐳 Docker Status Digest\n\n{summary}"
 
