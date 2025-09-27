@@ -17,7 +17,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🎭 Culture Digest ({section})\n\n{summary}"
+render_template = "🎭 Culture News\n\n{summary}"
 generate_image = true
 
 [feeds.arts_museums]
@@ -30,7 +30,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🎭 Culture Digest ({section})\n\n{summary}"
+render_template = "🖼️ Arts & Museums\n\n{summary}"
 generate_image = true
 
 [feeds.music_pop]
@@ -43,7 +43,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🎭 Culture Digest ({section})\n\n{summary}"
+render_template = "🎵 Music News\n\n{summary}"
 generate_image = true
 
 [feeds.theatre_stage]
@@ -56,5 +56,5 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🎭 Culture Digest ({section})\n\n{summary}"
+render_template = "🏛️ Theatre & Stage\n\n{summary}"
 generate_image = true

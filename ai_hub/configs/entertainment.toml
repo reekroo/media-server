@@ -15,7 +15,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🍿 Entertainment Digest ({section})\n\n{summary}"
+render_template = "🍿 Entertainment News\n\n{summary}"
 generate_image = true
 
 [feeds.reviews]
@@ -28,7 +28,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🍿 Entertainment Digest ({section})\n\n{summary}"
+render_template = "🎬 Movie & TV Reviews\n\n{summary}"
 generate_image = true
 
 [feeds.trailers_releases]
@@ -41,7 +41,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🍿 Entertainment Digest ({section})\n\n{summary}"
+render_template = "🍿 Trailers & New Releases\n\n{summary}"
 generate_image = true
 
 [feeds.industry_boxoffice]
@@ -54,5 +54,5 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🍿 Entertainment Digest ({section})\n\n{summary}"
+render_template = "💰 Industry & Box Office\n\n{summary}"
 generate_image = true

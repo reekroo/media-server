@@ -15,7 +15,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🎨 Animation Digest ({section})\n\n{summary}"
+render_template = "🎨 Animation News\n\n{summary}"
 generate_image = true
 
 [feeds.anime_plus]
@@ -29,7 +29,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🎨 Animation Digest ({section})\n\n{summary}"
+render_template = "🎌 Anime News\n\n{summary}"
 generate_image = true
 
 [feeds.industry_plus]
@@ -43,5 +43,5 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🎨 Animation Digest ({section})\n\n{summary}"
+render_template = "💼 Animation Industry\n\n{summary}"
 generate_image = true

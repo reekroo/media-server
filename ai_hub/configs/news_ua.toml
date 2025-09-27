@@ -18,7 +18,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🇺🇦 Ukraine News Digest ({section})\n\n{summary}"
+render_template = "🇺🇦 Ukraine News\n\n{summary}"
 generate_image = true
 
 [feeds.economy_society]
@@ -29,7 +29,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🇺🇦 Ukraine News Digest ({section})\n\n{summary}"
+render_template = "🇺🇦 Economy & Society\n\n{summary}"
 generate_image = true
 
 [feeds.war_security]
@@ -39,5 +39,5 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🇺🇦 Ukraine News Digest ({section})\n\n{summary}"
+render_template = "🇺🇦 War & Security\n\n{summary}"
 generate_image = true

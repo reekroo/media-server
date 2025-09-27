@@ -22,7 +22,7 @@ class TechnologyDigestTopic(TopicHandler):
             OUTPUT FORMAT (STRICT):
             - Simple Markdown ONLY (no links, no code/quotes/tables).
             - Each item is exactly 2 lines:
-              1) 💻 *Product or Company: News Headline* (≤ 80 chars)
+              1) *Product or Company: News Headline* (≤ 80 chars)
               2) One-sentence summary (≤ 180 chars).
             - Put ONE blank line between items.
 
@@ -50,8 +50,8 @@ class TechnologyDigestTopic(TopicHandler):
 
             title = lines[0]
             if "*" not in title:
-                clean = re.sub(r"^\s*(?:[^\w\s]|💻)\s*", "", title)
-                title = f"💻 *{clean}*"
+                clean = re.sub(r"^\s*(?:[^\w\s])\s*", "", title)
+                title = f"*{clean}*"
 
             summary = lines[1] if len(lines) > 1 else ""
 

@@ -17,7 +17,7 @@ urls = [
 ]
 fetch_limit = 20
 section_limit = 3
-render_template = "🎮 Gaming Digest ({section})\n\n{summary}"
+render_template = "🎮 General Gaming News\n\n{summary}"
 generate_image = true
 
 [feeds.nintendo]
@@ -27,7 +27,7 @@ urls = [
   "https://nintendoeverything.com/feed"
 ]
 fetch_limit = 20
-section_limit = 5
+section_limit = 4
 render_template = "🍄 Nintendo News\n\n{summary}"
 generate_image = false
 
@@ -39,8 +39,8 @@ urls = [
 ]
 fetch_limit = 20
 section_limit = 3
-render_template = "🎮 Gaming Digest ({section})\n\n{summary}"
-generate_image = true
+render_template = "👾 Playstation News\n\n{summary}"
+generate_image = false
 
 [feeds.xbox]
 urls = [
@@ -50,8 +50,8 @@ urls = [
 ]
 fetch_limit = 20
 section_limit = 3
-render_template = "🎮 Gaming Digest ({section})\n\n{summary}"
-generate_image = true
+render_template = "👾 Xbox News\n\n{summary}"
+generate_image = false
 
 [feeds.industry]
 urls = [
@@ -62,8 +62,8 @@ urls = [
 ]
 fetch_limit = 30
 section_limit = 4
-render_template = "💼 Industry News ({section})\n\n{summary}"
-generate_image = true
+render_template = "💼 Game Industry News\n\n{summary}"
+generate_image = false
 
 [feeds.esports]
 urls = [
@@ -73,8 +73,8 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 4
-render_template = "🏆 Esports ({section})\n\n{summary}"
-generate_image = true
+render_template = "🏆 Esports News\n\n{summary}"
+generate_image = false
 
 [feeds.indie]
 urls = [
@@ -84,5 +84,5 @@ urls = [
 ]
 fetch_limit = 15
 section_limit = 3
-render_template = "🎨 Indie Games ({section})\n\n{summary}"
-generate_image = true
+render_template = "🕹️ Indie Game News\n\n{summary}"
+generate_image = false

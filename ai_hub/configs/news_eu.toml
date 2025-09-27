@@ -17,7 +17,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🇪🇺 European Union News Digest ({section})\n\n{summary}"
+render_template = "🇪🇺 European Union News\n\n{summary}"
 generate_image = true
 
 [feeds.economy]
@@ -28,7 +28,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🇪🇺 European Union News Digest ({section})\n\n{summary}"
+render_template = "🇪🇺 EU Economy\n\n{summary}"
 generate_image = true
 
 [feeds.politics]
@@ -39,5 +39,5 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🇪🇺 European Union News Digest ({section})\n\n{summary}"
+render_template = "🇪🇺 EU Politics\n\n{summary}"
 generate_image = true

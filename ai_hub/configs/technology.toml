@@ -17,7 +17,7 @@ urls = [
 ]
 fetch_limit = 30
 section_limit = 3
-render_template = "💻 Technology Digest ({section})\n\n{summary}"
+render_template = "💻 General Tech News\n\n{summary}"
 generate_image = true
 
 [feeds.ai_research]
@@ -30,7 +30,7 @@ urls = [
 ]
 fetch_limit = 30
 section_limit = 3
-render_template = "💻 Technology Digest ({section})\n\n{summary}"
+render_template = "🤖 AI Research\n\n{summary}"
 generate_image = true
 
 [feeds.cybersec]
@@ -43,7 +43,7 @@ urls = [
 ]
 fetch_limit = 30
 section_limit = 3
-render_template = "💻 Technology Digest ({section})\n\n{summary}"
+render_template = "🛡️ Cybersecurity\n\n{summary}"
 generate_image = true
 
 [feeds.gadgets]
@@ -56,7 +56,7 @@ urls = [
 ]
 fetch_limit = 30
 section_limit = 3
-render_template = "💻 Technology Digest ({section})\n\n{summary}"
+render_template = "📱 Gadgets\n\n{summary}"
 generate_image = true
 
 [feeds.future]
@@ -69,5 +69,5 @@ urls = [
 ]
 fetch_limit = 30
 section_limit = 3
-render_template = "💻 Technology Digest ({section})\n\n{summary}"
+render_template = "🚀 Future Tech\n\n{summary}"
 generate_image = true

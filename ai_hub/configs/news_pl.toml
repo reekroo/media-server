@@ -15,7 +15,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🇵🇱 Poland News Digest ({section})\n\n{summary}"
+render_template = "🇵🇱 Poland News\n\n{summary}"
 generate_image = true
 
 [feeds.economy]
@@ -28,7 +28,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🇵🇱 Poland News Digest ({section})\n\n{summary}"
+render_template = "🇵🇱 Economy\n\n{summary}"
 generate_image = true
 
 [feeds.politics_world]
@@ -40,5 +40,5 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🇵🇱 Poland News Digest ({section})\n\n{summary}"
+render_template = "🇵🇱 Politics & World\n\n{summary}"
 generate_image = true

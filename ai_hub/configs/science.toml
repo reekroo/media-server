@@ -17,7 +17,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🔬 Science Digest ({section})\n\n{summary}"
+render_template = "🔬 General Science News\n\n{summary}"
 generate_image = true
 
 [feeds.space_astro]
@@ -30,7 +30,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🔬 Science Digest ({section})\n\n{summary}"
+render_template = "🔭 Space & Astronomy\n\n{summary}"
 generate_image = true
 
 [feeds.medicine_bio]
@@ -43,7 +43,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🔬 Science Digest ({section})\n\n{summary}"
+render_template = "🧬 Medicine & Biology\n\n{summary}"
 generate_image = true
 
 [feeds.tech_ai]
@@ -56,5 +56,5 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🔬 Science Digest ({section})\n\n{summary}"
+render_template = "🔬 Tech & AI in Science\n\n{summary}"
 generate_image = true

@@ -15,7 +15,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🗞️ News Digest ({section})\n\n{summary}"
+render_template = "🗞️ World News\n\n{summary}"
 generate_image = true
 
 [feeds.politics]
@@ -28,7 +28,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🗞️ News Digest ({section})\n\n{summary}"
+render_template = "⚖️ Politics\n\n{summary}"
 generate_image = true
 
 [feeds.economy]
@@ -41,7 +41,7 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🗞️ News Digest ({section})\n\n{summary}"
+render_template = "📈 Economy\n\n{summary}"
 generate_image = true
 
 [feeds.tech]
@@ -54,5 +54,5 @@ urls = [
 ]
 fetch_limit = 25
 section_limit = 3
-render_template = "🗞️ News Digest ({section})\n\n{summary}"
+render_template = "💻 Technology\n\n{summary}"
 generate_image = true

@@ -21,7 +21,7 @@ class GamingDigestTopic(TopicHandler):
             OUTPUT FORMAT (STRICT):
             - Simple Markdown ONLY (no links, no code/quotes/tables).
             - Each item is exactly 2 lines:
-              1) ⚡️ *Title*  (≤ 70 chars)
+              1) *Title*  (≤ 70 chars)
               2) One-sentence summary (≤ 180 chars; include date/platform if relevant).
             - Put ONE blank line between items. No bullets.
 
@@ -49,8 +49,8 @@ class GamingDigestTopic(TopicHandler):
 
             title = lines[0]
             if "*" not in title:
-                title = re.sub(r"^\s*(?:[^\w\s]|⚡️)\s*", "", title)
-                title = f"⚡️ *{title}*"
+                title = re.sub(r"^\s*(?:[^\w\s])\s*", "", title)
+                title = f"*{title}*"
 
             summary = lines[1] if len(lines) > 1 else ""
             title   = trim(title,   80) 
