@@ -2,10 +2,9 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from .base import ToolSpec
-from mcp.rpc_methods.daily import build_brief
 
 async def _exec_daily(app, args: Dict[str, Any]) -> str:
-    return await build_brief(app, config_name="daily")
+    return await app.dispatcher.run("daily.build", config_name="daily")
 
 TOOL = ToolSpec(
     name="daily_brief",

@@ -8,6 +8,8 @@ from .media_config import MediaConfig
 from .schedule_config import ScheduleConfig
 from .sys_config import SysConfig
 from .docker_status_config import DockerStatusConfig
+from .base_message_target_config import MessageTargetConfig
+
 
 __all__ = [
     "TomlMetadata",
@@ -20,4 +22,5 @@ __all__ = [
     "ScheduleConfig",
     "SysConfig",
     "DockerStatusConfig",
+    "MessageTargetConfig"
 ]

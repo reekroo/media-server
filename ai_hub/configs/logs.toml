@@ -1,10 +1,13 @@
 enabled = true
+rpc_method = "logs.build"
+
 to = "telegram"
 destination_group = "-1002918707721"
 destination_topic = "194"
 destination_language = "en"
-render_template = "{summary}"
+
 generate_image = false
+render_template = "{summary}"
 
 lookback_hours = 24
 

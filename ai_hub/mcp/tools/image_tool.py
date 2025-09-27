@@ -1,10 +1,6 @@
 from __future__ import annotations
-import base64
 from typing import Any, Dict
 from .base import ToolSpec
-
-def _b64(img: bytes) -> str:
-    return base64.b64encode(img).decode("ascii")
 
 async def _exec_image(app, args: Dict[str, Any]) -> Dict[str, Any]:
     prompt: str = (args.get("prompt") or "").strip()
@@ -12,12 +8,13 @@ async def _exec_image(app, args: Dict[str, Any]) -> Dict[str, Any]:
         prompt = "A simple abstract illustration"
 
     mode = (args.get("mode") or "prompt").strip().lower()
+    
     if mode == "summary":
-        img = await app.ai_service.generate_image_from_summary(prompt)
+        rpc_method_name = "assist.generate_image_b64_from_summary"
     else:
-        img = await app.ai_service.generate_image_from_prompt(prompt)
-
-    return {"mime": "image/png", "b64": _b64(img)}
+        rpc_method_name = "assist.generate_image_b64_from_prompt"
+        
+    return await app.dispatcher.run(rpc_method_name, text_summary=prompt)
 
 TOOL = ToolSpec(
     name="image_generate",

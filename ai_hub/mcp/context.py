@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from mcp.dispatcher import Dispatcher
+    from mcp.dispatcher.dispatcher import Dispatcher
 
 from core.settings import Settings
 from ai_assistent.service import DigestService

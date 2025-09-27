@@ -1,8 +1,11 @@
 enabled = true
+rpc_method = "sys.build"
+
 to = "telegram"
 destination_group = "-1002918707721"
 destination_topic = "194"
 destination_language = "en"
+
 generate_image = false
 
 lookback = "24h"

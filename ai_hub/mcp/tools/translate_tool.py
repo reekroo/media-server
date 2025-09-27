@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from .base import ToolSpec
-from ..rpc_methods import assist 
 
 async def _exec_translate(app, args: Dict[str, Any]) -> str:
     target_lang = args.get("target_lang")
@@ -11,7 +10,11 @@ async def _exec_translate(app, args: Dict[str, Any]) -> str:
     if not target_lang or not text:
         return "Error: Both 'target_lang' and 'text' are required."
 
-    return await assist.translate(app, target_lang=target_lang, text=text)
+    return await app.dispatcher.run(
+        "assist.translate", 
+        target_lang=target_lang, 
+        text=text
+    )
 
 TOOL = ToolSpec(
     name="text_translator",

@@ -2,7 +2,7 @@ from typing import List, Optional
 from pydantic import Field
 
 from .sys_patterns_config import SysPatternsConfig
-from .message_target_config import MessageTargetConfig
+from .base_message_target_config import MessageTargetConfig
 
 class SysConfig(MessageTargetConfig):    
     generate_image: Optional[bool] = False

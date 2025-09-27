@@ -1,15 +1,14 @@
 import asyncio
 import json
-import os
 from typing import Any, Dict
 
 from core.settings import Settings
 from core.logging import setup_logger, LOG_FILE_PATH
 from ai_assistent.composition import create_digest_service
 from functions.channels.factory import ChannelFactory
-from mcp.dispatcher import Dispatcher
+from mcp.dispatcher.dispatcher import Dispatcher
+from mcp.dispatcher.registration import discover_and_register_methods
 from mcp.context import AppContext
-from mcp.registration import discover_and_register_methods
 
 log = setup_logger(__name__, LOG_FILE_PATH)
 

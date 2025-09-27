@@ -2,10 +2,9 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from .base import ToolSpec
-from mcp.rpc_methods.docker_status import build_digest
 
 async def _exec_docker_status(app, args: Dict[str, Any]) -> str:
-    return await build_digest(app, config_name="docker_status")
+    return await app.dispatcher.run("docker_status.build", config_name="docker_status")
 
 TOOL = ToolSpec(
     name="docker_status_query",

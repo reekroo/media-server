@@ -4,7 +4,6 @@ import re
 from typing import Any, Dict, List, Optional
 from datetime import date
 
-from .discovery import list_tools
 from mcp.tools.base import ToolSpec
 from mcp.context import AppContext
 

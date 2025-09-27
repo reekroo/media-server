@@ -1,9 +1,12 @@
 enabled = true
+rpc_method = "docker_status.build"
+
 to = "telegram"
 destination_group = "-1002918707721"
 destination_topic = "194"
 destination_language = "en"
-render_template = "{summary}"
+
 generate_image = false
+render_template = "{summary}"
 
 ignore_containers = []

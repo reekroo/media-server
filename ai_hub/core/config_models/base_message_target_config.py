@@ -1,8 +1,8 @@
-from pydantic import BaseModel
 from typing import Optional
 
-class MessageTargetConfig(BaseModel):
-    enabled: bool = True
+from .base_digest_config import BaseDigestConfig
+
+class MessageTargetConfig(BaseDigestConfig):
     to: str = "telegram"
     destination_group: str = ""
     destination_topic: Optional[str] = None

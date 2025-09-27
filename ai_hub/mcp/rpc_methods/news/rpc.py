@@ -8,7 +8,7 @@ from core.logging import setup_logger, LOG_FILE_PATH
 
 log = setup_logger(__name__, LOG_FILE_PATH)
 
-async def build_digest(app: AppContext, config_name: str, section: str | None = None, count: int | None = None) -> List[str]:
+async def build(app: AppContext, config_name: str, section: str | None = None, count: int | None = None) -> List[str]:
     log.info(f"Building digest for config '{config_name}'")
     
     cfg = getattr(app.settings, config_name)
@@ -34,9 +34,7 @@ async def build_digest(app: AppContext, config_name: str, section: str | None = 
         processor = NewsSectionProcessor(app, cfg.ai_topic, params)
         tasks.append(processor.process())
 
-    log.info(f"Processing {len(tasks)} sections in parallel for '{config_name}'...")
     results = await asyncio.gather(*tasks)
-
     final_messages = [msg for msg in results if msg]
 
     if not final_messages:

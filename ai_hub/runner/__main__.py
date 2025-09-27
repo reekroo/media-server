@@ -14,6 +14,8 @@ from .rpc_client import RpcClient
 
 log = setup_logger(__name__, LOG_FILE_PATH)
 
+SCHEDULER_RPC_METHOD = "orchestrator.run_job"
+
 def _normalize_cron_list(value: Any) -> List[str]:
     if isinstance(value, str):
         s = value.strip()
@@ -27,18 +29,19 @@ def _normalize_cron_list(value: Any) -> List[str]:
     
     raise ValueError(f"cron must be string or list of strings, got {type(value).__name__}")
 
-async def _job_wrapper(client: RpcClient, method: str, params: Dict[str, Any]) -> None:
-    log.info(f"Triggering MCP method '%s' with params: %s", method, params)
+async def _job_wrapper(client: RpcClient, params: Dict[str, Any]) -> None:
+    config_name = params.get("config_name", "unknown")
+    log.info(f"Triggering MCP job for digest: '{config_name}'")
     try:
-        response = await client.call(method, **params)
+        response = await client.call(SCHEDULER_RPC_METHOD, **params)
         if response.get("ok"):
-            log.info("MCP method '%s' completed successfully.", method)
+            log.info("MCP job for '%s' completed successfully.", config_name)
         else:
             error_info = response.get('error', {'message': 'unknown error'})
-            log.error("MCP method '%s' returned an error: %s", method, error_info)
+            log.error("MCP job for '%s' returned an error: %s", config_name, error_info)
 
     except Exception as e:
-        log.error("Failed to call MCP method '%s'. Transport Error: %s", method, e, exc_info=True)
+        log.error("Failed to call MCP. Transport Error for '%s': %s", config_name, e, exc_info=True)
 
 async def main() -> None:
     settings = Settings()
@@ -59,10 +62,15 @@ async def main() -> None:
     for job_id, config in schedule_data.items():
         if not isinstance(config, dict): continue
         if not config.get("enabled", False): continue
-        rpc_method = config.get("rpc_method")
-        params = config.get("params", {}) or {}
+        
+        params = config.get("params", {})
+        if not params or not params.get("config_name"):
+            log.warning(f"Skipping job '{job_id}': 'params.config_name' is not defined.")
+            continue
+            
         cron_raw = config.get("cron")
-        if not cron_raw or not rpc_method: continue
+        if not cron_raw: continue
+        
         try:
             cron_list = _normalize_cron_list(cron_raw)
         except Exception as e:
@@ -73,7 +81,7 @@ async def main() -> None:
             try:
                 job_name = f"{job_id}#{idx}" if len(cron_list) > 1 else job_id
                 
-                job_func = partial(_job_wrapper, client=rpc_client, method=rpc_method, params=params)
+                job_func = partial(_job_wrapper, client=rpc_client, params=params)
                 
                 scheduler.add_job(
                     job_func,
@@ -81,7 +89,7 @@ async def main() -> None:
                     id=job_name, name=job_name,
                     coalesce=True, max_instances=1,
                 )
-                log.info(f"Scheduled job '{job_name}': CRON='{cron_expr}', Method='{rpc_method}'")
+                log.info(f"Scheduled job '{job_name}': CRON='{cron_expr}', Target='{params['config_name']}'")
                 job_count += 1
             except Exception as e:
                 log.error(f"Failed to schedule job '{job_id}' (expr '{cron_expr}'). Error: {e}")

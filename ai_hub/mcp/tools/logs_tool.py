@@ -2,10 +2,9 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from .base import ToolSpec
-from mcp.rpc_methods.logs import build_digest
 
 async def _exec_logs(app, args: Dict[str, Any]) -> str:
-    return await build_digest(app, config_name="logs")
+    return await app.dispatcher.run("logs.build")
 
 TOOL = ToolSpec(
     name="logs_query",

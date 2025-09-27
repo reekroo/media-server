@@ -5,7 +5,6 @@ from telegram.helpers import escape_markdown
 from typing import List, Optional, Tuple
 
 from core.settings import Settings
-from core.constants.news import UNIVERSAL_NEWS_DIGESTS
 from functions.channels.telegram_helpers.chunker import Chunker
 from ..messaging import reply_text_with_markdown
 from ..rpc_client import ChatRpcClient, ui_error_message
@@ -15,12 +14,6 @@ MSG_USAGE =           "🟦 Usage: /digest <name> [section] [count]\nAvailable: 
 MSG_UNKNOWN_DIGEST =  "🟥 Unknown digest: '{config_name}'.\n\nAvailable: {available}"
 MSG_EMPTY_DIGEST   =  "🟥 Digest builder returned empty content."
 MSG_BUILDING_DIGEST = "⏳ Building '{config_name}' digest, please wait..."
-
-def _get_rpc_method_name(config_name: str) -> str:
-    target_builder = "news" if config_name in UNIVERSAL_NEWS_DIGESTS else config_name
-    base_func_name = "build_brief" if target_builder == "daily" else "build_digest"
-    short_func_name = base_func_name.replace("_digest", "").replace("_brief", "")
-    return f"{target_builder}.{short_func_name}"
 
 def _normalize_payload(payload):
     if not payload: return []
@@ -36,13 +29,27 @@ def _parse_digest_args(args: List[str]) -> Tuple[str, Optional[str], Optional[in
     if args: section = args.pop(0)
     return config_name, section, count
 
-async def _fetch_digest_payload(rpc_client: ChatRpcClient, config_name: str, section: Optional[str], count: Optional[int]) -> Tuple[Optional[List[str]], Optional[dict]]:
-    rpc_method = _get_rpc_method_name(config_name)
+async def _fetch_digest_payload(
+    rpc_client: ChatRpcClient, 
+    settings: Settings, 
+    config_name: str, 
+    section: Optional[str], 
+    count: Optional[int]
+) -> Tuple[Optional[List[str]], Optional[dict]]:
+    
+    cfg = getattr(settings, config_name, None)
+    if not cfg:
+        return None, {"message": f"Configuration for '{config_name}' not found."}
+
+    rpc_method = cfg.rpc_method
+    
     rpc_params = {"config_name": config_name}
     if count is not None: rpc_params["count"] = count
     if section is not None: rpc_params["section"] = section
+    
     response = await rpc_client.call(rpc_method, **rpc_params)
     if not response.get("ok"): return None, response.get("error")
+    
     payload_list = _normalize_payload(response.get("result"))
     return payload_list, None
 
@@ -90,7 +97,8 @@ async def _send_chunked_message(update: Update, text: str, entities: List[Messag
 async def _send_payload_to_user(update: Update, context: ContextTypes.DEFAULT_TYPE, payload_list: List[str]):
     settings: Settings = context.bot_data["settings"]
     rpc_client: ChatRpcClient = context.bot_data["rpc_client"]
-    state = context.bot_data["state_manager"].get_chat_state(update.effective_chat.id)
+    state_manager: StateManager = context.bot_data["state_manager"]
+    state = state_manager.get_chat_state(update.effective_chat.id)
     
     translated_payload = await _translate_payload_if_needed(
         rpc_client, payload_list, (state.lang or settings.DEFAULT_LANGUAGE), settings.DEFAULT_LANGUAGE
@@ -117,7 +125,7 @@ async def digest_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     safe_display_name = escape_markdown(display_name, version=2)
     await reply_text_with_markdown(update, MSG_BUILDING_DIGEST.format(config_name=safe_display_name))
     
-    payload, error = await _fetch_digest_payload(rpc_client, config_name, section, count)
+    payload, error = await _fetch_digest_payload(rpc_client, settings, config_name, section, count)
 
     if error:
         await reply_text_with_markdown(update, ui_error_message(error))

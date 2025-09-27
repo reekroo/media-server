@@ -1,8 +1,11 @@
 enabled = true
+rpc_method = "news.build"
+
 to = "telegram"
 destination_group = "-1002918707721"
 destination_topic = "204"
 destination_language = "en"
+
 ai_topic = "animation"
 
 [feeds.general]

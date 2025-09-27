@@ -3,7 +3,7 @@ from pathlib import Path
 from pydantic import Field
 
 from .media_recommender_config import MediaRecommenderConfig
-from .message_target_config import MessageTargetConfig
+from .base_message_target_config import MessageTargetConfig
 
 class MediaConfig(MessageTargetConfig):
     generate_image: Optional[bool] = False

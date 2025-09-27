@@ -1,7 +1,7 @@
 from typing import Optional
 
 from .logs_components import ComponentsConfig
-from .message_target_config import MessageTargetConfig
+from .base_message_target_config import MessageTargetConfig
 
 class LogsConfig(MessageTargetConfig):    
     generate_image: Optional[bool] = False

@@ -2,24 +2,21 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from .base import ToolSpec
-from mcp.rpc_methods.dinner import build_digest
 
 _MIN, _MAX, _DEFAULT = 1, 5, 3
 
-def _normalize_count(value: Any) -> int | None:
+def _normalize_count(value: Any) -> int:
     try:
-        if value is None:
-            return None
         n = int(value)
         if n < _MIN: n = _MIN
         if n > _MAX: n = _MAX
         return n
     except Exception:
-        return None
+        return _DEFAULT
 
 async def _exec_dinner(app, args: Dict[str, Any]) -> str:
-    count = _normalize_count(args.get("count"))
-    return await build_digest(app, config_name="dinner", count=count)
+    count = _normalize_count(args.get("count", _DEFAULT))
+    return await app.dispatcher.run("dinner.build", config_name="dinner", count=count)
 
 TOOL = ToolSpec(
     name="dinner_get",

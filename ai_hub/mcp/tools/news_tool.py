@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import Any, Dict, List
 
 from .base import ToolSpec
-from mcp.rpc_methods.news.rpc import build_digest
 from core.constants.news import UNIVERSAL_NEWS_DIGESTS, DIGEST_ALIASES
 
 def _normalize_digest(value: str | None) -> str:
@@ -16,25 +15,20 @@ def _normalize_digest(value: str | None) -> str:
 async def _exec_news(app, args: Dict[str, Any]) -> str:
     digest = _normalize_digest(args.get("digest"))
     section = args.get("section")
-    
-    if not isinstance(section, str) or not section.strip():
-        section = None
-
     count = args.get("count")
-    if count and isinstance(count, (int, float)):
-        count = int(count)
-        if not (1 <= count <= 20):
-            count = None
-    else:
-        count = None
 
-    results_list: List[str] = await build_digest(app, config_name=digest, section=section, count=count)
+    params = {"config_name": digest}
+    if section:
+        params["section"] = section
+    if count and isinstance(count, (int, float)) and 1 <= int(count) <= 20:
+        params["count"] = int(count)
+
+    results_list: List[str] = await app.dispatcher.run("news.build", **params)
 
     if not results_list:
         return "No news items to show."
 
-    final_text = "\n\n".join(results_list)
-    return final_text
+    return "\n\n".join(results_list)
 
 TOOL = ToolSpec(
     name="news_fetch",
