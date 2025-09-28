@@ -133,10 +133,39 @@ services:
       - ${STORAGE_PATH}/media/movies:/media/movies
       - ${STORAGE_PATH}/media/tv_shows:/media/tv_shows
       - ${STORAGE_PATH}/downloads:/media/new_items
+    # tmpfs:
+    #   - /cache/transcodes:rw,size=4g,exec
+    shm_size: "512m"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    user: "${PUID}:${PGID}"
+    group_add:
+      - "video"
+    devices:
+    #  - /dev/dri:/dev/dri
+      - /dev/video19:/dev/video19
+      - /dev/video20:/dev/video20
+      - /dev/video21:/dev/video21
+      - /dev/video22:/dev/video22
+      - /dev/video23:/dev/video23
+      - /dev/video24:/dev/video24
+      - /dev/video25:/dev/video25
+      - /dev/video26:/dev/video26
+      - /dev/video27:/dev/video27
+      - /dev/video28:/dev/video28
+      - /dev/video29:/dev/video29
+      - /dev/video30:/dev/video30
+      - /dev/video31:/dev/video31
+      - /dev/video32:/dev/video32
+      - /dev/video33:/dev/video33
+      - /dev/video34:/dev/video34
+      - /dev/video35:/dev/video35
+    device_cgroup_rules:
+      - 'c 81:* rmw'
     ports:
       - 8096:8096
-    devices:
-      - /dev/dri:/dev/dri
     networks:
       - media-network
     healthcheck:
