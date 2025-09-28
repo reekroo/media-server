@@ -73,12 +73,21 @@ sudo systemctl start metrics-exporter
 
 # Running Unit Tests
 
+Go to the venv and ınstall additional dependencies to the run async tests:
+
+```bash
+cd ~/earthquake_monitor
+source .venv_earthquake_monitor/bin/activate
+pip install pytest pytest-asyncio
+```
+
 To verify the functionality of your scripts, navigate to the project directory and run the tests.
 
 ```Bash
 cd ~/earthquake_monitor
 source .venv_earthquake_monitor/bin/activate
-python3 -m unittest discover -s tests -p "test_*.py"
+pytest
+#python3 -m unittest discover -s tests -p "test_*.py"
 ```
 
 ```Bash

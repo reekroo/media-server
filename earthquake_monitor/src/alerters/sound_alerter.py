@@ -1,4 +1,4 @@
-import socket
+import asyncio
 import json
 import logging
 from .base import BaseAlerter
@@ -10,7 +10,7 @@ class SoundAlerter(BaseAlerter):
         self._timeout = timeout
         self._log.info(f"SoundAlerter initialized for socket path: {self._socket_path}")
 
-    def alert(
+    async def alert(
         self,
         level: int,
         magnitude: float,
@@ -31,26 +31,25 @@ class SoundAlerter(BaseAlerter):
             "wait": bool(wait)
         }
 
-        self._log.info(
-            f"[SoundAlerter] Sending sound command for Mag {magnitude} at '{place}': {command}"
-        )
+        self._log.info(f"[SoundAlerter] Sending sound command for Mag {magnitude} at '{place}': {command}")
         
-        if not self._send_command(command):
+        if not await self._send_command_async(command):
             self._log.error(f"[SoundAlerter] Failed to send command to sound service at {self._socket_path}")
 
-    def _send_command(self, command: dict) -> bool:
+    async def _send_command_async(self, command: dict) -> bool:
         try:
-            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
-                client.settimeout(self._timeout)
-                client.connect(self._socket_path)
-                client.sendall(json.dumps(command).encode("utf-8"))
-                
+            async with asyncio.timeout(self._timeout):
+                reader, writer = await asyncio.open_unix_connection(self._socket_path)                
+                writer.write(json.dumps(command).encode("utf-8"))
+                await writer.drain()
+
                 try:
-                    client.recv(16)
-                except (socket.timeout, ConnectionResetError):
-                    pass
+                    await reader.read(16)
+                finally:
+                    writer.close()
+                    await writer.wait_closed()
             return True
             
-        except (socket.error, FileNotFoundError, socket.timeout) as e:
+        except (asyncio.TimeoutError, OSError, FileNotFoundError) as e:
             self._log.error(f"[SoundAlerter] Could not connect or send to sound service: {e}")
             return False

@@ -3,5 +3,5 @@ from typing import Dict, Optional
 
 class ILocationProvider(ABC):
     @abstractmethod
-    def get_location(self) -> Optional[Dict[str, float]]:
+    async def get_location(self) -> Optional[Dict[str, float]]:
         pass

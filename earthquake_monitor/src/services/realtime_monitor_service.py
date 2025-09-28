@@ -1,6 +1,7 @@
 import logging
 from collections import deque
 from typing import List
+import asyncio
 
 from alerters.base import BaseAlerter
 from locations.base import ILocationProvider
@@ -23,26 +24,35 @@ class RealtimeMonitorService:
         self._log = logger
         self._log.info("RealtimeMonitorService initialized.")
 
-    def _get_current_location(self) -> dict | None:
+    async def _get_current_location(self) -> dict | None:
         for provider in self._location_providers:
-            location = provider.get_location()
+            location = await provider.get_location()
             if location:
                 return location
         self._log.error("Failed to get location from all available providers.")
         return None
 
-    def execute_check(self) -> None:
+    async def execute_check(self) -> None:
         self._log.info("Realtime check: Checking for new earthquake events...")
 
-        current_location = self._get_current_location()
+        current_location = await self._get_current_location()
         if not current_location:
             self._log.error("Realtime check: Could not determine location, skipping check cycle.")
             return
 
+        tasks = [
+            source.get_earthquakes(current_location['lat'], current_location['lon'])
+            for source in self._data_sources
+        ]
+        results_from_sources = await asyncio.gather(*tasks, return_exceptions=True)
+
         all_events: List[EarthquakeEvent] = []
-        for source in self._data_sources:
-            events = source.get_earthquakes(current_location['lat'], current_location['lon'])
-            all_events.extend(events)
+        for i, result in enumerate(results_from_sources):
+            if isinstance(result, Exception):
+                source_name = self._data_sources[i].name
+                self._log.error(f"Realtime check: Source '{source_name}' failed: {result}")
+            elif result:
+                all_events.extend(result)
             
         if not all_events:
             self._log.info("Realtime check: No events found from any source.")
@@ -60,21 +70,26 @@ class RealtimeMonitorService:
         for event in new_events:
             self._processed_event_ids.append(event.event_id)
 
-        self._trigger_alert_for_event(strongest_event)
+        await self._trigger_alert_for_event(strongest_event)
 
-    def _trigger_alert_for_event(self, event: EarthquakeEvent) -> None:
+    async def _trigger_alert_for_event(self, event: EarthquakeEvent) -> None:
         for level_cfg in self._alert_levels:
             if event.magnitude >= level_cfg['min_magnitude']:
                 self._log.warning("--- STRONGEST NEW EVENT DETECTED ---")
                 self._log.warning(f"Magnitude: {event.magnitude} (Threshold: {level_cfg['min_magnitude']})")
                 self._log.warning(f"Place: {event.place}")
 
+                alert_tasks = []
                 for alerter in self._alerters:
-                    alerter.alert(
+                    task = alerter.alert(
                         level=level_cfg['level_id'],
                         magnitude=event.magnitude,
                         place=event.place,
                         melody_name=level_cfg['melody_name'],
                         duration=level_cfg['duration']
                     )
+                    alert_tasks.append(task)
+                
+                await asyncio.gather(*alert_tasks)
+                
                 return

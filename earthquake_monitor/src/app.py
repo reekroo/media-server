@@ -1,5 +1,5 @@
 import logging
-import time
+import asyncio
 import configs
 
 from utils.http_client import HttpClient
@@ -86,29 +86,25 @@ class Application:
             fetch_days=7
         )
 
-    def run(self):
+    async def run(self):
         self._logger.info("Application starting all components...")
         
-        try:
-            self._historical_runner.start(run_immediately=True)
-            self._realtime_runner.start()
-            self._on_demand_server.start()
-            
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            self._logger.info("Shutdown signal received.")
-        finally:
-            self.close()
+        self._historical_runner.start(run_immediately=True)
+        self._realtime_runner.start(run_immediately=True)
+        
+        server_task = asyncio.create_task(self._on_demand_server.start())
 
-    def close(self):
+        await asyncio.gather(server_task)
+
+
+    async def close(self):
         self._logger.info("Application shutdown sequence initiated.")
         
+        stop_tasks = []
         for component in reversed(self._managed_components):
-            try:
-                if hasattr(component, 'stop'):
-                    component.stop()
-            except Exception as e:
-                self._logger.error(f"Error stopping component {component.__class__.__name__}: {e}")
+            if hasattr(component, 'stop'):
+                stop_tasks.append(asyncio.create_task(component.stop()))
+        
+        await asyncio.gather(*stop_tasks)
         
         self._logger.info("Application has been shut down.")

@@ -1,12 +1,13 @@
 import json
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Any
 
-from .base import BaseApiDataSource
+from .base import BaseApiDataSource, ApiResponseType
 from models.earthquake_event import EarthquakeEvent
 
 class EmscApiDataSource(BaseApiDataSource):
     API_URL = "https://www.seismicportal.eu/fdsnws/event/1/query"
+    RESPONSE_TYPE = ApiResponseType.JSON
 
     def _build_request_params(self, latitude: float, longitude: float, start_time_iso: str) -> (str, Dict, Dict):
         radius_km = self._config.get('SEARCH_RADIUS_KM', 250)
@@ -23,12 +24,8 @@ class EmscApiDataSource(BaseApiDataSource):
         }
         return self.API_URL, params, {}
     
-    def _parse_response(self, response_text: str) -> list[EarthquakeEvent]:
-        if not response_text or not response_text.strip().startswith('{'):
-            self._log.warning(f"[{self.name}] Received empty or non-JSON response, skipping. Content: '{response_text[:200]}'")
-            return []
+    def _parse_response(self, data: Dict[str, Any]) -> list[EarthquakeEvent]:
         try:
-            data = json.loads(response_text)
             events = []
             for feature in data.get('features', []):
                 try:
@@ -61,6 +58,6 @@ class EmscApiDataSource(BaseApiDataSource):
                     self._log.warning(f"[{self.name}] Skipping an event due to data conversion error: {e}. Data: {feature}")
                     continue
             return events
-        except (json.JSONDecodeError, KeyError, IndexError) as e:
-            self._log.error(f"[{self.name}] Error parsing JSON response: {e}. Response text: '{response_text[:500]}'")
+        except (KeyError, IndexError) as e:
+            self._log.error(f"[{self.name}] Error parsing JSON object: {e}. Data snippet: '{str(data)[:500]}'")
             return []

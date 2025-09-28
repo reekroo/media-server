@@ -2,11 +2,12 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 from typing import List, Dict
 
-from .base import BaseApiDataSource
+from .base import BaseApiDataSource, ApiResponseType
 from models.earthquake_event import EarthquakeEvent
 
 class IscApiDataSource(BaseApiDataSource):
     API_URL = "https://www.isc.ac.uk/fdsnws/event/1/query"
+    RESPONSE_TYPE = ApiResponseType.TEXT
 
     def _build_request_params(self, latitude: float, longitude: float, start_time_iso: str) -> (str, Dict, Dict):
         radius_km = self._config.get('SEARCH_RADIUS_KM', 250)
