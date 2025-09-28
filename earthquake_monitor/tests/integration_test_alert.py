@@ -1,6 +1,7 @@
-from unittest.mock import MagicMock
+import asyncio
+from unittest.mock import MagicMock, AsyncMock
 
-from earthquake_monitor import EarthquakeMonitor
+from services.realtime_monitor_service import RealtimeMonitorService
 from alerters.sound_alerter import SoundAlerter
 from models.earthquake_event import EarthquakeEvent
 from earthquake_logger import setup_logger
@@ -27,21 +28,21 @@ def create_fake_earthquake(mag, event_id="physical_test_event") -> list[Earthqua
         )
     ]
 
-def run_physical_test():
+async def run_physical_test():
     log = setup_logger("EarthquakePhysicalTest", configs.LOG_FILE_PATH)
     log.info("--- STARTING PHYSICAL ALERT TEST (5 seconds) ---")
 
     mock_data_source = MagicMock()
-    mock_data_source.get_earthquakes.return_value = create_fake_earthquake(4.0)
+    mock_data_source.get_earthquakes = AsyncMock(return_value=create_fake_earthquake(4.0))
     log.info("Fake data source created to report a magnitude 4.0 earthquake.")
 
     mock_location_provider = MagicMock()
-    mock_location_provider.get_location.return_value = {'lat': 38.0, 'lon': 27.0}
+    mock_location_provider.get_location = AsyncMock(return_value={'lat': 38.0, 'lon': 27.0})
 
     real_sound_alerter = SoundAlerter(logger=log, socket_path=configs.BUZZER_SOCKET)
     log.info(f"Real SoundAlerter created, will connect to {configs.BUZZER_SOCKET}.")
 
-    monitor = EarthquakeMonitor(
+    monitor_service = RealtimeMonitorService(
         data_sources=[mock_data_source],
         alerters=[real_sound_alerter],
         location_providers=[mock_location_provider],
@@ -49,12 +50,12 @@ def run_physical_test():
         logger=log,
         max_processed_events=10
     )
-    log.info("EarthquakeMonitor instance created with test components.")
+    log.info("RealtimeMonitorService instance created with test components.")
 
-    log.info(">>> TRIGGERING check_and_alert(). Listen for a 5-second buzzer! <<<")
-    monitor.check_and_alert()
+    log.info(">>> TRIGGERING execute_check(). Listen for a 5-second buzzer! <<<")
+    await monitor_service.execute_check()
 
     log.info("--- PHYSICAL ALERT TEST COMPLETE ---")
 
 if __name__ == "__main__":
-    run_physical_test()
+    asyncio.run(run_physical_test())

@@ -1,5 +1,6 @@
 import unittest
 import logging
+import json
 from unittest.mock import MagicMock
 
 from data_sources.emsc_api import EmscApiDataSource
@@ -58,7 +59,8 @@ class TestEmscApiDataSource(unittest.TestCase):
         )
 
     def test_parse_response_with_string_time(self):
-        events = self.data_source._parse_response(SAMPLE_EMSC_RESPONSE_TIME_AS_STRING)
+        data = json.loads(SAMPLE_EMSC_RESPONSE_TIME_AS_STRING)
+        events = self.data_source._parse_response(data)
         
         self.assertEqual(len(events), 1)
         event = events[0]
@@ -68,15 +70,14 @@ class TestEmscApiDataSource(unittest.TestCase):
 
     def test_parse_response_with_iso_time(self):
         from datetime import datetime, timezone
-
-        events = self.data_source._parse_response(SAMPLE_EMSC_RESPONSE_ISO_TIME)
+        data = json.loads(SAMPLE_EMSC_RESPONSE_ISO_TIME)
+        events = self.data_source._parse_response(data)
 
         self.assertEqual(len(events), 1)
         event = events[0]
         self.assertEqual(event.event_id, "20250904_0000058")
 
         result_dt = datetime.fromtimestamp(event.timestamp, tz=timezone.utc)
-
         self.assertEqual(result_dt.year, 2025)
         self.assertEqual(result_dt.month, 9)
         self.assertEqual(result_dt.day, 4)
@@ -93,6 +94,7 @@ class TestEmscApiDataSource(unittest.TestCase):
             ]
         }
         """
-        events = self.data_source._parse_response(malformed_response)
+        data = json.loads(malformed_response)
+        events = self.data_source._parse_response(data)
         self.assertEqual(len(events), 1)
         self.assertEqual(events[0].event_id, "good_event")

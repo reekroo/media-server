@@ -1,11 +1,12 @@
 import json
-from typing import List, Dict
+from typing import List, Dict, Any
 
-from .base import BaseApiDataSource
+from .base import BaseApiDataSource, ApiResponseType
 from models.earthquake_event import EarthquakeEvent
 
 class UsgsApiDataSource(BaseApiDataSource):
     API_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query"
+    RESPONSE_TYPE = ApiResponseType.JSON
 
     def _build_request_params(self, latitude: float, longitude: float, start_time_iso: str) -> (str, Dict, Dict):
         params = {
@@ -19,12 +20,8 @@ class UsgsApiDataSource(BaseApiDataSource):
         }
         return self.API_URL, params, {}
 
-    def _parse_response(self, response_text: str) -> List[EarthquakeEvent]:
-        if not response_text or not response_text.strip().startswith('{'):
-            self._log.warning(f"[{self.name}] Received empty or non-JSON response, skipping. Content: '{response_text[:200]}'")
-            return []
+    def _parse_response(self, data: Dict[str, Any]) -> List[EarthquakeEvent]:
         try:
-            data = json.loads(response_text)
             events = []
             for feature in data.get('features', []):
                 props = feature.get('properties', {})
@@ -45,6 +42,6 @@ class UsgsApiDataSource(BaseApiDataSource):
                     timestamp=int(time_ms) // 1000
                 ))
             return events
-        except (json.JSONDecodeError, KeyError, TypeError) as e:
-            self._log.error(f"[{self.name}] Error parsing JSON response: {e}. Response text: '{response_text[:500]}'")
+        except (KeyError, TypeError) as e:
+            self._log.error(f"[{self.name}] Error parsing JSON object: {e}. Data snippet: '{str(data)[:500]}'")
             return []

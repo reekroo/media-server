@@ -12,6 +12,7 @@ description = "Service for monitoring earthquakes and sending alerts."
 requires-python = ">=3.9"
 
 dependencies = [
+    "httpx==0.27.0",
     "requests==2.32.4",
     "concurrent-log-handler==0.9.28",
     "portalocker==3.2.0",

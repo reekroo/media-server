@@ -1,5 +1,6 @@
 import unittest
 import logging
+import json
 from unittest.mock import MagicMock
 
 from data_sources.usgs_api import UsgsApiDataSource
@@ -57,7 +58,8 @@ class TestUsgsApiDataSource(unittest.TestCase):
         )
 
     def test_parse_response_success(self):
-        events = self.data_source._parse_response(SAMPLE_USGS_RESPONSE)
+        data = json.loads(SAMPLE_USGS_RESPONSE)
+        events = self.data_source._parse_response(data)
         
         self.assertEqual(len(events), 1)
         event = events[0]
@@ -70,11 +72,10 @@ class TestUsgsApiDataSource(unittest.TestCase):
         self.assertEqual(event.timestamp, 1678886400)
 
     def test_parse_response_handles_incomplete_data(self):
-        events = self.data_source._parse_response(INCOMPLETE_USGS_RESPONSE)
+        data = json.loads(INCOMPLETE_USGS_RESPONSE)
+        events = self.data_source._parse_response(data)
         self.assertEqual(len(events), 0)
 
     def test_parse_response_handles_empty_json(self):
-        events = self.data_source._parse_response('{"features": []}')
-        self.assertEqual(len(events), 0)
-        events = self.data_source._parse_response('invalid json')
+        events = self.data_source._parse_response({'features': []})
         self.assertEqual(len(events), 0)

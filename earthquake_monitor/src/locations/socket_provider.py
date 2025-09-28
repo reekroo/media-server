@@ -1,6 +1,7 @@
-import socket
+import asyncio
 import json
 import logging
+
 from .base import ILocationProvider
 
 class SocketLocationProvider(ILocationProvider):
@@ -9,15 +10,15 @@ class SocketLocationProvider(ILocationProvider):
         self._socket_path = socket_path
         self._timeout = timeout
 
-    def get_location(self) -> dict | None:
+    async def get_location(self) -> dict | None:
         self._log.info(f"Attempting to get location from socket: {self._socket_path}...")
         
         try:
-            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client_socket:
-                client_socket.settimeout(self._timeout)
-                client_socket.connect(self._socket_path)
-                
-                data = client_socket.recv(1024)
+            async with asyncio.timeout(self._timeout):
+                reader, writer = await asyncio.open_unix_connection(self._socket_path)                
+                data = await reader.read(1024)                
+                writer.close()
+                await writer.wait_closed()
                 
                 if data:
                     location = json.loads(data.decode('utf-8'))
@@ -25,6 +26,6 @@ class SocketLocationProvider(ILocationProvider):
                     return location
             return None
             
-        except (socket.error, FileNotFoundError, json.JSONDecodeError, socket.timeout) as e:
+        except (asyncio.TimeoutError, FileNotFoundError, json.JSONDecodeError, OSError) as e:
             self._log.warning(f"Failed to get location from service socket: {e}")
             return None
