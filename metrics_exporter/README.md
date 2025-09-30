@@ -1,32 +1,75 @@
 # metrics-exporter
 
-A lightweight Prometheus exporter for Raspberry Pi that collects system, disk, network, Docker, and hardware stats and exposes them on an HTTP endpoint for scraping (Grafana/Prometheus). It runs a loop at a fixed interval and updates Prometheus Gauges.
+A lightweight Prometheus exporter for Raspberry Pi that collects system, disk, network, Docker, and hardware stats and exposes them on an HTTP endpoint for scraping (Grafana/Prometheus).
 
-# Key features
+## Deployment
 
-- HTTP metrics endpoint – starts a Prometheus server (default :8001). 
+### Docker (Recommended)
 
-- Pluggable providers – system, network, disks (root + storage), Docker, hardware/NVMe. 
+This method encapsulates all dependencies and provides the necessary host access for metric collection.
 
-- Friendly logging – rotating file + console logger. 
+**Prerequisites:**
+* `Docker`
+* `Docker Compose`
 
-- Config via configs.py – log paths, poll interval, interfaces, disk paths, port.
+**Instructions:**
 
-# Installation
+**1. Prepare Host Directories**
+Create a directory for the service's logs.
+```bash
+mkdir -p ./logs
+```
 
-Requires Python ≥ 3.9. Uses requests and concurrent-log-handler (declared in pyproject.toml).
+**2. Set up the environment**
+Copy the production environment template.
+```bash
+cp .env.prod.template .env.prod
+# You can edit .env.prod to change ports, intervals, or disk paths.
+```
 
-Install inside your virtual environment or system
+**3. Build and run the container**
+```bash
+docker-compose up --build -d
+```
+The exporter will now be available at `http://<your-pi-ip>:8001/metrics`.
 
+**4. Check the logs**
+```bash
+docker-compose logs -f
+```
+
+**5. Stop the application**
+```bash
+docker-compose down
+```
+
+### Native / Legacy Setup
+
+Requires Python ≥ 3.9. See `pyproject.toml` for dependencies.
+
+**Installation**
 ```Bash
 cd ~/metrics_exporter
 python3 -m venv .venv_metrics_exporter
 source .venv_metrics_exporter/bin/activate
 pip install -e .
-deactivate
 ```
 
-# Configuration
+**Systemd Integration**
+Use a systemd unit file to manage the service. See example here: https://github.com/reekroo/media-server/tree/main/deployment/systemd_services
+
+**Enable & Run**
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable metrics-exporter
+sudo systemctl start metrics-exporter
+```
+
+---
+
+## Configuration
+
+The service is configured via environment variables. The Docker setup uses the `.env.prod` file for this. For native setup, export these variables in your shell or systemd unit file.
 
 | Setting                            | Default                     | Notes                                            |
 | ---------------------------------- | --------------------------- | ------------------------------------------------ |
@@ -38,20 +81,9 @@ deactivate
 | `STORAGE_DISK_PATH`                | `/mnt/storage`              | Usage + IO gauges labeled `path="/mnt/storage"`. |
 | `LAN_INTERFACE` / `WLAN_INTERFACE` | `eth0` / `wlan0`            | Used for IP + throughput.                        |
 
+---
 
-# Systemd Integration
-
-Take the systemd file from here: https://github.com/reekroo/media-server/tree/main/deployment/systemd_services
-
-## Enable & Run
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable metrics-exporter
-sudo systemctl start metrics-exporter
-```
-
-# Metrics exposed
+## Metrics Exposed
 
 * rpi_cpu_usage_percent
 * rpi_cpu_frequency_mhz
