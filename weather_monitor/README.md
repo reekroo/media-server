@@ -1,110 +1,128 @@
-# weather-monitor
+# Weather Monitor
 
-`weather-monitor` is a Python daemon that periodically fetches current weather data from external APIs and makes it available for other local services (e.g., OLED dashboards).
-It supports multiple weather providers, flexible location sources, and dual outputs (console + socket).
+`weather-monitor` is a Python service that periodically fetches weather data from external APIs and makes it available to other local services (e.g., OLED dashboards).
 
-# Key features
+## Key Features
 
-- Provider fallback
+-   **Provider Fallback:** Uses multiple providers (OpenWeatherMap, WeatherAPI.com) and falls back to the next one if a request fails.
+-   **Flexible Location Sources:** Can read coordinates from another service via a UNIX socket or use static values from its configuration as a fallback.
+-   **Multiple Outputs:**
+    -   `ConsoleOutput`: Logs human-readable weather data to the console.
+    -   `SocketOutput`: Serves the latest weather data as JSON over a UNIX socket.
+    -   `FileOutput`: Periodically saves the weather data to a JSON file.
+-   **Unified Data Model:** Normalizes data from all providers into a single, consistent `WeatherData` format.
+-   **Log Rotation:** Manages log files automatically to prevent disk space issues.
 
-    -  OpenWeatherMapProvider (OpenWeatherMap API)
+---
 
-    -  WeatherApiProvider (WeatherAPI.com)
-    The first successful provider result is used.
+## Configuration
 
-- Location sources
+The service is configured via environment variables.
 
-    - SocketLocationProvider: reads coordinates from your running location-service via a UNIX socket. 
+| Variable                 | Description                                                  |
+| ------------------------ | ------------------------------------------------------------ |
+| `OPENWEATHERMAP_API_KEY` | Your API key for OpenWeatherMap.                             |
+| `WEATHERAPI_API_KEY`     | Your API key for WeatherAPI.com.                             |
+| `LOCATION_SERVICE_SOCKET`| Path to the UNIX socket for the location service.            |
+| `WEATHER_SERVICE_SOCKET` | Path for the UNIX socket where this service provides weather JSON. |
+| `ON_DEMAND_WEATHER_SOCKET`| Path for the UNIX socket used for on-demand weather requests.  |
+| `WEATHER_JSON_FILE_PATH` | Path where the `latest.json` file is saved.                  |
+| `LOG_FILE_PATH`          | Path to the log file.                                        |
+| `DEFAULT_LATITUDE`       | Fallback latitude if the location service is unavailable.    |
+| `DEFAULT_LONGITUDE`      | Fallback longitude if the location service is unavailable.   |
+| `INTERVAL_SECONDS`       | Refresh interval for fetching weather data (in seconds).     |
+| `JSON_INTERVAL_SECONDS`  | Interval for saving data to the JSON file.                   |
 
-    - ConfigLocationProvider: falls back to static lat/lon if the socket is unavailable. 
+---
 
-- Outputs
+## How to Run
 
-    - ConsoleOutput: logs weather data in a readable form.
+You can run this service using Docker (recommended) or natively on your system.
 
-    - SocketOutput: serves the latest weather snapshot as JSON over a UNIX socket (e.g., /tmp/weather_service.sock).
+### Running with Docker (Recommended)
 
-- Unified data model
-Weather data is normalized into a single WeatherData namedtuple:
+This method handles all dependencies and ensures a consistent environment.
 
+**Prerequisites:**
+* `Docker`
+* `Docker Compose`
+
+**Instructions:**
+
+**Step 1: Clone the repository**
 ```bash
-location_name, temperature, feels_like, pressure, humidity,
-description, wind_speed, source
-``` :contentReference[oaicite:2]{index=2}
+git clone [your-repo-url]
+cd weather-monitor
 ```
 
-- Rotating logging
-Console + file logger with rotation (ConcurrentRotatingFileHandler).
-
-- CLI entrypoint
-Installed as weather-monitor via pyproject.toml.
-
-# Project Structure
+**Step 2: Prepare Host Directories (First Time Setup)**
+Before the first launch, you must create the directories on the host machine that Docker will use for persistent storage. This ensures the application has the necessary permissions to write files.
 
 ```bash
-weather-monitor/
-├─ configs.py             # env/config: API keys, intervals, sockets
-├─ main.py                # entrypoint wiring (providers, outputs, loop)
-├─ weather_controller.py  # core loop: get location → query providers → publish
-├─ weather_logger.py      # rotating file logger setup
-├─ weather_data.py        # WeatherData namedtuple (normalized model)
-├─ providers/
-│  ├─ openweathermap.py   # OpenWeatherMap provider
-│  ├─ weatherapi.py       # WeatherAPI provider
-│  ├─ socket_provider.py  # location via UNIX socket
-│  └─ config_provider.py  # fallback lat/lon provider
-├─ outputs/
-│  ├─ console_output.py   # console summary
-│  └─ socket_output.py    # JSON socket server
-└─ utils/
-   └─ http_client.py      # tiny requests wrapper
+# Create directory for the JSON output file and grant permissions
+sudo mkdir -p /run/monitors/weather
+sudo chmod 777 /run/monitors/weather
+
+# Create directory for logs in your project folder and grant permissions
+mkdir -p ./logs
+sudo chmod 777 ./logs
 ```
 
-# Configuration
+**Step 3: Set up the environment**
+Copy the production environment template and add your secret API keys.
+```bash
+cp .env.prod.template .env.prod
+nano .env.prod
+```
 
-| Variable                                 | Default                      | Purpose                         |
-| ---------------------------------------- | ---------------------------- | ------------------------------- |
-| `OPENWEATHERMAP_API_KEY`                 | *(none)*                     | API key for OpenWeatherMap      |
-| `WEATHERAPI_API_KEY`                     | *(none)*                     | API key for WeatherAPI          |
-| `LOCATION_SERVICE_SOCKET`                | `/tmp/location_service.sock` | Path to location-service socket |
-| `WEATHER_SERVICE_SOCKET`                 | `/tmp/weather_service.sock`  | Where to serve weather JSON     |
-| `DEFAULT_LATITUDE` / `DEFAULT_LONGITUDE` | `38.4237 / 27.1428`          | Fallback location               |
-| `INTERVAL_SECONDS`                       | `1800`                       | Refresh interval (seconds)      |
-| `LOG_FILE_PATH`                          | `logs/weather_service.log`   | Rotating file log path          |
+**Step 4: Build and run the container**
+This command will build the Docker image and start the service in the background.
+```bash
+docker-compose up --build -d
+```
 
-# Installation
+**Step 5: Check the logs**
+To see the application output or troubleshoot issues, run:
+```bash
+docker-compose logs -f
+```
 
-Requires Python ≥ 3.9. Declared dependencies: requests, concurrent-log-handler.
+**Step 6: Stop the application**
+To stop and remove the container, run:
+```bash
+docker-compose down
+```
 
-Install inside your virtual environment or system
+### Running Natively (Legacy)
 
-```Bash
-cd ~/weather_monitor
-python3 -m venv .venv_weather_monitor
-source .venv_weather_monitor/bin/activate
+This method requires installing Python and dependencies directly on your system.
+
+**Prerequisites:**
+* Python >= 3.10
+
+**Instructions:**
+
+**Step 1: Installation**
+Create a virtual environment and install the project dependencies.
+```bash
+cd /path/to/weather-monitor
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -e .
-deactivate
 ```
 
-## Enable & Run
-
+**Step 2: Configuration**
+Export the required environment variables in your shell before running the application.
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable weather-monitor
-sudo systemctl start weather-monitor
+export OPENWEATHERMAP_API_KEY="your_key_here"
+export WEATHERAPI_API_KEY="your_key_here"
+# Export other variables if you need to override the defaults
+# export LOG_FILE_PATH="/path/to/your/logs/weather.log"
 ```
 
-# Typical JSON payload
-
-```json
-{
-  "location_name": "Izmir",
-  "temperature": 26.1,
-  "feels_like": 27.8,
-  "pressure": 1015,
-  "humidity": 65,
-  "description": "Clear sky",
-  "wind_speed": 12,
-  "source": "OpenWeatherMap"
-}
+**Step 3: Run**
+Execute the installed script.
+```bash
+weather-monitor
 ```
+To run it as a persistent background service, you will need to configure a process manager like `systemd`.
