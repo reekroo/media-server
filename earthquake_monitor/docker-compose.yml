@@ -1,5 +1,9 @@
 version: '3.8'
 
+networks:
+  earthquake_net:
+    name: earthquake_monitor_network
+
 services:
   earthquake-monitor:
     build: .
@@ -11,3 +15,5 @@ services:
       - ./logs:/app/logs
       - /tmp:/tmp
       - /run/monitors/earthquakes:/run/monitors/earthquakes
+    networks:
+      - earthquake_net

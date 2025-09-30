@@ -1,5 +1,9 @@
 version: '3.8'
 
+networks:
+  weather_net:
+    name: weather_monitor_network
+
 services:
   weather-monitor:
     build: .
@@ -12,3 +16,5 @@ services:
       - ./logs:/app/logs
       - /run/monitors/weather:/run/data
       - /tmp:/tmp
+    networks:
+      - weather_net

@@ -1,5 +1,9 @@
 version: '3.8'
 
+networks:
+  location_net:
+    name: location_service_network
+
 services:
   location-service:
     build: .
@@ -10,3 +14,5 @@ services:
     volumes:
       - ./logs:/app/logs
       - /tmp:/tmp
+    networks:
+      - location_net
