@@ -1,0 +1,21 @@
+enabled = true
+to = "telegram"
+destination_group = "-1002918707721"
+destination_topic = "1090"
+destination_language = "ru"
+ai_topic = "science"
+
+[feeds.general]
+urls = [
+  "http://rss.sciencedaily.com/all.xml",
+  "https://www.sciencenews.org/feed",
+  "https://phys.org/rss-feed/science-news/",
+  "https://newscientist.com/feed/home/",
+  "https://www.nature.com/nature.rss",
+  "https://www.scientificamerican.com/feed/",
+  "https://www.theguardian.com/science/rss"
+]
+fetch_limit = 25
+section_limit = 3
+render_template = "🔬 General Science News\n\n{summary}"
+generate_image = true

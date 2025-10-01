@@ -1,0 +1,19 @@
+enabled = true
+to = "telegram"
+destination_group = "-1002918707721"
+destination_topic = "210"
+destination_language = "ru"
+ai_topic = "news"
+
+[feeds.general]
+urls = [
+  "https://feeds.bbci.co.uk/news/rss.xml",
+  "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+  "https://www.theguardian.com/world/rss",
+  "https://www.aljazeera.com/xml/rss/all.xml",
+  "https://www.dw.com/en/top-stories/s-9097?maca=en-rss-en-all-1573-xml"
+]
+fetch_limit = 25
+section_limit = 3
+render_template = "🗞️ World News\n\n{summary}"
+generate_image = true

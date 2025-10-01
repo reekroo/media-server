@@ -1,0 +1,19 @@
+enabled = true
+to = "telegram"
+destination_group = "-1002918707721"
+destination_topic = "204"
+destination_language = "en"
+ai_topic = "animation"
+
+[feeds.general]
+urls = [
+  "https://www.animenewsnetwork.com/all/rss.xml",
+  "https://www.crunchyroll.com/feed/news",
+  "https://www.animationmagazine.net/feed/",
+  "https://www.cartoonbrew.com/feed",
+  "https://www.awn.com/news/rss.xml"
+]
+fetch_limit = 25
+section_limit = 3
+render_template = "🎨 Animation News\n\n{summary}"
+generate_image = true

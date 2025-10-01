@@ -1,0 +1,28 @@
+enabled = true
+to = "telegram"
+destination_group = "-1002918707721"
+destination_topic = "396"
+destination_language = "ru"
+ai_topic = "news_fun"
+
+[feeds.general]
+urls = [
+    "https://www.theonion.com/rss",
+    "https://thehardtimes.net/feed/",
+    "https://feeds.reuters.com/reuters/oddeEnoughNews",
+    "https://apnews.com/hub/strange-news/rss",
+    "https://zerkalo.io/rss/s/main.rss",
+    "https://mediazona.by/rss",
+    "https://www.interfax.ru/rss.asp",
+    "https://ria.ru/export/rss2/index.xml",
+    "https://www.politico.eu/feed",
+    "https://www.euronews.com/rss",
+    "https://apnews.com/hub/us-news/rss",
+    "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+    "https://www.aa.com.tr/en/rss/default-RSS",
+    "https://www.dailysabah.com/rss"
+]
+fetch_limit = 25
+section_limit = 3
+render_template = "🤡 Odd & Funny News\n\n{summary}"
+generate_image = true

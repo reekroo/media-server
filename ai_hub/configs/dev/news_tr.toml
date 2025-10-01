@@ -1,0 +1,20 @@
+enabled = true
+to = "telegram"
+destination_group = "-1002918707721"
+destination_topic = "214"
+destination_language = "ru"
+ai_topic = "news_tr"
+
+[feeds.general]
+urls = [
+  "https://www.trthaber.com/xml_mobile.php?cat=1",
+  "https://www.aa.com.tr/tr/rss/default?cat=guncel",
+  "https://feeds.bbci.co.uk/turkce/rss.xml",
+  "https://www.cnnturk.com/feed/rss/all/news",
+  "https://www.hurriyet.com.tr/rss/anasayfa",
+  "https://www.sabah.com.tr/rss/anasayfa.xml"
+]
+fetch_limit = 25
+section_limit = 3
+render_template = "🇹🇷 Turkish News\n\n{summary}"
+generate_image = true
