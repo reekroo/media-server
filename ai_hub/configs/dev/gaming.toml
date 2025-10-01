@@ -1,0 +1,21 @@
+enabled = true
+to = "telegram"
+destination_group = "-1002918707721"
+destination_topic = "207"
+destination_language = "en"
+ai_topic = "gaming"
+
+[feeds.general]
+urls = [
+  "https://www.ign.com/rss.xml",
+  "https://www.pcgamer.com/rss/",
+  "https://www.kotaku.com/rss",
+  "https://www.vg247.com/feed",
+  "https://www.gamespot.com/feeds/mashup",
+  "https://www.polygon.com/rss/index.xml",
+  "https://www.rockpapershotgun.com/feed"
+]
+fetch_limit = 20
+section_limit = 3
+render_template = "🎮 General Gaming News\n\n{summary}"
+generate_image = true

@@ -1,0 +1,19 @@
+enabled = true
+to = "telegram"
+destination_group = "-1002918707721"
+destination_topic = "204"
+destination_language = "en"
+ai_topic = "entertainment"
+
+[feeds.general]
+urls = [
+  "https://variety.com/feed/",
+  "https://deadline.com/feed/",
+  "https://www.hollywoodreporter.com/t/feed/",
+  "https://www.indiewire.com/c/film/feed/",
+  "https://www.theguardian.com/film/rss"
+]
+fetch_limit = 25
+section_limit = 3
+render_template = "🍿 Entertainment News\n\n{summary}"
+generate_image = true

@@ -7,7 +7,7 @@ from core.logging import setup_logger, LOG_FILE_PATH
 
 log = setup_logger(__name__, LOG_FILE_PATH)
 
-SYS_DISABLED = "🟥 System digest is disabled or not configured."
+SYS_DISABLED = "🟪 System digest is disabled or not configured."
 
 async def build_digest(app: AppContext, config_name: str) -> str:
     log.info(f"Building system digest for config '{config_name}'")

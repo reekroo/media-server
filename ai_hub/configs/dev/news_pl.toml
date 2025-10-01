@@ -1,0 +1,19 @@
+enabled = true
+to = "telegram"
+destination_group = "-1002918707721"
+destination_topic = "1209"
+destination_language = "ru"
+ai_topic = "news_pl"
+
+[feeds.general]
+urls = [
+  "https://www.tvn24.pl/najnowsze.xml",
+  "https://pap-mediaroom.pl/rss",
+  "https://www.rmf24.pl/rss",
+  "https://rp.pl/rss_main",
+  "https://www.polskieradio.pl/399/8214"
+]
+fetch_limit = 25
+section_limit = 3
+render_template = "🇵🇱 Poland News\n\n{summary}"
+generate_image = true
