@@ -1,0 +1,19 @@
+version: '3.8'
+
+networks:
+  earthquake_net:
+    name: earthquake_monitor_network
+
+services:
+  earthquake-monitor:
+    build: .
+    container_name: earthquake-monitor
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    volumes:
+      - ./logs:/app/logs
+      - /tmp:/tmp
+      - /run/monitors/earthquakes:/run/monitors/earthquakes
+    networks:
+      - earthquake_net

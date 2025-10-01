@@ -1,24 +1,95 @@
-# location-service
+# backup-service
 
-`backup-service` creates timestamped ZIP archives of your configured directories and uploads them to Google Drive on a schedule (or immediately with a flag). It logs all actions with rotation and cleans up temporary archives after a successful upload.
+`backup-service` creates timestamped ZIP archives of your configured directories and uploads them to Google Drive on a schedule.
 
-# Key Features
+## Key Features
 
-- Zip archiving using a pluggable archiver (Zipper, format: zip). 
+- Zip archiving of one or more source directories.
+- Google Drive upload using OAuth2 (token is cached locally).
+- Flexible scheduling (weekly/daily).
+- Rotating logs via `concurrent-log-handler`.
+- Immediate backup execution via a CLI flag.
 
-- Google Drive upload with OAuth2; token is cached to token.json. 
+---
 
-- Config-driven sources & schedule (weekly/daily). 
+## Deployment with Docker (Recommended)
 
-- Rotating logs (file + console) via concurrent-log-handler. 
+This method encapsulates all dependencies and provides a clear process for the one-time authentication required by Google APIs.
 
-- CLI entrypoint backup-service with --now to run once and exit.
+### Prerequisites
+* `Docker`
+* `Docker Compose`
 
-# Google Account Setup
+### One-Time Setup & Authentication
+
+This process authenticates the service with your Google Account and creates a persistent `token.json` file. **You only need to do this once.**
+
+**1. Prepare Google API Credentials:**
+   - Follow **Step 1, 2, and 3** from the "Google Account Setup" section in the legacy instructions below to get your `credentials.json` file and your `GOOGLE_DRIVE_FOLDER_ID`.
+
+**2. Prepare Local Directories:**
+   Create the necessary folders in your project directory on the host machine.
+   ```bash
+   # Create folders for logs, temporary archives, and config files
+   mkdir -p ./logs ./temp ./config
+   ```
+
+**3. Place `credentials.json`:**
+   Move the `credentials.json` file you downloaded from Google into the newly created `./config` directory.
+
+**4. Configure `.env.prod`:**
+   Copy the template and edit the file to add your `GOOGLE_DRIVE_FOLDER_ID`.
+   ```bash
+   cp .env.prod.template .env.prod
+   nano .env.prod
+   ```
+
+**5. Run the Interactive Authentication:**
+   Execute the following command. This will run the container in the foreground and attach your terminal, allowing you to complete the Google authentication flow.
+   ```bash
+   docker-compose run --rm backup-service
+   ```
+   - The console will display a URL. Copy it and paste it into your web browser.
+   - Log in to your Google account and grant the requested permissions.
+   - Google will provide you with an authorization code. Copy it.
+   - Paste the code back into your terminal and press Enter.
+   - If successful, you will see a message "Token saved to file," and a `token.json` will appear in your `./config` directory. The container will then exit.
+
+### Normal Scheduled Operation
+
+After the one-time setup is complete, you can start the service in its normal, detached mode.
+
+**1. Start the service:**
+   ```bash
+   docker-compose up -d --build
+   ```
+   The service will now run in the background and perform backups according to the schedule defined in `.env.prod`.
+
+**2. Check the logs:**
+   ```bash
+   docker-compose logs -f
+   ```
+
+**3. Stop the service:**
+   ```bash
+   docker-compose down
+   ```
+
+**4. Run an immediate backup:**
+   To trigger a one-time backup without waiting for the schedule, use the `--now` flag.
+   ```bash
+   docker-compose run --rm backup-service --now
+   ```
+
+---
+
+## Legacy / Native Setup
+
+### Google Account Setup
 
 To work, the service needs permission to access your Google Drive. This is a one-time setup.
 
-1. Step 1: Obtaining `credentials.json`
+**1. Step 1: Obtaining `credentials.json`**
 
 This file is the key that allows your application to request access to the Google API.
 
@@ -29,13 +100,13 @@ This file is the key that allows your application to request access to the Googl
 * For "Application type," select "Desktop app" and give it a name (e.g., "Backup Service").
 * After creation, click "DOWNLOAD JSON". Rename the downloaded file to `credentials.json` and place it in the root folder of your project.
 
-2. Step 2: Add a test user
+**2. Step 2: Add a test user**
 
 * Go to the [Google Cloud Console](https://console.cloud.google.com/) 
 * In the navigation menu (☰), open "APIs & Services" -> "OAuth consent screen"
 * Click "+ Add users" in the "Audience" section
 
-3. Step 3: Obtaining `GOOGLE_DRIVE_FOLDER_ID`. 
+**3. Step 3: Obtaining `GOOGLE_DRIVE_FOLDER_ID`**
 
 This is the ID of the folder on your Google Drive where the archives will be uploaded.
 
@@ -44,7 +115,7 @@ This is the ID of the folder on your Google Drive where the archives will be upl
 Example: https://drive.google.com/drive/folders/1a2b3c4d5e6f7g8h9i0j
 Your ID here is: 1a2b3c4d5e6f7g8h9i0j.
 
-# Installation
+### Installation
 
 Requires Python ≥ 3.9. Uses requests and concurrent-log-handler (declared in pyproject.toml).
 
@@ -72,7 +143,7 @@ deactivate
 sudo /home/reekroo/backup_service/.venv_backup_service/bin/python -m src.main --now
 ```
 
-# Configuration
+### Configuration
 
 | Setting / Env                                                            | Default                      | Purpose                                                     |
 | ------------------------------------------------------------------------ | ---------------------------- | ----------------------------------------------------------- |
@@ -86,29 +157,14 @@ sudo /home/reekroo/backup_service/.venv_backup_service/bin/python -m src.main --
 | `LOG_LEVEL`, `LOG_MAX_BYTES`, `LOG_BACKUP_COUNT`                         | `INFO`, `5MB`, `3`           | Logging/rotation config.                                    |
 | `SCHEDULE_UNIT` / `SCHEDULE_INTERVAL` / `SCHEDULE_DAY` / `SCHEDULE_TIME` | `weeks / 1 / sunday / 03:00` | When to run (supports weekly/day-based modes).              |
 
-
-# Systemd Integration
+### Systemd Integration
 
 Take the systemd file from here: https://github.com/reekroo/media-server/tree/main/deployment/systemd_services
 
-## Enable & Run
+#### Enable & Run
 
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable backup-service
 sudo systemctl start backup-service
-```
-
-# Usage
-
-- Run once (immediate backup)
-
-```bash
-backup-service --now
-```
-
-- Run as a scheduler (foreground)
-
-```bash
-backup-service
 ```

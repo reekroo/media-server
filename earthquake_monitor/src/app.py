@@ -48,7 +48,7 @@ class Application:
         )
         self._historical_runner = PeriodicTaskRunner(
             task_callable=self._historical_service.execute_export,
-            interval=20 * 60,
+            interval=configs.HISTORICAL_INTERVAL_SECONDS,
             logger=self._logger,
             name="HistoricalExportRunner"
         )
@@ -82,7 +82,7 @@ class Application:
             location_providers=self._location_providers,
             output=json_output,
             logger=self._logger,
-            output_path='/run/monitors/earthquakes/last7d.json',
+            output_path=configs.HISTORICAL_JSON_FILE_PATH,
             fetch_days=7
         )
 

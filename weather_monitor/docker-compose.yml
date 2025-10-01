@@ -1,0 +1,20 @@
+version: '3.8'
+
+networks:
+  weather_net:
+    name: weather_monitor_network
+
+services:
+  weather-monitor:
+    build: .
+    container_name: weather-monitor
+    restart: unless-stopped
+    # privileged: true
+    env_file:
+      - .env.prod
+    volumes:
+      - ./logs:/app/logs
+      - /run/monitors/weather:/run/data
+      - /tmp:/tmp
+    networks:
+      - weather_net

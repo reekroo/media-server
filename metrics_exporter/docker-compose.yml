@@ -1,0 +1,22 @@
+networks:
+  metrics_net:
+    name: metrics_exporter_network
+
+services:
+  metrics-exporter:
+    build: .
+    container_name: metrics-exporter
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    
+    privileged: true
+    network_mode: host
+    pid: host
+    
+    volumes:
+      - /usr/bin/vcgencmd:/usr/bin/vcgencmd:ro
+      - /opt/vc:/opt/vc:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/hostfs:ro
+      - ./logs:/app/logs

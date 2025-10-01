@@ -1,23 +1,24 @@
 import os
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = os.getenv("PROJECT_ROOT", "/app")
 LOGS_DIR = os.path.join(PROJECT_ROOT, 'logs')
-LOG_FILE_PATH = os.path.join(LOGS_DIR, 'weather_service.log')
-LOG_MAX_BYTES = 10 * 1024 * 1024
-LOG_BACKUP_COUNT = 5
 
-WEATHER_SERVICE_SOCKET = "/tmp/weather_service.sock"
-ON_DEMAND_WEATHER_SOCKET = "/tmp/on_demand_weather.sock"
-LOCATION_SERVICE_SOCKET = '/tmp/location_service.sock'
-INTERVAL_SECONDS = 1800
+WEATHER_SERVICE_SOCKET = os.getenv("WEATHER_SERVICE_SOCKET", "/tmp/weather_service.sock")
+ON_DEMAND_WEATHER_SOCKET = os.getenv("ON_DEMAND_WEATHER_SOCKET", "/tmp/on_demand_weather.sock")
+LOCATION_SERVICE_SOCKET = os.getenv('LOCATION_SERVICE_SOCKET', '/tmp/location_service.sock')
+WEATHER_JSON_FILE_PATH = os.getenv("WEATHER_JSON_FILE_PATH", "/run/monitors/weather/latest.json")
+LOG_FILE_PATH = os.getenv("LOG_FILE_PATH", os.path.join(LOGS_DIR, 'weather_service.log'))
 
-WEATHER_JSON_FILE_PATH = "/run/monitors/weather/latest.json"
-JSON_INTERVAL_SECONDS = 1200
+LOG_MAX_BYTES = int(os.getenv("LOG_MAX_BYTES", 10 * 1024 * 1024))
+LOG_BACKUP_COUNT = int(os.getenv("LOG_BACKUP_COUNT", 5))
 
-OPENWEATHERMAP_API_KEY = os.getenv("OPENWEATHERMAP_API_KEY", "bfff0720b491083abffe6d560e8c5e5f")
-WEATHERAPI_API_KEY = os.getenv("WEATHERAPI_API_KEY", "a66c1a552fe64810a8653549252308")
+INTERVAL_SECONDS = int(os.getenv("INTERVAL_SECONDS", 1800))
+JSON_INTERVAL_SECONDS = int(os.getenv("JSON_INTERVAL_SECONDS", 1200))
 
-DEFAULT_LATITUDE = 38.4237
-DEFAULT_LONGITUDE = 27.1428
+OPENWEATHERMAP_API_KEY = os.getenv("OPENWEATHERMAP_API_KEY")
+WEATHERAPI_API_KEY = os.getenv("WEATHERAPI_API_KEY")
+
+DEFAULT_LATITUDE = float(os.getenv("DEFAULT_LATITUDE", 38.4237))
+DEFAULT_LONGITUDE = float(os.getenv("DEFAULT_LONGITUDE", 27.1428))
 
 OUTPUT_MODES = ['console', 'socket']
