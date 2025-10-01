@@ -9,56 +9,70 @@ clients:
   - url: http://loki:3100/loki/api/v1/push
 
 scrape_configs:
-  - job_name: periphery scripts
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: scripts
-          host: raspberrypi
-          __path__: /mnt/logs/scripts_logs/*.log
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: 'container'
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: 'stream'
+      - source_labels: ['__meta_docker_container_label_logging_jobname']
+        target_label: 'job'
 
-  - job_name: location service
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: location_service
-          host: raspberrypi
-          __path__: /mnt/logs/location_service_logs/*.log
+# scrape_configs:
+  # - job_name: periphery scripts
+  #   static_configs:
+  #     - targets:
+  #         - localhost
+  #       labels:
+  #         job: scripts
+  #         host: raspberrypi
+  #         __path__: /mnt/logs/scripts_logs/*.log
 
-  - job_name: backup service
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: backup_service
-          host: raspberrypi
-          __path__: /mnt/logs/backup_service_logs/*.log
+  # - job_name: location service
+  #   static_configs:
+  #     - targets:
+  #         - localhost
+  #       labels:
+  #         job: location_service
+  #         host: raspberrypi
+  #         __path__: /mnt/logs/location_service_logs/*.log
 
-  - job_name: earthquake monitor app
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: earthquake_monitor
-          host: raspberrypi
-          __path__: /mnt/logs/earthquake_monitor_logs/*.log
+  # - job_name: backup service
+  #   static_configs:
+  #     - targets:
+  #         - localhost
+  #       labels:
+  #         job: backup_service
+  #         host: raspberrypi
+  #         __path__: /mnt/logs/backup_service_logs/*.log
 
-  - job_name: weather monitor app
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: weather_monitor
-          host: raspberrypi
-          __path__: /mnt/logs/weather_monitor_logs/*.log
+  # - job_name: earthquake monitor app
+  #   static_configs:
+  #     - targets:
+  #         - localhost
+  #       labels:
+  #         job: earthquake_monitor
+  #         host: raspberrypi
+  #         __path__: /mnt/logs/earthquake_monitor_logs/*.log
 
-  - job_name: ai hub
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: ai_hub
-          host: raspberrypi
-          __path__: /mnt/logs/ai_hub_logs/*.log
+  # - job_name: weather monitor app
+  #   static_configs:
+  #     - targets:
+  #         - localhost
+  #       labels:
+  #         job: weather_monitor
+  #         host: raspberrypi
+  #         __path__: /mnt/logs/weather_monitor_logs/*.log
+
+  # - job_name: ai hub
+  #   static_configs:
+  #     - targets:
+  #         - localhost
+  #       labels:
+  #         job: ai_hub
+  #         host: raspberrypi
+  #         __path__: /mnt/logs/ai_hub_logs/*.log
